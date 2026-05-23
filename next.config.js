@@ -18,7 +18,7 @@ const nextConfig = {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
     const redirects = [];
 
-    // Force www redirect: naked domain italiacantieri.it → www.italiacantieri.it
+    // Force www redirect: naked domain bandigaredappalto.it → www.bandigaredappalto.it
     if (siteUrl) {
       try {
         const url = new URL(siteUrl);
@@ -34,11 +34,9 @@ const nextConfig = {
       } catch {}
     }
 
-    // Privacy unica: la vecchia pagina "come trattiamo i dati" confluisce nella Privacy Policy.
-    redirects.push(
-      { source: '/come-trattiamo-i-dati', destination: '/legal/privacy', permanent: true },
-      { source: '/come-trattiamo-i-dati/:path*', destination: '/legal/privacy', permanent: true },
-    );
+    // La rotta canonica del dettaglio bando è /bandi/[slug].
+    // Eventuali link legacy /bando/[slug] (dal clone italia-cantieri) vengono redirezionati.
+    redirects.push({ source: '/bando/:slug', destination: '/bandi/:slug', permanent: true });
 
     return redirects;
   },

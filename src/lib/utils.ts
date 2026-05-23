@@ -63,67 +63,31 @@ export function slugify(str: string): string {
 }
 
 /**
- * Mappa regione -> slug per route /[regione].
+ * Titolo leggibile di un bando.
+ * I dati TED hanno spesso l'oggetto degradato (es. "I"): in quel caso
+ * costruiamo un fallback usando ente + categoria CPV + CIG.
  */
-export function regioneSlug(regione: string): string {
-  return slugify(regione);
+export function bandoTitolo(b: {
+  oggetto?: string | null;
+  stazione_appaltante?: string | null;
+  cpv_principale?: string | null;
+  cig?: string | null;
+}, cpvLabel?: string): string {
+  const oggetto = (b.oggetto || '').trim();
+  if (oggetto.length >= 6) return oggetto;
+  // Fallback editoriale: "<categoria CPV> — <ente>" o CIG
+  const parts: string[] = [];
+  if (cpvLabel) parts.push(cpvLabel);
+  if (b.stazione_appaltante) parts.push(b.stazione_appaltante);
+  if (parts.length > 0) return parts.join(' — ');
+  return b.cig ? `Bando di gara ${b.cig}` : 'Bando di gara pubblico';
 }
 
 /**
- * Inverso slug -> nome regione canonical (case-insensitive lookup richiede query DB).
- * Per matching SQL usa ILIKE.
+ * Giorni rimanenti alla scadenza (negativo se scaduto, null se assente).
  */
-export function regioneFromSlug(slug: string): string {
-  return slug
-    .split('-')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
-}
-
-/**
- * Province italiane: il DB memorizza la sigla 2 lettere (BO, MI, TO, ...).
- * Le URL del sito usano lo slug del nome esteso (es. "TO" → "torino"),
- * coerente con la convenzione editoriale italiaprogettisti.com.
- *
- * @deprecated Usa `provinciaSlugFromCode` da `@/lib/province` per ottenere lo slug
- * canonico (es. "torino"). Questa funzione adesso e' un wrapper di compatibilita.
- */
-export function provinciaSlug(provinciaSigla: string): string {
-  // Lazy import per evitare cicli — ma in pratica e' un re-export sicuro.
-  // Mantieni signature stabile per i call-site legacy.
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { provinciaSlugFromCode } = require('./province') as typeof import('./province');
-  return provinciaSlugFromCode(provinciaSigla);
-}
-
-/**
- * Coordinate PostGIS (WKB hex) -> { lat, lng } se possibile.
- * Le geometrie arrivano come WKB binario in formato hex string.
- * Parser leggero per POINT (E6...).
- */
-export function parseCoordinate(wkbHex: string | null): { lat: number; lng: number } | null {
-  if (!wkbHex || typeof wkbHex !== 'string') return null;
-  // PostGIS hex string per POINT: 0101000020E6100000 + 8 byte lng + 8 byte lat (little endian double)
-  try {
-    if (wkbHex.length < 50) return null;
-    // Estrai gli ultimi 32 hex chars: 16 lng + 16 lat
-    const lngHex = wkbHex.slice(18, 34);
-    const latHex = wkbHex.slice(34, 50);
-    const lng = hexToDouble(lngHex);
-    const lat = hexToDouble(latHex);
-    if (isNaN(lat) || isNaN(lng)) return null;
-    return { lat, lng };
-  } catch {
-    return null;
-  }
-}
-
-function hexToDouble(hex: string): number {
-  // Little endian: reverse byte order
-  const bytes = new Uint8Array(8);
-  for (let i = 0; i < 8; i++) {
-    bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
-  }
-  const buffer = bytes.buffer;
-  return new DataView(buffer).getFloat64(0, true);
+export function giorniAllaScadenza(scadenza: string | null | undefined): number | null {
+  if (!scadenza) return null;
+  const ms = new Date(scadenza).getTime() - Date.now();
+  return Math.ceil(ms / (1000 * 60 * 60 * 24));
 }

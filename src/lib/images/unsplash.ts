@@ -180,5 +180,5 @@ export function getRegionHero(regione: string): UnsplashImage {
  * Conforme alle linee guida Unsplash API.
  */
 export function unsplashAttributionHtml(img: UnsplashImage): string {
-  return `Foto di <a href="${img.photographerUrl}?utm_source=italiacantieri&utm_medium=referral" rel="noopener noreferrer" target="_blank">${img.photographer}</a> su <a href="https://unsplash.com/?utm_source=italiacantieri&utm_medium=referral" rel="noopener noreferrer" target="_blank">Unsplash</a>`;
+  return `Foto di <a href="${img.photographerUrl}?utm_source=bandigaredappalto&utm_medium=referral" rel="noopener noreferrer" target="_blank">${img.photographer}</a> su <a href="https://unsplash.com/?utm_source=bandigaredappalto&utm_medium=referral" rel="noopener noreferrer" target="_blank">Unsplash</a>`;
 }

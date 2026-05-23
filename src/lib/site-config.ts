@@ -1,6 +1,7 @@
 /**
- * Site config per italiacantieri.it (HUB unico, no multi-tenant come satelliti).
- * Espone valori statici + funzioni helper per layout/metadata.
+ * Site config per bandigaredappalto.it — satellite SEO della rete ItaliaProgettisti.
+ * Vetrina pubblica (anon, sola lettura): tutto il transazionale (registrazione,
+ * sblocco, abbonamento, alert) avviene sull'HUB www.italiaprogettisti.com.
  */
 
 export interface SiteConfig {
@@ -30,21 +31,22 @@ export interface SiteConfig {
   };
 }
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.italiacantieri.it';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.bandigaredappalto.it';
 
 export const siteConfig: SiteConfig = {
-  name: 'Italia Cantieri',
-  domain: 'italiacantieri.it',
+  name: 'Bandi Gare d\'Appalto',
+  domain: 'bandigaredappalto.it',
   baseUrl: siteUrl,
-  tagline: 'Aggregatore pubblico cantieri edilizi e bandi di gara in Italia',
+  tagline: 'Tutti i bandi e le gare d\'appalto pubbliche d\'Italia, in chiaro',
   description:
-    'Italia Cantieri è il database pubblico dei cantieri edilizi italiani: permessi di costruire, SCIA, CILA, bandi pubblici. Dati open data PA aggregati con piena trasparenza GDPR.',
-  email: 'info@italiacantieri.it',
+    'BandiGareDappalto è il portale pubblico dei bandi e delle gare d\'appalto in Italia: oggetto, stazione appaltante, importo a base di gara, scadenze, CIG/CUP, categoria CPV e chi vince le gare. Dati pubblici trattati nel rispetto del GDPR.',
+  email: 'info@bandigaredappalto.it',
   dpoEmail: 'privacy@italiaprogettisti.com',
   companyName: 'AZIENDA 365 SRL',
   companyPiva: 'P.IVA 02724340746',
   network: [
     { name: 'Italia Progettisti', url: 'https://www.italiaprogettisti.com' },
+    { name: 'Italia Cantieri', url: 'https://www.italiacantieri.it' },
     { name: 'Italia Domus', url: 'https://www.italiadomus.it' },
     { name: 'Italia Serramenti', url: 'https://www.italiaserramenti.com' },
     { name: 'Italia Blindati', url: 'https://www.italiablindati.com' },
@@ -59,22 +61,41 @@ export const siteConfig: SiteConfig = {
   },
   seo: {
     defaultTitle:
-      'Italia Cantieri — Database cantieri edilizi pubblici e bandi di gara Italia',
-    titleSuffix: 'Italia Cantieri',
+      'Bandi e gare d\'appalto pubbliche in Italia — BandiGareDappalto',
+    titleSuffix: 'BandiGareDappalto',
     defaultDescription:
-      'Aggregatore pubblico di cantieri edilizi italiani: permessi di costruire (PDC), SCIA, CILA, bandi pubblici. Dati open data PA con piena trasparenza GDPR.',
+      'Portale pubblico dei bandi e delle gare d\'appalto in Italia: procedure aperte, ristrette e negoziate, importo a base di gara, scadenze, CIG, CUP, categoria CPV e aggiudicatari. Dati pubblici, piena trasparenza GDPR.',
     keywords: [
-      'cantieri edilizi italia',
-      'permessi di costruire',
-      'PDC SCIA CILA',
-      'bandi di gara pubblici',
-      'open data PA',
-      'database cantieri',
-      'edilizia pubblica',
+      'bandi di gara',
+      'gare d\'appalto pubbliche',
+      'appalti pubblici Italia',
+      'CIG CUP CPV',
+      'stazione appaltante',
+      'procedura aperta appalto',
+      'categoria SOA',
+      'importo a base di gara',
+      'aggiudicatari gare',
     ],
   },
 };
 
 export function getSiteConfig(): SiteConfig {
   return siteConfig;
+}
+
+/** Costruisce un URL HUB con UTM coerenti per le CTA transazionali. */
+export function hubUrl(
+  path: string,
+  campaign: string,
+  extraParams: Record<string, string> = {},
+): string {
+  const base = 'https://www.italiaprogettisti.com';
+  const qs = new URLSearchParams({
+    utm_source: 'bandigaredappalto',
+    utm_medium: 'referral',
+    utm_campaign: campaign,
+    ...extraParams,
+  });
+  const clean = path.startsWith('/') ? path : `/${path}`;
+  return `${base}${clean}?${qs.toString()}`;
 }

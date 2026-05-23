@@ -1,11 +1,9 @@
 /**
- * Generatori JSON-LD schema.org per italiacantieri.it.
+ * Generatori JSON-LD schema.org per bandigaredappalto.it.
  * Escape </script> per evitare injection.
  */
-import { Cantiere } from '@/lib/supabase/queries/cantieri';
 import { Bando } from '@/lib/supabase/queries/bandi';
 import { siteConfig } from '@/lib/site-config';
-import { parseCoordinate } from '@/lib/utils';
 
 /** Escape sicuro per JSON-LD inline in HTML. */
 export function safeJsonLd(obj: any): string {
@@ -24,13 +22,14 @@ export function organizationLd() {
     foundingDate: '2026',
     areaServed: { '@type': 'Country', name: 'Italia' },
     knowsAbout: [
-      'permessi di costruire',
-      'SCIA edilizia',
-      'CILA edilizia',
       'bandi di gara pubblici',
-      'open data Pubblica Amministrazione',
-      'cantieri edilizi Italia',
-      'intelligence edilizia',
+      'gare d\'appalto Italia',
+      'appalti pubblici',
+      'CIG codice identificativo gara',
+      'CPV vocabolario comune appalti',
+      'attestazione SOA',
+      'stazione appaltante',
+      'aggiudicatari gare pubbliche',
     ],
     contactPoint: [
       {
@@ -51,7 +50,7 @@ export function organizationLd() {
   };
 }
 
-/** WebSite con SearchAction. Target = pagina /regioni (entry-point ricerca territoriale). */
+/** WebSite con SearchAction. Target = pagina /bandi (entry-point ricerca bandi). */
 export function websiteLd() {
   return {
     '@context': 'https://schema.org',
@@ -68,75 +67,48 @@ export function websiteLd() {
       '@type': 'SearchAction',
       target: {
         '@type': 'EntryPoint',
-        urlTemplate: `${siteConfig.baseUrl}/regioni?q={search_term_string}`,
+        urlTemplate: `${siteConfig.baseUrl}/bandi?q={search_term_string}`,
       },
       'query-input': 'required name=search_term_string',
     },
   };
 }
 
-/**
- * Schema.org ConstructionProject (type diretto per AI engines).
- */
-export function cantiereLd(c: Cantiere) {
-  const coords = parseCoordinate(c.coordinate);
+/** ItemList per le liste di bandi (home, /bandi, /categoria/[cpv], /scadenze). */
+export function itemListLd(
+  items: { name: string; url: string }[],
+  listName?: string,
+) {
   return {
     '@context': 'https://schema.org',
-    '@type': 'ConstructionProject',
-    name: c.descrizione || `${c.tipo_titolo || 'Cantiere'} – ${c.protocollo || c.comune}`,
-    description: c.descrizione || `${c.tipo_titolo || 'Cantiere edilizio'} pubblicato a ${c.comune}, ${c.regione}.`,
-    identifier: c.protocollo || c.id,
-    url: `${siteConfig.baseUrl}/cantiere/${c.slug}`,
-    location: {
-      '@type': 'Place',
-      address: {
-        '@type': 'PostalAddress',
-        streetAddress: [c.indirizzo, c.civico].filter(Boolean).join(' ') || undefined,
-        postalCode: c.cap || undefined,
-        addressLocality: c.comune,
-        addressRegion: c.regione,
-        addressCountry: 'IT',
-      },
-      ...(coords ? { geo: { '@type': 'GeoCoordinates', latitude: coords.lat, longitude: coords.lng } } : {}),
-    },
-    ...(c.importo_lavori
-      ? { estimatedCost: { '@type': 'MonetaryAmount', currency: 'EUR', value: c.importo_lavori } }
-      : {}),
-    ...(c.data_inizio_lavori ? { startDate: c.data_inizio_lavori } : {}),
-    ...(c.data_fine_lavori_prevista ? { endDate: c.data_fine_lavori_prevista } : {}),
-    ...(c.data_rilascio ? { dateCreated: c.data_rilascio } : {}),
-    keywords: (c.categorie || []).join(', '),
-    isBasedOn: {
-      '@type': 'CreativeWork',
-      name: `Fonte: ${c.fonte_tipo || 'open data PA'}`,
-      dateCreated: c.fonte_pubblicazione_data || undefined,
-    },
+    '@type': 'ItemList',
+    ...(listName ? { name: listName } : {}),
+    numberOfItems: items.length,
+    itemListElement: items.map((it, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: it.name,
+      url: it.url,
+    })),
   };
 }
 
-/** GovernmentService / Bando di gara */
-export function bandoLd(b: Bando) {
+/** GovernmentService / Bando di gara — route canonica /bandi/[slug]. */
+export function bandoLd(b: Bando, titolo: string, descrizione: string) {
+  const aperto = !!b.scadenza_offerte && new Date(b.scadenza_offerte) >= new Date();
   return {
     '@context': 'https://schema.org',
     '@type': 'GovernmentService',
-    name: b.oggetto,
-    description: b.descrizione_completa,
+    name: titolo,
+    description: descrizione,
     identifier: b.cig || b.numero_bando || b.id,
-    url: `${siteConfig.baseUrl}/bando/${b.slug}`,
-    serviceType: b.tipo_procedura,
+    url: `${siteConfig.baseUrl}/bandi/${b.slug}`,
+    serviceType: b.tipo_procedura || 'Bando di gara pubblico',
+    inLanguage: 'it-IT',
     provider: {
       '@type': 'GovernmentOrganization',
-      name: b.stazione_appaltante,
-      ...(b.comune
-        ? {
-            address: {
-              '@type': 'PostalAddress',
-              addressLocality: b.comune,
-              addressRegion: b.regione,
-              addressCountry: 'IT',
-            },
-          }
-        : {}),
+      name: b.stazione_appaltante || 'Stazione appaltante',
+      areaServed: { '@type': 'Country', name: 'Italia' },
     },
     ...(b.importo_base
       ? {
@@ -144,8 +116,10 @@ export function bandoLd(b: Bando) {
             '@type': 'Offer',
             price: b.importo_base,
             priceCurrency: 'EUR',
-            availability: b.stato === 'pubblicato' ? 'https://schema.org/InStock' : 'https://schema.org/Discontinued',
-            validThrough: b.scadenza_offerte,
+            availability: aperto
+              ? 'https://schema.org/InStock'
+              : 'https://schema.org/Discontinued',
+            ...(b.scadenza_offerte ? { validThrough: b.scadenza_offerte } : {}),
           },
         }
       : {}),

@@ -1,33 +1,23 @@
 import { MetadataRoute } from 'next';
 import { siteConfig } from '@/lib/site-config';
-import {
-  getCantieriByRegione,
-  getAllProvince,
-  getAllComuni,
-  getAllCantieriSlugs,
-} from '@/lib/supabase/queries/cantieri';
-import { getAllBandiSlugs } from '@/lib/supabase/queries/bandi';
-import { regioneSlug, slugify } from '@/lib/utils';
-import { provinciaSlugFromCode } from '@/lib/province';
+import { getAllBandiSlugs, getBandiByCpvGroup } from '@/lib/supabase/queries/bandi';
 
 export const revalidate = 3600;
 
 /**
- * Sitemap unica fino a ~5000 cantieri + 2000 bandi + 500 comuni + province + regioni + static.
- * Per scale superiori, Next.js suggerisce sitemap-split via generateSitemaps().
+ * Sitemap: pagine statiche + categorie CPV presenti + schede bando.
+ * NON includiamo /bandi con querystring (ricerca/filtro dinamica, noindex).
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = siteConfig.baseUrl;
   const now = new Date();
 
-  // Static pages
   const staticPages: MetadataRoute.Sitemap = [
     { url: `${baseUrl}/`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
-    { url: `${baseUrl}/regioni`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
-    { url: `${baseUrl}/statistiche`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${baseUrl}/bandi`, lastModified: now, changeFrequency: 'daily', priority: 0.8 },
-    { url: `${baseUrl}/iscriviti`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/bandi`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
+    { url: `${baseUrl}/scadenze`, lastModified: now, changeFrequency: 'daily', priority: 0.85 },
     { url: `${baseUrl}/glossario`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/iscriviti`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${baseUrl}/per-pubbliche-amministrazioni`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${baseUrl}/api-pubbliche`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${baseUrl}/come-trattiamo-i-dati`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
@@ -38,50 +28,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/legal/termini`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
   ];
 
-  // Regioni
-  const regioni = await getCantieriByRegione();
-  const regionPages: MetadataRoute.Sitemap = regioni.map((r) => ({
-    url: `${baseUrl}/${regioneSlug(r.regione)}`,
+  // Categorie CPV (gruppi realmente presenti)
+  const cpvGroups = await getBandiByCpvGroup();
+  const categoriaPages: MetadataRoute.Sitemap = cpvGroups.map((g) => ({
+    url: `${baseUrl}/categoria/${g.group}`,
     lastModified: now,
     changeFrequency: 'daily',
-    priority: 0.85,
+    priority: 0.8,
   }));
 
-  // Province (per ogni regione)
-  const province = await getAllProvince();
-  const provinciaPages: MetadataRoute.Sitemap = province.slice(0, 200).map((p) => ({
-    url: `${baseUrl}/${regioneSlug(p.regione)}/${provinciaSlugFromCode(p.provincia)}`,
-    lastModified: now,
-    changeFrequency: 'daily',
-    priority: 0.75,
-  }));
-
-  // Comuni (max 500 dedup)
-  const comuni = await getAllComuni(500);
-  const comunePages: MetadataRoute.Sitemap = comuni.map((c) => ({
-    url: `${baseUrl}/comune/${slugify(c.comune)}`,
-    lastModified: now,
-    changeFrequency: 'daily',
-    priority: 0.7,
-  }));
-
-  // Cantieri (max 5000)
-  const cantieri = await getAllCantieriSlugs(5000);
-  const cantierePages: MetadataRoute.Sitemap = cantieri.map((c) => ({
-    url: `${baseUrl}/cantiere/${c.slug}`,
-    lastModified: c.updated_at ? new Date(c.updated_at) : now,
-    changeFrequency: 'monthly',
-    priority: 0.5,
-  }));
-
-  // Bandi (max 2000)
-  const bandi = await getAllBandiSlugs(2000);
+  // Schede bando
+  const bandi = await getAllBandiSlugs(5000);
   const bandoPages: MetadataRoute.Sitemap = bandi.map((b) => ({
-    url: `${baseUrl}/bando/${b.slug}`,
+    url: `${baseUrl}/bandi/${b.slug}`,
     lastModified: b.updated_at ? new Date(b.updated_at) : now,
     changeFrequency: 'weekly',
     priority: 0.6,
   }));
 
-  return [...staticPages, ...regionPages, ...provinciaPages, ...comunePages, ...cantierePages, ...bandoPages];
+  return [...staticPages, ...categoriaPages, ...bandoPages];
 }
