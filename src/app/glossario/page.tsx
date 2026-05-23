@@ -1,14 +1,9 @@
 /**
- * Pagina /glossario — definizioni tecniche edilizia italiana.
+ * Pagina /glossario — definizioni dei termini di bandi e gare d'appalto.
  *
- * Target keyword Tier 1 (PDC, SCIA, CILA, PAS, DIA, Albo Pretorio, ITP, OG, OS, ecc.).
- * Stack AEO:
- *   - DefinedTermSet + DefinedTerm[] schema.org (Google + Perplexity/ChatGPT citations)
- *   - HTML semantico <dl><dt><dd> per ogni termine
- *   - Anchor link per cross-link interno
- *   - Risposta DIRETTA nei primi 60 caratteri di ogni definizione (featured snippet)
- *
- * Linked dal Header e dal Footer.
+ * Target keyword informazionali (CIG, CUP, CPV, SOA, RTI, stazione appaltante,
+ * procedura aperta/negoziata, aggiudicazione, RUP, MEPA, ecc.).
+ * Stack AEO: DefinedTermSet schema.org + HTML semantico <dl><dt><dd>.
  */
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -21,267 +16,237 @@ import {
   type GlossaryTerm,
 } from '@/lib/seo/structured-data';
 
-export const revalidate = 86400; // glossario cambia raramente
+export const revalidate = 86400;
 
 const ogImage = ogImageUrl({
-  title: 'Glossario edilizia italiana',
-  subtitle: 'PDC, SCIA, CILA, OG, OS e tutti i termini tecnici dei cantieri',
+  title: 'Glossario degli appalti pubblici',
+  subtitle: 'CIG, CUP, CPV, SOA, RTI e tutti i termini delle gare d\'appalto',
   kind: 'glossario',
-  count: '28',
   label: 'termini definiti',
 });
 
 export const metadata: Metadata = {
-  title: 'Glossario edilizia italiana — PDC, SCIA, CILA, OG, OS e termini tecnici',
+  title: 'Glossario appalti pubblici — CIG, CUP, CPV, SOA, RTI e termini delle gare',
   description:
-    'Glossario completo dei termini tecnici dell\'edilizia italiana: Permesso di Costruire (PDC), SCIA, CILA, PAS, DIA, OG, OS, albo pretorio, ITP, sanatoria, agibilità. Definizioni accurate e riferimenti normativi.',
+    'Glossario completo dei termini di bandi e gare d\'appalto pubbliche: CIG, CUP, CPV, SOA, RTI, stazione appaltante, procedura aperta, negoziata, aggiudicazione, RUP, MEPA. Definizioni allineate al D.Lgs. 36/2023.',
   alternates: { canonical: '/glossario' },
   keywords: [
-    'glossario edilizia',
-    'PDC SCIA CILA differenze',
-    'cosa significa PDC',
-    'permesso di costruire definizione',
-    'categorie OG OS',
-    'albo pretorio',
-    'glossario cantieri',
+    'glossario appalti',
+    'cosa significa CIG',
+    'CPV codice appalto',
+    'attestazione SOA',
+    'cos\'è un RTI',
+    'stazione appaltante definizione',
+    'procedura aperta appalto',
   ],
   openGraph: {
-    title: 'Glossario edilizia italiana — Italia Cantieri',
-    description:
-      'PDC, SCIA, CILA, OG, OS, albo pretorio e tutti i termini tecnici dei cantieri italiani spiegati con definizioni accurate.',
+    title: 'Glossario appalti pubblici — BandiGareDappalto',
+    description: 'CIG, CUP, CPV, SOA, RTI, stazione appaltante e tutti i termini delle gare d\'appalto spiegati con definizioni accurate.',
     url: '/glossario',
     type: 'website',
-    images: [{ url: ogImage, width: 1200, height: 630, alt: 'Glossario edilizia italiana' }],
+    images: [{ url: ogImage, width: 1200, height: 630, alt: 'Glossario appalti pubblici' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Glossario edilizia italiana',
-    description: 'PDC, SCIA, CILA, OG, OS e tutti i termini tecnici dei cantieri italiani.',
+    title: 'Glossario appalti pubblici',
+    description: 'CIG, CUP, CPV, SOA, RTI e tutti i termini delle gare d\'appalto.',
     images: [ogImage],
   },
 };
 
-/**
- * 28 termini ad alta intenzione di ricerca informazionale.
- * Ogni definizione: 50-100 parole, prima frase factual diretta.
- */
 const TERMS: GlossaryTerm[] = [
   {
-    termCode: 'PDC',
-    name: 'Permesso di Costruire',
+    termCode: 'CIG',
+    name: 'Codice Identificativo Gara',
     definition:
-      'Il Permesso di Costruire (PDC) è l\'autorizzazione preventiva rilasciata dal Comune per interventi edilizi rilevanti: nuove costruzioni, ampliamenti volumetrici, ristrutturazioni che modificano la sagoma o il volume dell\'edificio. È disciplinato dagli artt. 10-20 del DPR 380/2001 (Testo Unico Edilizia). Tempo medio di rilascio: 90 giorni dalla presentazione della domanda completa. Senza PDC i lavori sono abusivi e soggetti a sanzioni amministrative e penali.',
-    example:
-      'Per costruire una villa unifamiliare di nuova edificazione su un terreno edificabile serve il PDC, presentato presso lo Sportello Unico Edilizia (SUE) del Comune competente.',
-    relatedPath: '/statistiche',
+      'Il CIG (Codice Identificativo Gara) è un codice alfanumerico univoco rilasciato dall\'ANAC per ogni procedura di affidamento pubblico, a prescindere dall\'importo. Obbligatorio dal 2010 per la tracciabilità dei flussi finanziari (L. 136/2010). Senza CIG il contratto è nullo e l\'impresa non può fatturare alla Pubblica Amministrazione.',
+    example: 'Ogni bando di gara riporta il proprio CIG: è il codice da indicare in fattura e in tutti i pagamenti collegati all\'appalto.',
+    relatedPath: '/bandi',
   },
   {
-    termCode: 'SCIA',
-    name: 'Segnalazione Certificata di Inizio Attività',
+    termCode: 'CUP',
+    name: 'Codice Unico di Progetto',
     definition:
-      'La SCIA (Segnalazione Certificata di Inizio Attività) è una comunicazione asseverata da tecnico abilitato che consente di iniziare i lavori immediatamente, senza attendere autorizzazione preventiva. Si applica a manutenzione straordinaria, restauro, risanamento conservativo, ristrutturazione "leggera" (non comportante modifica di sagoma o volume). Disciplinata dall\'art. 22 DPR 380/2001 e dall\'art. 19 L. 241/1990. Il Comune ha 60 giorni per controlli successivi.',
-    example:
-      'Per rifare l\'impianto idraulico e ristrutturare i bagni di un appartamento (senza spostare i muri portanti) basta una SCIA.',
-    relatedPath: '/statistiche',
+      'Il CUP (Codice Unico di Progetto) identifica univocamente ogni progetto di investimento pubblico finanziato con risorse statali, comunitarie o PNRR. A differenza del CIG, che identifica la singola gara, il CUP segue il progetto in tutte le sue fasi, dalla programmazione alla realizzazione.',
+    example: 'Un\'opera finanziata dal PNRR avrà un CUP che resta invariato anche se l\'opera è divisa in più appalti, ciascuno con il proprio CIG.',
   },
   {
-    termCode: 'CILA',
-    name: 'Comunicazione di Inizio Lavori Asseverata',
+    termCode: 'CPV',
+    name: 'Common Procurement Vocabulary',
     definition:
-      'La CILA (Comunicazione di Inizio Lavori Asseverata) è il titolo più leggero del Testo Unico Edilizia: comunica al Comune l\'inizio di lavori di manutenzione straordinaria che non incidono sulle parti strutturali. Richiede asseverazione del tecnico ma NON è soggetta a verifica preventiva. Disciplinata dall\'art. 6-bis DPR 380/2001. Lavori iniziabili immediatamente dopo la presentazione.',
-    example:
-      'Spostare un tramezzo non portante, rifare la pavimentazione interna o sostituire gli infissi richiede una CILA.',
-    relatedPath: '/statistiche',
+      'Il CPV (Vocabolario Comune per gli Appalti) è la classificazione europea standard che identifica l\'oggetto di un appalto pubblico tramite un codice numerico. Le prime due cifre indicano la divisione (es. 45 = lavori di costruzione, 71 = servizi di architettura e ingegneria). Permette di cercare le gare per tipologia in tutta l\'Unione Europea.',
+    example: 'Una gara per la progettazione di una scuola avrà un CPV che inizia per 71 (servizi di architettura e ingegneria).',
+    relatedPath: '/categoria/45',
   },
   {
-    termCode: 'PAS',
-    name: 'Procedura Abilitativa Semplificata',
+    termCode: 'SOA',
+    name: 'Attestazione SOA',
     definition:
-      'La PAS (Procedura Abilitativa Semplificata) è il titolo edilizio utilizzato per installare impianti di produzione di energia da fonti rinnovabili (fotovoltaico, eolico, biomasse) di piccola e media taglia. Disciplinata dal D.Lgs. 28/2011 art. 6. È intermedia tra autorizzazione unica e comunicazione: silenzio-assenso dopo 30 giorni dalla presentazione.',
-    example:
-      'Installare un impianto fotovoltaico da 60 kWp su tetto industriale richiede la PAS al Comune.',
+      'L\'attestazione SOA (Società Organismi di Attestazione) è il documento obbligatorio per partecipare a gare pubbliche di lavori di importo superiore a 150.000 €. Certifica la capacità tecnico-economica dell\'impresa nelle categorie OG (opere generali) e OS (opere specializzate). Rilasciata da organismi privati autorizzati dall\'ANAC, ha validità di 5 anni con verifica triennale.',
+    example: 'Un\'impresa che vuole partecipare alla gara per costruire una scuola deve possedere la SOA OG1 nella classifica adeguata all\'importo.',
+    relatedPath: '/bandi',
   },
   {
-    termCode: 'DIA',
-    name: 'Denuncia di Inizio Attività',
+    termCode: 'StazioneAppaltante',
+    name: 'Stazione appaltante',
     definition:
-      'La DIA (Denuncia di Inizio Attività) era il titolo edilizio precursore della SCIA, abrogato dal D.L. 138/2011 per le procedure ordinarie. Oggi sopravvive solo come "Super DIA" alternativa al PDC in casi specifici (art. 23 DPR 380/2001). Non confonderla con la SCIA: la DIA prevedeva attesa di 30 giorni prima dell\'inizio lavori.',
+      'La stazione appaltante è l\'amministrazione o l\'ente pubblico che avvia e gestisce una procedura di gara per affidare lavori, servizi o forniture. Può essere un Comune, una Provincia, una Regione, una ASL, una centrale unica di committenza (CUC) o una stazione unica appaltante (SUA). È il soggetto che pubblica il bando e aggiudica il contratto.',
+    example: 'Una Centrale Unica di Committenza gestisce le gare per conto di più Comuni associati, riducendo i costi e aumentando la trasparenza.',
+    relatedPath: '/bandi',
   },
   {
-    termCode: 'AlboPretorio',
-    name: 'Albo Pretorio comunale',
+    termCode: 'RUP',
+    name: 'Responsabile Unico del Progetto',
     definition:
-      'L\'Albo Pretorio è la sezione del sito web comunale in cui per obbligo di legge (L. 69/2009 art. 32) vengono pubblicati tutti gli atti amministrativi del Comune: delibere, permessi di costruire, SCIA, CILA, ordinanze, bandi di gara. La pubblicazione è obbligatoria per 15 giorni consecutivi e conferisce efficacia giuridica agli atti. Italia Cantieri legge sistematicamente gli Albi Pretori dei Comuni italiani.',
-    example:
-      'I PDC rilasciati dal Comune di Bologna sono consultabili online sull\'Albo Pretorio comunale per 15 giorni dalla data di rilascio.',
-    relatedPath: '/come-trattiamo-i-dati',
-  },
-  {
-    termCode: 'Catasto',
-    name: 'Catasto edilizio urbano',
-    definition:
-      'Il Catasto è l\'inventario di tutti gli immobili italiani gestito dall\'Agenzia delle Entrate. Ogni unità immobiliare ha identificativi univoci: foglio, particella, subalterno. La visura catastale riporta intestatari, categoria (es. A/3 abitazione civile), classe, rendita catastale. Il Catasto non costituisce prova di proprietà ma è essenziale per ogni pratica edilizia.',
-    example:
-      'Prima di iniziare un cantiere, il progettista verifica la conformità catastale dell\'immobile (es. nessuna variazione non dichiarata).',
-  },
-  {
-    termCode: 'Cantiere',
-    name: 'Cantiere edilizio',
-    definition:
-      'Il cantiere edilizio è il luogo fisico in cui si svolgono attività di costruzione, ampliamento, demolizione, manutenzione o ristrutturazione di un\'opera edile o di ingegneria civile. Disciplinato dal D.Lgs. 81/2008 (Testo Unico Sicurezza) e dal DPR 380/2001 (Testo Unico Edilizia). Ogni cantiere deve avere un titolo edilizio valido (PDC, SCIA, CILA) e un Coordinatore della Sicurezza in caso di più imprese.',
-    example:
-      'Un cantiere di ristrutturazione di un condominio in centro a Torino con 4 imprese affidatarie richiede il Piano di Sicurezza e Coordinamento (PSC).',
-    relatedPath: '/regioni',
-  },
-  {
-    termCode: 'Concessione',
-    name: 'Concessione edilizia',
-    definition:
-      'La Concessione edilizia era il titolo abilitativo edilizio in vigore fino al 2003, sostituita dal Permesso di Costruire con il DPR 380/2001. Disciplinata originariamente dalla L. 10/1977 (Legge Bucalossi). Oggi il termine sopravvive nel linguaggio comune ma normativamente è scorretto: si usa "Permesso di Costruire" (PDC).',
+      'Il RUP (Responsabile Unico del Progetto, già "del Procedimento") è il funzionario della stazione appaltante che sovrintende a tutte le fasi dell\'appalto: programmazione, progettazione, affidamento ed esecuzione. Disciplinato dall\'art. 15 del D.Lgs. 36/2023. È il punto di riferimento istituzionale della gara.',
   },
   {
     termCode: 'Bando',
-    name: 'Bando di gara pubblico',
+    name: 'Bando di gara',
     definition:
-      'Il Bando di gara pubblico è l\'atto formale con cui un\'amministrazione pubblica (Comune, Provincia, Regione, ASL, ecc.) avvia una procedura per affidare un appalto di lavori, servizi o forniture. Disciplinato dal D.Lgs. 36/2023 (Nuovo Codice degli Appalti). Tipologie principali: procedura aperta, ristretta, competitiva con negoziazione, dialogo competitivo. Pubblicato su ANAC e sui portali appalti regionali.',
-    example:
-      'Un Comune che vuole ristrutturare una scuola pubblica con importo > 150K € deve pubblicare un bando di gara aperto e selezionare l\'impresa tramite procedura competitiva.',
+      'Il bando di gara è l\'atto formale con cui una stazione appaltante avvia una procedura per affidare un appalto di lavori, servizi o forniture. Disciplinato dal D.Lgs. 36/2023 (Codice dei Contratti Pubblici). Indica oggetto, importo a base di gara, requisiti di partecipazione, criterio di aggiudicazione e termine per le offerte.',
+    example: 'Un Comune che vuole ristrutturare una scuola con importo superiore alla soglia pubblica un bando di gara aperto.',
     relatedPath: '/bandi',
   },
   {
     termCode: 'Appalto',
     name: 'Appalto pubblico',
     definition:
-      'L\'Appalto pubblico è il contratto a titolo oneroso stipulato tra una stazione appaltante (PA) e un operatore economico (impresa) per l\'esecuzione di lavori, fornitura di prodotti o prestazione di servizi. Disciplinato dal D.Lgs. 36/2023. Si distingue per soglia di importo: sotto-soglia (< €5,3M lavori) o sopra-soglia (> €5,3M lavori, comunitario).',
+      'L\'appalto pubblico è il contratto a titolo oneroso tra una stazione appaltante e un operatore economico per l\'esecuzione di lavori, la fornitura di beni o la prestazione di servizi. Disciplinato dal D.Lgs. 36/2023. Si distingue per soglia di importo in sotto-soglia e sopra-soglia (di rilevanza comunitaria).',
     relatedPath: '/bandi',
   },
   {
-    termCode: 'ITP',
-    name: 'Importo a base d\'asta',
+    termCode: 'ProceduraAperta',
+    name: 'Procedura aperta',
     definition:
-      'L\'ITP (Importo a base d\'asta) o "importo a base di gara" è il valore massimo dell\'appalto fissato dalla stazione appaltante nel bando, sul quale le imprese formulano ribassi percentuali nella loro offerta. Comprende l\'importo dei lavori più gli oneri della sicurezza non soggetti a ribasso. È uno dei parametri chiave per valutare l\'opportunità commerciale di un bando.',
-    example:
-      'Bando con ITP €450.000: l\'impresa offre uno sconto del 18% e si aggiudica i lavori a €369.000.',
+      'La procedura aperta è la modalità di gara in cui qualsiasi operatore economico in possesso dei requisiti può presentare un\'offerta. È la procedura più trasparente e concorrenziale, disciplinata dall\'art. 71 del D.Lgs. 36/2023. È la più diffusa per gli appalti di importo rilevante.',
+    example: 'Per un appalto di lavori sopra-soglia la stazione appaltante sceglie tipicamente la procedura aperta, garantendo la massima concorrenza.',
     relatedPath: '/bandi',
   },
   {
-    termCode: 'CIG',
-    name: 'Codice Identificativo Gara',
+    termCode: 'ProceduraRistretta',
+    name: 'Procedura ristretta',
     definition:
-      'Il CIG (Codice Identificativo Gara) è un codice univoco alfanumerico rilasciato da ANAC per ogni procedura di affidamento pubblico, indipendentemente dall\'importo. Obbligatorio dal 2010 per la tracciabilità dei flussi finanziari (L. 136/2010). Senza CIG il contratto è nullo e l\'impresa non può fatturare alla PA.',
+      'Nella procedura ristretta possono presentare offerta solo gli operatori invitati dalla stazione appaltante a seguito di una fase di prequalifica. Disciplinata dall\'art. 72 del D.Lgs. 36/2023. Si usa quando serve selezionare preventivamente i concorrenti in base a requisiti specifici.',
   },
   {
-    termCode: 'CUP',
-    name: 'Codice Unico di Progetto',
+    termCode: 'ProceduraNegoziata',
+    name: 'Procedura negoziata',
     definition:
-      'Il CUP (Codice Unico di Progetto) è il codice che identifica univocamente ogni progetto di investimento pubblico finanziato con risorse statali. Obbligatorio per investimenti, lavori pubblici e incentivi (PNRR incluso). Diverso dal CIG: il CUP segue il progetto in tutte le sue fasi, il CIG identifica la singola gara.',
+      'La procedura negoziata consente alla stazione appaltante di consultare e negoziare le condizioni del contratto con gli operatori selezionati. Può essere con o senza previa pubblicazione del bando. Disciplinata dagli artt. 73-76 del D.Lgs. 36/2023. È ammessa solo nei casi previsti dalla legge.',
+  },
+  {
+    termCode: 'Aggiudicazione',
+    name: 'Aggiudicazione',
+    definition:
+      'L\'aggiudicazione è il provvedimento con cui la stazione appaltante individua il vincitore della gara, ossia l\'operatore economico che ha presentato l\'offerta migliore secondo il criterio prestabilito (prezzo più basso o offerta economicamente più vantaggiosa). Diventa efficace dopo la verifica dei requisiti.',
+    example: 'Dopo l\'aggiudicazione, la stazione appaltante stipula il contratto con l\'impresa vincitrice e l\'opera può partire.',
+    relatedPath: '/bandi',
+  },
+  {
+    termCode: 'Aggiudicatario',
+    name: 'Aggiudicatario',
+    definition:
+      'L\'aggiudicatario è l\'operatore economico (impresa, società o raggruppamento) che si è aggiudicato la gara e con cui la stazione appaltante stipula il contratto. Sul portale mostriamo la ragione sociale dell\'aggiudicatario quando la gara è stata aggiudicata: è un dato pubblico relativo a persone giuridiche.',
+    relatedPath: '/bandi',
+  },
+  {
+    termCode: 'RTI',
+    name: 'Raggruppamento Temporaneo di Imprese',
+    definition:
+      'Il RTI (Raggruppamento Temporaneo di Imprese), o ATI, è un\'aggregazione tra più operatori economici che partecipano insieme a una gara per sommare i requisiti e le capacità. È composto da una mandataria (capogruppo) e da una o più mandanti. Disciplinato dall\'art. 68 del D.Lgs. 36/2023.',
+    example: 'Per un grande appalto di lavori, tre imprese si uniscono in RTI: la mandataria coordina, le mandanti eseguono parti specifiche.',
   },
   {
     termCode: 'OG',
     name: 'Categorie OG (Opere Generali)',
     definition:
-      'Le categorie OG (Opere Generali) sono le 13 classificazioni SOA per opere edili e civili generali: OG1 edifici civili e industriali, OG2 restauro beni tutelati, OG3 strade autostrade ponti, OG4 opere d\'arte sotterranee, OG5 dighe, OG6 acquedotti gasdotti, OG7 opere marittime, OG8 opere fluviali, OG9 impianti energia, OG10 impianti trasporto energia, OG11 impianti tecnologici, OG12 bonifica beni inquinati, OG13 opere ambientali. Necessarie per gare pubbliche sopra €150K.',
-    example:
-      'Un\'impresa che vuole partecipare a gare per costruire scuole pubbliche deve possedere la qualificazione SOA OG1 classifica III o superiore.',
-    relatedPath: '/bandi',
+      'Le categorie OG (Opere Generali) sono le classificazioni SOA per opere edili e civili generali (OG1 edifici civili e industriali, OG2 restauro beni tutelati, OG3 strade e ponti, e così via fino a OG13). Indicano l\'ambito di lavori per cui un\'impresa è qualificata a partecipare alle gare pubbliche sopra 150.000 €.',
+    relatedPath: '/categoria/45',
   },
   {
     termCode: 'OS',
     name: 'Categorie OS (Opere Specializzate)',
     definition:
-      'Le categorie OS (Opere Specializzate) sono le classificazioni SOA per lavori specialistici, attualmente 35 categorie (OS1-OS35). Esempi: OS2 superfici decorate beni storici, OS6 finiture opere generali edili, OS8 opere strutturali in cemento armato, OS18 componenti strutturali in acciaio, OS28 impianti termici e condizionamento, OS30 impianti elettrici. Spesso a "qualificazione obbligatoria" (le imprese devono possederle direttamente o subappaltare).',
-    relatedPath: '/bandi',
+      'Le categorie OS (Opere Specializzate) sono le classificazioni SOA per lavori specialistici (OS1-OS35): ad esempio OS6 finiture, OS8 strutture in cemento armato, OS28 impianti termici, OS30 impianti elettrici. Alcune sono a qualificazione obbligatoria: l\'impresa deve possederle o subappaltarle a una specializzata.',
+    relatedPath: '/categoria/45',
   },
   {
-    termCode: 'OSA',
-    name: 'Operatore economico singolo / aggregato',
+    termCode: 'OEPV',
+    name: 'Offerta economicamente più vantaggiosa',
     definition:
-      'L\'OSA (Operatore Singolo o Aggregato) è la denominazione tecnica usata in ambito appalti pubblici per indicare la parte contrattuale dal lato impresa. Può essere un\'impresa individuale, una società, un consorzio, un RTI (Raggruppamento Temporaneo di Imprese), un GEIE.',
+      'L\'OEPV (Offerta Economicamente Più Vantaggiosa) è il criterio di aggiudicazione che valuta l\'offerta non solo sul prezzo ma su un mix di prezzo e qualità (tecnica, ambientale, tempi). Disciplinata dall\'art. 108 del D.Lgs. 36/2023, è il criterio preferenziale per appalti complessi e ad alto contenuto tecnico.',
+  },
+  {
+    termCode: 'Ribasso',
+    name: 'Ribasso d\'asta',
+    definition:
+      'Il ribasso d\'asta è la percentuale di sconto che l\'operatore economico offre rispetto all\'importo a base di gara. Nelle gare al prezzo più basso vince chi offre il ribasso maggiore (salvo verifica delle offerte anomale). È un indicatore chiave dell\'andamento del mercato degli appalti.',
+    example: 'Bando con base di gara 450.000 €: l\'impresa offre un ribasso del 18% e si aggiudica i lavori a 369.000 €.',
+  },
+  {
+    termCode: 'BaseDiGara',
+    name: 'Importo a base di gara',
+    definition:
+      'L\'importo a base di gara (o base d\'asta) è il valore massimo dell\'appalto fissato dalla stazione appaltante, su cui gli operatori formulano i propri ribassi. Comprende l\'importo dei lavori o servizi più gli oneri della sicurezza non soggetti a ribasso. È il primo parametro per valutare l\'opportunità commerciale di un bando.',
+    relatedPath: '/bandi',
   },
   {
     termCode: 'Subappalto',
     name: 'Subappalto',
     definition:
-      'Il Subappalto è il contratto con cui l\'impresa aggiudicataria di un appalto pubblico affida l\'esecuzione di una parte dei lavori a un\'altra impresa. Disciplinato dall\'art. 119 D.Lgs. 36/2023. Limite massimo: 49% del valore complessivo dell\'appalto (con eccezioni). Soggetto ad autorizzazione preventiva della stazione appaltante e verifiche antimafia.',
-    example:
-      'L\'impresa generale aggiudicataria di una scuola appalta gli impianti elettrici a un\'impresa specializzata in OS30: questo è un subappalto.',
+      'Il subappalto è il contratto con cui l\'impresa aggiudicataria affida l\'esecuzione di una parte dei lavori a un\'altra impresa. Disciplinato dall\'art. 119 del D.Lgs. 36/2023. È soggetto ad autorizzazione della stazione appaltante e a verifiche antimafia.',
   },
   {
-    termCode: 'Visura',
-    name: 'Visura catastale ed edilizia',
+    termCode: 'MEPA',
+    name: 'Mercato Elettronico della PA',
     definition:
-      'La Visura è il documento ufficiale che attesta lo stato giuridico-amministrativo di un immobile. La visura catastale (Agenzia delle Entrate) riporta intestatari, categoria, rendita; la visura edilizia (Comune) riporta tutti i titoli edilizi rilasciati (PDC, SCIA, CILA, condoni). Indispensabile per ogni compravendita o nuova pratica edilizia.',
+      'Il MEPA (Mercato Elettronico della Pubblica Amministrazione) è la piattaforma di e-procurement gestita da Consip su cui le amministrazioni acquistano beni e servizi sotto-soglia direttamente dai cataloghi delle imprese abilitate. Riduce tempi e costi degli affidamenti di importo contenuto.',
   },
   {
-    termCode: 'Pratica',
-    name: 'Pratica edilizia',
+    termCode: 'ANAC',
+    name: 'Autorità Nazionale Anticorruzione',
     definition:
-      'La Pratica edilizia è l\'insieme dei documenti tecnici e amministrativi presentati al Comune (Sportello Unico Edilizia, SUE) per richiedere un titolo abilitativo edilizio (PDC, SCIA, CILA) o per comunicare l\'avvenuto inizio o fine lavori. Comprende relazione tecnica, elaborati grafici, calcoli strutturali, asseverazioni, autocertificazioni.',
+      'L\'ANAC (Autorità Nazionale Anticorruzione) è l\'autorità indipendente che vigila sui contratti pubblici, rilascia i CIG, gestisce la Banca Dati Nazionale dei Contratti Pubblici e pubblica i dati delle gare. È la fonte istituzionale primaria per la trasparenza degli appalti in Italia.',
+    relatedPath: '/come-trattiamo-i-dati',
   },
   {
-    termCode: 'Variante',
-    name: 'Variante in corso d\'opera',
+    termCode: 'TED',
+    name: 'Tenders Electronic Daily',
     definition:
-      'La Variante in corso d\'opera è la modifica del progetto edilizio approvato, presentata al Comune durante l\'esecuzione dei lavori. Disciplinata dall\'art. 22 e 23 DPR 380/2001. Si distingue in: varianti essenziali (richiedono nuovo PDC), varianti minori (basta SCIA), varianti non sostanziali (basta CILA o comunicazione finale).',
-    example:
-      'Durante la costruzione si decide di aggiungere un balcone: serve presentare una variante (SCIA in variante o nuovo PDC a seconda dell\'incidenza).',
+      'Il TED (Tenders Electronic Daily) è il supplemento online della Gazzetta Ufficiale dell\'Unione Europea dedicato agli appalti pubblici. Pubblica i bandi di rilevanza comunitaria (sopra-soglia) di tutti gli Stati membri. È una delle fonti pubbliche da cui BandiGareDappalto aggrega i dati delle gare.',
+    relatedPath: '/come-trattiamo-i-dati',
   },
   {
-    termCode: 'Sanatoria',
-    name: 'Sanatoria edilizia',
+    termCode: 'PNRR',
+    name: 'Piano Nazionale di Ripresa e Resilienza',
     definition:
-      'La Sanatoria edilizia (o accertamento di conformità) è la procedura per regolarizzare opere edili realizzate senza titolo o in difformità (art. 36-37 DPR 380/2001). Si applica solo se l\'opera è conforme alla disciplina urbanistica vigente sia al momento della realizzazione sia al momento della richiesta ("doppia conformità"). Sanzione: oblazione pari al doppio del costo di costruzione.',
+      'Il PNRR è il programma di investimenti finanziato dall\'Unione Europea (Next Generation EU) per la ripresa post-pandemia. Una parte rilevante delle gare d\'appalto pubbliche italiane è finanziata dal PNRR, riconoscibile dal CUP e da specifici obblighi di rendicontazione e tempistiche.',
   },
   {
-    termCode: 'Agibilita',
-    name: 'Agibilità',
+    termCode: 'SottoSoglia',
+    name: 'Appalto sotto-soglia',
     definition:
-      'L\'Agibilità è la certificazione tecnica obbligatoria che attesta la sicurezza, igiene, salubrità e risparmio energetico di un edificio nuovo o ristrutturato. Disciplinata dagli artt. 24-26 DPR 380/2001. Dal 2016 si presenta come SCIA agibilità (autocertificazione). Necessaria per occupare/affittare/vendere l\'immobile.',
+      'Un appalto è sotto-soglia quando il suo importo è inferiore alle soglie di rilevanza comunitaria fissate periodicamente dall\'UE. Per questi appalti il D.Lgs. 36/2023 prevede procedure semplificate (affidamento diretto, procedura negoziata) per ridurre tempi e oneri.',
   },
   {
-    termCode: 'Abitabilita',
-    name: 'Abitabilità',
+    termCode: 'SopraSoglia',
+    name: 'Appalto sopra-soglia',
     definition:
-      'L\'Abitabilità è il termine storicamente usato per certificare l\'idoneità abitativa di un immobile residenziale, oggi confluito nell\'unico concetto di Agibilità (art. 24 DPR 380/2001). Riguarda altezza minima dei locali, superficie minima, requisiti igienico-sanitari, isolamento termico.',
-  },
-  {
-    termCode: 'Condono',
-    name: 'Condono edilizio',
-    definition:
-      'Il Condono edilizio è la sanatoria straordinaria di opere abusive, concessa in passato con leggi ad hoc (L. 47/1985, L. 724/1994, L. 326/2003). A differenza della sanatoria ordinaria, il condono regolarizza anche opere NON conformi alla disciplina urbanistica vigente. Oggi non sono attivi nuovi condoni: le ultime domande sono ancora in fase di smaltimento amministrativo.',
-  },
-  {
-    termCode: 'SUE',
-    name: 'Sportello Unico Edilizia',
-    definition:
-      'Lo SUE (Sportello Unico Edilizia) è l\'ufficio comunale dedicato alla ricezione e gestione di tutte le pratiche edilizie (PDC, SCIA, CILA, varianti, agibilità). Disciplinato dall\'art. 5 DPR 380/2001. Funziona come "front-office unico" per cittadini, tecnici e imprese, raccordandosi con ASL, VVF, Soprintendenza, altri enti.',
-  },
-  {
-    termCode: 'SOA',
-    name: 'Attestazione SOA',
-    definition:
-      'L\'attestazione SOA (Società Organismi di Attestazione) è il documento obbligatorio per partecipare a gare pubbliche di lavori sopra €150.000. Certifica la capacità tecnico-economica dell\'impresa nelle categorie OG e OS. Rilasciata da organismi privati autorizzati da ANAC, ha validità di 5 anni con verifica triennale.',
+      'Un appalto è sopra-soglia quando il suo importo supera le soglie comunitarie. In questo caso è obbligatoria la pubblicazione anche a livello europeo (TED) e si applicano le procedure ordinarie (aperta o ristretta) con tempi e garanzie maggiori.',
     relatedPath: '/bandi',
-  },
-  {
-    termCode: 'PSC',
-    name: 'Piano di Sicurezza e Coordinamento',
-    definition:
-      'Il PSC (Piano di Sicurezza e Coordinamento) è il documento obbligatorio per cantieri con più di un\'impresa, redatto dal Coordinatore della Sicurezza in Fase di Progettazione (CSP). Disciplinato dal D.Lgs. 81/2008 (Allegato XV). Contiene analisi rischi, misure preventive, layout cantiere, procedure di emergenza. Senza PSC i lavori non possono iniziare.',
   },
 ];
 
 export default function GlossarioPage() {
-  // Ordina alfabeticamente per name
   const sorted = [...TERMS].sort((a, b) => a.name.localeCompare(b.name, 'it'));
 
   return (
     <>
-      {/* DefinedTermSet JSON-LD per AI engines + Google */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: safeJsonLd(glossaryLd('Glossario edilizia italiana — Italia Cantieri', sorted)),
+          __html: safeJsonLd(glossaryLd('Glossario degli appalti pubblici — BandiGareDappalto', sorted)),
         }}
       />
 
@@ -289,76 +254,46 @@ export default function GlossarioPage() {
         <div className="container-zen max-w-5xl">
           <BreadcrumbCantiere steps={[{ label: 'Glossario' }]} />
 
-          {/* HEADER EDITORIAL */}
           <div className="mb-16 md:mb-20 max-w-4xl">
             <p className="mb-6 inline-flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
               <BookOpen className="h-3.5 w-3.5" strokeWidth={2} />
-              <span>Riferimento tecnico · Edilizia italiana</span>
+              <span>Riferimento · Appalti pubblici</span>
             </p>
-            <h1
-              className="font-black tracking-[-0.05em] leading-[0.92] text-foreground text-balance mb-8"
-              style={{ fontSize: 'clamp(2.5rem, 6vw + 0.5rem, 5.5rem)' }}
-            >
-              Glossario<br className="hidden sm:block" />
-              <span className="italic font-black text-construction">edilizia italiana</span>.
+            <h1 className="font-black tracking-[-0.05em] leading-[0.92] text-foreground text-balance mb-8" style={{ fontSize: 'clamp(2.5rem, 6vw + 0.5rem, 5.5rem)' }}>
+              Glossario degli<br className="hidden sm:block" />
+              <span className="italic font-black text-construction">appalti pubblici</span>.
             </h1>
-            {/*
-              HIGH-3 FEATURED SNIPPET: risposta DIRETTA fattuale nei primi 60 caratteri.
-              AI Overview e Google snippet preferiscono frase iniziale corta + dato numerico.
-            */}
             <p className="text-lg md:text-xl font-light leading-relaxed text-secondary-text max-w-3xl text-pretty">
-              <span className="font-black tabular-nums text-foreground text-2xl md:text-3xl mr-1.5 tracking-tight">
-                {sorted.length}
-              </span>
-              termini tecnici dell\'edilizia italiana definiti con accuratezza: dai titoli edilizi (PDC, SCIA, CILA, PAS, DIA)
-              alle categorie SOA (OG, OS), dagli appalti pubblici (CIG, CUP, ITP) ai documenti catastali. Definizioni allineate
-              al DPR 380/2001 e al D.Lgs. 36/2023.
+              <span className="font-black tabular-nums text-foreground text-2xl md:text-3xl mr-1.5 tracking-tight">{sorted.length}</span>
+              termini delle gare d&apos;appalto definiti con accuratezza: dai codici (CIG, CUP, CPV) alle qualificazioni
+              (SOA, OG, OS), dalle procedure (aperta, ristretta, negoziata) agli attori (stazione appaltante, RUP, RTI).
+              Definizioni allineate al D.Lgs. 36/2023, il Codice dei Contratti Pubblici.
             </p>
           </div>
 
-          {/* INDICE ALFABETICO compatto */}
-          <nav
-            aria-label="Indice del glossario"
-            className="mb-12 rounded-3xl border border-border bg-secondary/30 p-5 md:p-7"
-          >
+          <nav aria-label="Indice del glossario" className="mb-12 rounded-3xl border border-border bg-secondary/30 p-5 md:p-7">
             <p className="mb-4 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              <Search className="h-3.5 w-3.5" strokeWidth={2} />
-              Indice rapido
+              <Search className="h-3.5 w-3.5" strokeWidth={2} /> Indice rapido
             </p>
             <ul className="flex flex-wrap gap-2 md:gap-2.5">
               {sorted.map((t) => (
                 <li key={t.termCode}>
-                  <a
-                    href={`#${t.termCode.toLowerCase()}`}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3.5 py-1.5 text-xs font-bold text-foreground transition-all hover:border-foreground/40 hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  >
-                    {t.termCode}
+                  <a href={`#${t.termCode.toLowerCase()}`} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3.5 py-1.5 text-xs font-bold text-foreground transition-all hover:border-foreground/40 hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                    {t.name.length > 22 ? t.termCode : t.name}
                   </a>
                 </li>
               ))}
             </ul>
           </nav>
 
-          {/* LISTA DEFINIZIONI */}
           <dl className="space-y-10 md:space-y-14">
             {sorted.map((term) => (
-              <article
-                key={term.termCode}
-                id={term.termCode.toLowerCase()}
-                className="scroll-mt-32 border-l-2 border-foreground/15 hover:border-construction transition-colors pl-6 md:pl-8 py-2"
-              >
+              <article key={term.termCode} id={term.termCode.toLowerCase()} className="scroll-mt-32 border-l-2 border-foreground/15 hover:border-construction transition-colors pl-6 md:pl-8 py-2">
                 <div className="flex items-baseline gap-4 mb-3 flex-wrap">
-                  <span className="inline-flex items-center justify-center rounded-lg bg-foreground text-background px-3 py-1.5 text-xs font-black tracking-wider uppercase">
-                    {term.termCode}
-                  </span>
-                  <dt className="text-2xl md:text-3xl font-black tracking-[-0.03em] text-foreground leading-tight">
-                    {term.name}
-                  </dt>
+                  <dt className="text-2xl md:text-3xl font-black tracking-[-0.03em] text-foreground leading-tight">{term.name}</dt>
                 </div>
                 <dd className="space-y-3 max-w-3xl">
-                  <p className="text-base md:text-lg leading-relaxed text-secondary-text text-pretty">
-                    {term.definition}
-                  </p>
+                  <p className="text-base md:text-lg leading-relaxed text-secondary-text text-pretty">{term.definition}</p>
                   {term.example && (
                     <p className="text-sm md:text-base italic text-muted-foreground leading-relaxed border-l-2 border-construction pl-4 py-1">
                       <span className="font-bold not-italic text-foreground">Esempio:</span> {term.example}
@@ -366,10 +301,7 @@ export default function GlossarioPage() {
                   )}
                   {term.relatedPath && (
                     <p className="text-sm pt-2">
-                      <Link
-                        href={term.relatedPath}
-                        className="inline-flex items-center gap-1.5 text-foreground font-semibold underline underline-offset-4 decoration-foreground/30 hover:decoration-construction transition-colors"
-                      >
+                      <Link href={term.relatedPath} className="inline-flex items-center gap-1.5 text-foreground font-semibold underline underline-offset-4 decoration-foreground/30 hover:decoration-construction transition-colors">
                         Approfondisci →
                       </Link>
                     </p>
@@ -379,7 +311,6 @@ export default function GlossarioPage() {
             ))}
           </dl>
 
-          {/* CTA finale */}
           <div className="mt-20 md:mt-24 rounded-[2rem] border border-border bg-secondary/30 p-8 md:p-12 text-center">
             <p className="mb-4 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
               <span aria-hidden="true" className="h-px w-8 bg-foreground/30" />
@@ -387,24 +318,18 @@ export default function GlossarioPage() {
               <span aria-hidden="true" className="h-px w-8 bg-foreground/30" />
             </p>
             <h2 className="text-2xl md:text-4xl font-black tracking-[-0.035em] mb-4 text-foreground">
-              Vuoi vedere i cantieri pubblicati in Italia?
+              Vuoi vedere i bandi pubblicati in Italia?
             </h2>
             <p className="text-secondary-text max-w-2xl mx-auto mb-8 leading-relaxed">
-              Cerca cantieri per regione, provincia o Comune. Ogni scheda riporta il titolo edilizio,
-              l\'importo lavori, la categoria di intervento e la fonte ufficiale di pubblicazione.
+              Sfoglia le gare d&apos;appalto per categoria CPV, importo e scadenza. Ogni scheda riporta
+              l&apos;ente, l&apos;importo a base di gara, il CIG e — quando disponibile — chi se l&apos;è aggiudicata.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-              <Link
-                href="/regioni"
-                className="inline-flex items-center gap-2 rounded-full bg-foreground text-background px-7 py-3.5 text-sm font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
-              >
-                Esplora i cantieri per regione
+              <Link href="/bandi" className="inline-flex items-center gap-2 rounded-full bg-foreground text-background px-7 py-3.5 text-sm font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg">
+                Esplora tutti i bandi
               </Link>
-              <Link
-                href="/bandi"
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-7 py-3.5 text-sm font-semibold text-foreground transition-all duration-300 hover:border-foreground/40 hover:bg-secondary/40"
-              >
-                Vedi i bandi di gara
+              <Link href="/scadenze" className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-7 py-3.5 text-sm font-semibold text-foreground transition-all duration-300 hover:border-foreground/40 hover:bg-secondary/40">
+                Bandi in scadenza
               </Link>
             </div>
           </div>

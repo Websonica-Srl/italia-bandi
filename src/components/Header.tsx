@@ -2,19 +2,19 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Menu, X, ArrowRight, HardHat } from 'lucide-react';
+import { Menu, X, ArrowRight, Gavel } from 'lucide-react';
 
 const navItems = [
-  { label: 'Cantieri per regione', href: '/regioni' },
-  { label: 'Bandi pubblici', href: '/bandi' },
-  { label: 'Statistiche', href: '/statistiche' },
+  { label: 'Bandi', href: '/bandi' },
+  { label: 'Categorie', href: '/categoria/45' },
+  { label: 'In scadenza', href: '/scadenze' },
   { label: 'Glossario', href: '/glossario' },
+  { label: 'Per le PA', href: '/per-pubbliche-amministrazioni' },
   { label: 'Chi siamo', href: '/chi-siamo' },
-  { label: 'Privacy', href: '/legal/privacy' },
 ];
 
 const HUB_REGISTER =
-  'https://www.italiaprogettisti.com/register?utm_source=italiacantieri&utm_medium=header&utm_campaign=iscriviti_gratis';
+  'https://www.italiaprogettisti.com/register?utm_source=bandigaredappalto&utm_medium=referral&utm_campaign=header_iscriviti';
 
 export default function Header() {
   const [open, setOpen] = useState(false);
@@ -47,7 +47,7 @@ export default function Header() {
           <Link
             href="/"
             className="flex items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 group/logo"
-            aria-label="Italia Cantieri — homepage"
+            aria-label="BandiGareDappalto — homepage"
           >
             <span
               aria-hidden="true"
@@ -56,7 +56,7 @@ export default function Header() {
                 scrolled ? 'h-9 w-9' : 'h-10 w-10 md:h-11 md:w-11',
               ].join(' ')}
             >
-              <HardHat
+              <Gavel
                 className={scrolled ? 'h-4 w-4' : 'h-5 w-5 md:h-[22px] md:w-[22px]'}
                 strokeWidth={2}
               />
@@ -68,7 +68,7 @@ export default function Header() {
                   scrolled ? 'text-lg md:text-xl' : 'text-xl md:text-[1.6rem]',
                 ].join(' ')}
               >
-                Italia<span className="text-foreground/55">Cantieri</span>
+                Bandi<span className="text-foreground/55">GareDappalto</span>
               </span>
               <span className="hidden md:block text-[10px] uppercase tracking-[0.22em] text-muted-foreground mt-0.5">
                 Network ItaliaProgettisti

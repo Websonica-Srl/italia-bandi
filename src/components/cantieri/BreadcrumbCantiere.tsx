@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ChevronRight, Home } from 'lucide-react';
+import { siteConfig } from '@/lib/site-config';
 
 export interface BreadcrumbStep {
   label: string;
@@ -14,14 +15,15 @@ export default function BreadcrumbCantiere({
   /** Modalità su sfondo scuro (hero immagine). Usa testo bianco. */
   inverted?: boolean;
 }) {
+  const base = siteConfig.baseUrl;
   // JSON-LD BreadcrumbList
   const itemListElement = [
-    { '@type': 'ListItem', position: 1, name: 'Italia Cantieri', item: 'https://www.italiacantieri.it/' },
+    { '@type': 'ListItem', position: 1, name: siteConfig.name, item: `${base}/` },
     ...steps.map((s, i) => ({
       '@type': 'ListItem',
       position: i + 2,
       name: s.label,
-      ...(s.href ? { item: `https://www.italiacantieri.it${s.href}` } : {}),
+      ...(s.href ? { item: `${base}${s.href}` } : {}),
     })),
   ];
 
@@ -54,7 +56,7 @@ export default function BreadcrumbCantiere({
               }`}
             >
               <Home className="h-3.5 w-3.5" />
-              <span className="sr-only">Italia Cantieri</span>
+              <span className="sr-only">{siteConfig.name}</span>
             </Link>
           </li>
           {steps.map((s, i) => (

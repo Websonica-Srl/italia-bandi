@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { HardHat, DraftingCompass, User, ArrowRight, ShieldCheck, Zap, Mail } from 'lucide-react';
+import { Building2, DraftingCompass, User, ArrowRight, Zap, Mail } from 'lucide-react';
 import {
   INDUSTRIAL_GEOMETRY,
   ARCHITECT_MODEL,
@@ -11,36 +11,36 @@ import {
 export const metadata: Metadata = {
   title: 'Iscriviti gratis al network ItaliaProgettisti',
   description:
-    'Scegli il percorso più adatto a te: impresa edile, studio di progettazione o professionista. Registrazione gratuita al HUB ItaliaProgettisti in 30 secondi.',
+    'Scegli il percorso più adatto a te: impresa, ufficio gare, studio di progettazione o professionista. Registrazione gratuita al network ItaliaProgettisti in 30 secondi per monitorare bandi e gare.',
   alternates: { canonical: '/iscriviti' },
   robots: { index: true, follow: true },
   openGraph: {
-    title: 'Iscriviti gratis al network ItaliaProgettisti — Italia Cantieri',
+    title: 'Iscriviti gratis al network ItaliaProgettisti — BandiGareDappalto',
     description:
-      'Impresa edile, studio di progettazione o professionista: registrazione gratuita al HUB ItaliaProgettisti in 30 secondi.',
+      'Impresa, studio di progettazione o professionista: registrazione gratuita al network ItaliaProgettisti per alert e monitoraggio gare d\'appalto.',
     url: '/iscriviti',
     type: 'website',
   },
 };
 
 interface IscriviiPageProps {
-  searchParams: { intent?: string; cantiere?: string; comune?: string; from?: string };
+  searchParams: { intent?: string; bando?: string; from?: string };
 }
 
-const UTM_BASE = '?utm_source=italiacantieri&utm_medium=iscriviti_page&utm_campaign=intent_splitter';
+const UTM_BASE = '?utm_source=bandigaredappalto&utm_medium=referral&utm_campaign=iscriviti_intent';
 
 const OPTIONS = [
   {
     id: 'impresa',
-    icon: HardHat,
-    title: 'Sono un&apos;impresa edile',
-    titleClean: "Sono un'impresa edile",
-    pitch: 'Cerco subappalti, lavori e clienti per la mia impresa.',
+    icon: Building2,
+    title: "Sono un'impresa o un ufficio gare",
+    titleClean: "Sono un'impresa o un ufficio gare",
+    pitch: 'Partecipo alle gare e cerco i bandi giusti per la mia categoria SOA.',
     benefits: [
-      'Alert email su nuovi cantieri della tua zona',
-      'Mappa dei lavori entro 20 km dalla sede',
-      'Profilo impresa visibile ai progettisti del network ItaliaProgettisti',
-      'Esportazione CSV dati committenti',
+      'Alert email sui nuovi bandi per CPV e importo',
+      'Monitoraggio dei concorrenti e storico ribassi',
+      'Documentazione di gara e scadenzario',
+      'Scheda azienda con le gare vinte',
     ],
     hubPath: 'register',
     hubParams: '&intent=impresa&type=COMPANY',
@@ -52,11 +52,11 @@ const OPTIONS = [
     icon: DraftingCompass,
     title: 'Sono uno studio di progettazione',
     titleClean: 'Sono uno studio di progettazione',
-    pitch: 'Cerco nuovi committenti e voglio far conoscere il mio studio.',
+    pitch: 'Cerco gare di progettazione e direzione lavori (CPV 71).',
     benefits: [
-      'Alert su cantieri in fase progettuale',
-      '38.000+ soggetti analizzati dai cantieri pubblici',
-      'Profilo studio + portfolio digitale pubblicabile',
+      'Alert sulle gare di architettura e ingegneria',
+      'Scheda studio con track record delle gare vinte',
+      'Profilo + portfolio pubblicabile nel network',
       'Accesso al network ItaliaProgettisti',
     ],
     hubPath: 'register',
@@ -72,8 +72,8 @@ const OPTIONS = [
     pitch: 'Architetto, ingegnere o geometra che lavora in proprio.',
     benefits: [
       'Profilo personale con specializzazioni',
-      'Visibilità nei risultati per Comune e regione',
-      'Accesso libero al database cantieri',
+      'Alert sulle gare di servizi tecnici',
+      'Consultazione libera dei bandi pubblici',
       'Magic link per accesso veloce',
     ],
     hubPath: 'register',
@@ -85,14 +85,13 @@ const OPTIONS = [
 
 export default function IscriviPage({ searchParams }: IscriviiPageProps) {
   const intent = searchParams.intent;
-  const cantiere = searchParams.cantiere;
-  const comune = searchParams.comune;
+  const bando = searchParams.bando;
 
-  const contextCopy = cantiere
-    ? `Stai sbloccando i dati del cantiere ${cantiere}${comune ? ` a ${comune}` : ''}.`
+  const contextCopy = bando
+    ? `Stai sbloccando i dati del bando ${bando}.`
     : intent
       ? `Hai scelto il percorso "${intent}". Confermalo qui sotto.`
-      : 'Tre percorsi, un solo network. Scegli il tuo punto di partenza.';
+      : 'Tre percorsi, un solo network. Scegli il tuo punto di partenza per monitorare bandi e gare.';
 
   return (
     <>
@@ -107,9 +106,9 @@ export default function IscriviPage({ searchParams }: IscriviiPageProps) {
             <span>Registrazione gratuita · Senza carta · 30 secondi</span>
           </p>
           <h1 className="heading-cinematic mb-6">
-            Cosa cerchi su
+            Monitora bandi e gare su
             <br className="hidden sm:block" />
-            <span className="text-foreground/55">ItaliaProgettisti</span>?
+            <span className="text-foreground/55">ItaliaProgettisti</span>
           </h1>
           <p className="body-large text-secondary-text max-w-2xl">{contextCopy}</p>
         </div>
@@ -121,9 +120,9 @@ export default function IscriviPage({ searchParams }: IscriviiPageProps) {
             {OPTIONS.map((opt) => {
               const Icon = opt.icon;
               const isPreselected = intent === opt.id;
-              const hubUrl = `https://www.italiaprogettisti.com/${opt.hubPath}${UTM_BASE}${opt.hubParams}${
-                cantiere ? `&cantiere=${encodeURIComponent(cantiere)}` : ''
-              }${comune ? `&comune=${encodeURIComponent(comune)}` : ''}`;
+              const optHubUrl = `https://www.italiaprogettisti.com/${opt.hubPath}${UTM_BASE}${opt.hubParams}${
+                bando ? `&bando=${encodeURIComponent(bando)}` : ''
+              }`;
 
               return (
                 <article
@@ -168,7 +167,7 @@ export default function IscriviPage({ searchParams }: IscriviiPageProps) {
                       ))}
                     </ul>
                     <a
-                      href={hubUrl}
+                      href={optHubUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-foreground text-background px-5 py-3 font-semibold transition-all duration-200 hover:scale-[1.02] hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -193,11 +192,11 @@ export default function IscriviPage({ searchParams }: IscriviiPageProps) {
               </div>
               <div className="flex-1">
                 <h3 className="font-bold text-base md:text-lg mb-1">
-                  Non sei sicuro? Resta aggiornato sui nuovi cantieri
+                  Non sei sicuro? Resta aggiornato sui nuovi bandi
                 </h3>
                 <p className="text-sm text-secondary-text leading-relaxed mb-4">
-                  Inserisci la tua email e ti avvisiamo quando il sistema crediti e le funzioni Premium saranno
-                  disponibili. Nessun impegno, nessuna carta richiesta.
+                  Inserisci la tua email e ti avvisiamo quando gli alert sui bandi e le funzioni di monitoraggio
+                  saranno disponibili. Nessun impegno, nessuna carta richiesta.
                 </p>
                 <form
                   action="https://www.italiaprogettisti.com/register"
@@ -205,9 +204,9 @@ export default function IscriviPage({ searchParams }: IscriviiPageProps) {
                   target="_blank"
                   className="flex flex-col sm:flex-row gap-2"
                 >
-                  <input type="hidden" name="utm_source" value="italiacantieri" />
-                  <input type="hidden" name="utm_medium" value="iscriviti_notify" />
-                  <input type="hidden" name="utm_campaign" value="notify_premium" />
+                  <input type="hidden" name="utm_source" value="bandigaredappalto" />
+                  <input type="hidden" name="utm_medium" value="referral" />
+                  <input type="hidden" name="utm_campaign" value="iscriviti_notify" />
                   <input
                     type="email"
                     name="email"
@@ -244,7 +243,7 @@ export default function IscriviPage({ searchParams }: IscriviiPageProps) {
               href="/"
               className="text-foreground font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
             >
-              Torna a Italia Cantieri
+              Torna a BandiGareDappalto
             </Link>
           </p>
         </div>

@@ -32,13 +32,13 @@ const COLORS = {
 };
 
 const KIND_LABELS: Record<string, string> = {
-  regione: 'Cantieri per regione',
-  comune: 'Cantieri per Comune',
-  cantiere: 'Scheda cantiere',
-  bando: 'Bando pubblico',
-  stats: 'Statistiche nazionali',
-  glossario: 'Glossario edilizia',
-  generic: 'Database pubblico cantieri',
+  regione: 'Bandi per regione',
+  comune: 'Bandi per Comune',
+  cantiere: 'Scheda bando',
+  bando: 'Bando di gara',
+  stats: 'Statistiche appalti',
+  glossario: 'Glossario appalti',
+  generic: 'Portale bandi e gare d\'appalto',
   pa: 'Per Pubbliche Amministrazioni',
   api: 'API & sviluppatori',
 };
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
 
-    const rawTitle = (searchParams.get('title') || 'Italia Cantieri').slice(0, 110);
+    const rawTitle = (searchParams.get('title') || 'BandiGareDappalto').slice(0, 110);
     const rawSubtitle = (searchParams.get('subtitle') || '').slice(0, 140);
     const kind = (searchParams.get('kind') || 'generic').toLowerCase();
     const count = (searchParams.get('count') || '').slice(0, 12);
@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
                       lineHeight: 1,
                     }}
                   >
-                    Italia<span style={{ opacity: 0.55 }}>Cantieri</span>
+                    Bandi<span style={{ opacity: 0.55 }}>GareDappalto</span>
                   </span>
                   <span
                     style={{
@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
                       marginTop: '4px',
                     }}
                   >
-                    italiacantieri.it
+                    bandigaredappalto.it
                   </span>
                 </div>
               </div>
@@ -305,7 +305,7 @@ export async function GET(request: NextRequest) {
                     display: 'flex',
                   }}
                 />
-                italiacantieri.it
+                bandigaredappalto.it
               </div>
             </div>
           </div>

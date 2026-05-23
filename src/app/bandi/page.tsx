@@ -1,114 +1,179 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Briefcase, Calendar, MapPin, EuroIcon, ArrowRight, Database } from 'lucide-react';
-import { getBandi } from '@/lib/supabase/queries/bandi';
-import { formatEuro, formatDate, truncate } from '@/lib/utils';
+import { Briefcase } from 'lucide-react';
+import { getBandi, getBandiByCpvGroup, BandiFilters } from '@/lib/supabase/queries/bandi';
+import { bandoTitolo } from '@/lib/utils';
+import { cpvGroupLabel, proceduraLabel } from '@/lib/bandi-taxonomy';
+import BandoCard from '@/components/bandi/BandoCard';
+import FiltriBandi from '@/components/bandi/FiltriBandi';
 import BreadcrumbCantiere from '@/components/cantieri/BreadcrumbCantiere';
-import { ogImageUrl } from '@/lib/seo/structured-data';
+import { ogImageUrl, itemListLd, safeJsonLd } from '@/lib/seo/structured-data';
+import { siteConfig } from '@/lib/site-config';
 
 export const revalidate = 3600;
 
+const PAGE_SIZE = 24;
+
 const bandiOg = ogImageUrl({
-  title: 'Bandi di gara pubblici Italia',
-  subtitle: 'Procedure aperte, ristrette, negoziate · ANAC + portali appalti regionali',
+  title: 'Bandi e gare d\'appalto pubbliche in Italia',
+  subtitle: 'Procedure aperte, ristrette e negoziate · fonti pubbliche TED e ANAC',
   kind: 'bando',
 });
 
-export const metadata: Metadata = {
-  title: 'Bandi di gara pubblici Italia — Procedure aperte, ristrette, negoziate',
-  description:
-    'Aggregatore bandi di gara pubblici in Italia: procedure aperte, ristrette, negoziate. Dati open ANAC e portali appalti regionali aggiornati ogni giorno.',
-  alternates: { canonical: '/bandi' },
-  openGraph: {
-    title: 'Bandi di gara pubblici Italia — Italia Cantieri',
-    description:
-      'Aggregatore bandi di gara pubblici Italia: procedure aperte, ristrette, negoziate. Dati open ANAC + portali appalti.',
-    url: '/bandi',
-    type: 'website',
-    images: [{ url: bandiOg, width: 1200, height: 630, alt: 'Bandi di gara pubblici Italia' }],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Bandi di gara pubblici Italia',
-    description:
-      'Aggregatore bandi di gara pubblici Italia: procedure aperte, ristrette, negoziate.',
-    images: [bandiOg],
-  },
-};
+interface PageProps {
+  searchParams: {
+    q?: string;
+    cpv?: string;
+    procedura?: string;
+    importo_min?: string;
+    importo_max?: string;
+    aperti?: string;
+    page?: string;
+  };
+}
 
-export default async function BandiPage() {
-  const { data: bandi, total } = await getBandi({ limit: 30 });
+/** È una "ricerca/filtro dinamica"? In tal caso noindex (anti-duplicazione SEO). */
+function isFiltered(sp: PageProps['searchParams']): boolean {
+  return Boolean(
+    sp.q || sp.cpv || sp.procedura || sp.importo_min || sp.importo_max || sp.aperti || sp.page,
+  );
+}
+
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const filtered = isFiltered(searchParams);
+  return {
+    title: 'Bandi e gare d\'appalto pubbliche in Italia — elenco completo',
+    description:
+      'Elenco dei bandi e delle gare d\'appalto pubbliche in Italia: filtra per categoria CPV, procedura, importo a base di gara e scadenza. Dati pubblici da TED e ANAC.',
+    alternates: { canonical: '/bandi' },
+    // Le pagine di ricerca/filtro dinamiche non vanno indicizzate: la lista
+    // base /bandi è la canonica indicizzabile.
+    robots: filtered ? { index: false, follow: true } : { index: true, follow: true },
+    openGraph: {
+      title: 'Bandi e gare d\'appalto pubbliche in Italia',
+      description: 'Elenco dei bandi pubblici italiani: filtra per categoria, procedura, importo e scadenza.',
+      url: '/bandi',
+      type: 'website',
+      images: [{ url: bandiOg, width: 1200, height: 630, alt: 'Bandi e gare d\'appalto pubbliche in Italia' }],
+    },
+    twitter: { card: 'summary_large_image', title: 'Bandi e gare d\'appalto pubbliche in Italia', images: [bandiOg] },
+  };
+}
+
+export default async function BandiPage({ searchParams }: PageProps) {
+  const page = Math.max(1, parseInt(searchParams.page || '1', 10) || 1);
+  const offset = (page - 1) * PAGE_SIZE;
+
+  const filters: BandiFilters = {
+    q: searchParams.q,
+    cpvGroup: searchParams.cpv,
+    procedura: searchParams.procedura,
+    importo_min: searchParams.importo_min ? Number(searchParams.importo_min) : undefined,
+    importo_max: searchParams.importo_max ? Number(searchParams.importo_max) : undefined,
+    soloAperti: searchParams.aperti === '1',
+    limit: PAGE_SIZE,
+    offset,
+  };
+
+  const [{ data: bandi, total }, cpvGroups] = await Promise.all([
+    getBandi(filters),
+    getBandiByCpvGroup(),
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const filtered = isFiltered(searchParams);
+
+  // descrizione del filtro attivo
+  const activeBits: string[] = [];
+  if (searchParams.cpv) activeBits.push(cpvGroupLabel(searchParams.cpv));
+  if (searchParams.procedura) activeBits.push(proceduraLabel(searchParams.procedura));
+  if (searchParams.aperti === '1') activeBits.push('termine aperto');
+  if (searchParams.q) activeBits.push(`"${searchParams.q}"`);
+
+  const itemList = itemListLd(
+    bandi.map((b) => ({
+      name: bandoTitolo(b, cpvGroupLabel(b.cpv_principale)),
+      url: `${siteConfig.baseUrl}/bandi/${b.slug}`,
+    })),
+    'Bandi e gare d\'appalto pubbliche',
+  );
+
+  // costruttore querystring per paginazione che preserva i filtri
+  const buildPageHref = (p: number) => {
+    const qs = new URLSearchParams();
+    if (searchParams.q) qs.set('q', searchParams.q);
+    if (searchParams.cpv) qs.set('cpv', searchParams.cpv);
+    if (searchParams.procedura) qs.set('procedura', searchParams.procedura);
+    if (searchParams.importo_min) qs.set('importo_min', searchParams.importo_min);
+    if (searchParams.importo_max) qs.set('importo_max', searchParams.importo_max);
+    if (searchParams.aperti) qs.set('aperti', searchParams.aperti);
+    if (p > 1) qs.set('page', String(p));
+    const s = qs.toString();
+    return s ? `/bandi?${s}` : '/bandi';
+  };
 
   return (
-    <section className="pt-32 md:pt-40 pb-12 md:pb-16">
-      <div className="container-zen">
-        <BreadcrumbCantiere steps={[{ label: 'Bandi pubblici' }]} />
-        <h1 className="heading-section mb-3">Bandi di gara pubblici</h1>
-        <p className="body-default text-muted-foreground mb-10 max-w-2xl">
-          {total > 0
-            ? `${total.toLocaleString('it-IT')} bandi pubblici aggregati da open data ANAC e portali appalti regionali.`
-            : 'Sezione in attivazione. I bandi di gara saranno disponibili dalle prossime release, aggregati da open data ANAC e portali appalti regionali.'}
-        </p>
+    <>
+      {!filtered && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(itemList) }} />
+      )}
+      <section className="pt-32 md:pt-40 pb-12 md:pb-16">
+        <div className="container-zen">
+          <BreadcrumbCantiere steps={[{ label: 'Bandi e gare d\'appalto' }]} />
+          <h1 className="heading-section mb-3">Bandi e gare d&apos;appalto pubbliche</h1>
+          <p className="body-default text-muted-foreground mb-8 max-w-2xl">
+            {total > 0
+              ? `${total.toLocaleString('it-IT')} bandi pubblici${activeBits.length ? ` — ${activeBits.join(', ')}` : ''}, aggregati da fonti pubbliche (TED, ANAC).`
+              : 'Nessun bando corrisponde ai filtri selezionati.'}
+          </p>
 
-        {bandi.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border bg-white p-12 text-center">
-            <Briefcase className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Bandi in arrivo</h2>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
-              La sezione bandi è in fase di attivazione. Stiamo integrando le pipeline da open data ANAC, SUAP regionali
-              e portali appalti istituzionali.
-            </p>
-            <div className="inline-flex items-center gap-2 text-xs text-muted-foreground">
-              <Database className="h-3.5 w-3.5" /> Fonti pianificate: ANAC, MEPA, portali regionali appalti
+          <div className="grid lg:grid-cols-[320px_1fr] gap-6 md:gap-8 items-start">
+            <aside className="lg:sticky lg:top-28">
+              <FiltriBandi cpvOptions={cpvGroups} />
+            </aside>
+
+            <div>
+              {bandi.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-border bg-white p-12 text-center">
+                  <Briefcase className="h-12 w-12 mx-auto text-muted-foreground mb-4" strokeWidth={1.25} />
+                  <h2 className="text-xl font-semibold mb-2">Nessun risultato</h2>
+                  <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
+                    Prova ad allargare i filtri o a cercare un altro termine.
+                  </p>
+                  <Link href="/bandi" className="btn-primary inline-flex">Azzera i filtri</Link>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+                    {bandi.map((b) => (
+                      <BandoCard key={b.id} bando={b} />
+                    ))}
+                  </div>
+
+                  {/* Paginazione */}
+                  {totalPages > 1 && (
+                    <nav className="mt-10 flex items-center justify-center gap-2" aria-label="Paginazione bandi">
+                      {page > 1 && (
+                        <Link href={buildPageHref(page - 1)} rel="prev" className="rounded-full border border-border bg-white px-4 py-2 text-sm font-medium hover:border-foreground/40 transition-colors">
+                          ← Precedente
+                        </Link>
+                      )}
+                      <span className="px-4 py-2 text-sm text-muted-foreground tabular-nums">
+                        Pagina {page} di {totalPages}
+                      </span>
+                      {page < totalPages && (
+                        <Link href={buildPageHref(page + 1)} rel="next" className="rounded-full border border-border bg-white px-4 py-2 text-sm font-medium hover:border-foreground/40 transition-colors">
+                          Successiva →
+                        </Link>
+                      )}
+                    </nav>
+                  )}
+                </>
+              )}
             </div>
           </div>
-        ) : (
-          <div className="space-y-4">
-            {bandi.map((b) => (
-              <Link
-                key={b.id}
-                href={`/bando/${b.slug}`}
-                className="group block rounded-2xl border border-border bg-white p-6 hover:shadow-lg transition-all"
-              >
-                <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/5 px-2.5 py-1 text-xs font-medium text-primary border border-primary/10">
-                    <Briefcase className="h-3 w-3" /> {b.tipo_procedura || 'Bando pubblico'}
-                  </span>
-                  {b.scadenza_offerte && (
-                    <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      Scadenza: {formatDate(b.scadenza_offerte)}
-                    </span>
-                  )}
-                </div>
-                <h3 className="font-semibold text-foreground leading-snug mb-2 line-clamp-2">
-                  {truncate(b.oggetto || 'Bando di gara', 200)}
-                </h3>
-                <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                  {b.stazione_appaltante && (
-                    <span className="inline-flex items-center gap-1.5">
-                      <Briefcase className="h-3.5 w-3.5" /> {truncate(b.stazione_appaltante, 60)}
-                    </span>
-                  )}
-                  {b.comune && (
-                    <span className="inline-flex items-center gap-1.5">
-                      <MapPin className="h-3.5 w-3.5" /> {b.comune} ({b.provincia})
-                    </span>
-                  )}
-                  {b.importo_base && (
-                    <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
-                      <EuroIcon className="h-3.5 w-3.5" /> {formatEuro(b.importo_base, { compact: true })}
-                    </span>
-                  )}
-                  <span className="ml-auto inline-flex items-center gap-1 text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                    Dettagli <ArrowRight className="h-3 w-3" />
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-    </section>
+        </div>
+      </section>
+    </>
   );
 }

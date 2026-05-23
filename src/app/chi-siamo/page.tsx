@@ -7,12 +7,12 @@ import TrustBadges from '@/components/cantieri/TrustBadges';
 import FAQ from '@/components/cantieri/FAQ';
 
 export const metadata: Metadata = {
-  title: 'Chi siamo — Trasparenza, open data e network ItaliaProgettisti',
-  description: `${siteConfig.name} aggrega i cantieri edilizi pubblici italiani da fonti ufficiali. Servizio editoriale di AZIENDA 365 SRL, parte del network ItaliaProgettisti.`,
+  title: 'Chi siamo — Trasparenza sugli appalti e network ItaliaProgettisti',
+  description: `${siteConfig.name} aggrega i bandi e le gare d'appalto pubbliche italiane da fonti ufficiali. Servizio editoriale di AZIENDA 365 SRL, parte del network ItaliaProgettisti.`,
   alternates: { canonical: '/chi-siamo' },
   openGraph: {
-    title: 'Chi siamo — Italia Cantieri',
-    description: `${siteConfig.name} aggrega i cantieri edilizi pubblici italiani da fonti ufficiali. Servizio editoriale di AZIENDA 365 SRL`,
+    title: 'Chi siamo — BandiGareDappalto',
+    description: `${siteConfig.name} aggrega i bandi e le gare d'appalto pubbliche italiane da fonti ufficiali. Servizio editoriale di AZIENDA 365 SRL`,
     url: '/chi-siamo',
     type: 'website',
   },
@@ -20,20 +20,20 @@ export const metadata: Metadata = {
 
 const chiSiamoFaq = [
   {
-    q: 'Chi gestisce Italia Cantieri?',
-    a: 'Italia Cantieri e un servizio editoriale di AZIENDA 365 SRL (P.IVA 02724340746), parte del network ItaliaProgettisti che dal 2024 connette progettisti, studi e imprese edili in tutta Italia.',
+    q: 'Chi gestisce BandiGareDappalto?',
+    a: 'BandiGareDappalto è un servizio editoriale di AZIENDA 365 SRL (P.IVA 02724340746), parte del network ItaliaProgettisti che connette progettisti, studi e imprese edili in tutta Italia.',
   },
   {
-    q: 'Perche e nato Italia Cantieri?',
-    a: 'I dati sui cantieri sono pubblici per legge, ma frammentati su centinaia di portali comunali con formati diversi. Abbiamo creato uno strumento unico che li unifica, normalizza e rende navigabili a tutti: progettisti, imprese, committenti, ricercatori e cittadini.',
+    q: 'Perché è nato BandiGareDappalto?',
+    a: 'I dati sui bandi e le gare d\'appalto sono pubblici per legge, ma frammentati e illeggibili: PDF, formati diversi, portali eterogenei. Abbiamo creato uno strumento unico che li unifica, normalizza e rende navigabili a imprese, studi, professionisti, ricercatori e cittadini.',
   },
   {
-    q: 'Italia Cantieri vende dati a terzi?',
-    a: 'No. I dati pubblici restano accessibili gratuitamente sul sito. Il modello di business e basato sulla rete di abbonamenti professionali al network ItaliaProgettisti, dove i professionisti pagano per visibilita, alert e dashboard avanzate.',
+    q: 'BandiGareDappalto vende dati a terzi?',
+    a: 'No. I dati pubblici restano accessibili gratuitamente sul sito. Il modello di business si basa sugli abbonamenti professionali al network ItaliaProgettisti, dove gli iscritti pagano per alert, monitoraggio dei concorrenti e documentazione di gara.',
   },
   {
-    q: 'Posso collaborare o segnalare un Comune da aggiungere?',
-    a: 'Si. Scrivici a info@italiacantieri.it: integriamo nuovi Comuni quando i dati sono accessibili tramite API o albo pretorio digitale. Ogni nuova fonte importata e gratuita per gli utenti.',
+    q: 'Pubblicate dati personali di persone fisiche?',
+    a: 'No. Pubblichiamo esclusivamente dati di gara e ragioni sociali di persone giuridiche (imprese aggiudicatarie), che sono dati pubblici per legge e fuori dall\'ambito del GDPR. Non pubblichiamo dati personali di persone fisiche (es. nominativi privati, contatti RUP).',
   },
 ];
 
@@ -43,12 +43,12 @@ export default function ChiSiamoPage() {
       <div className="container-zen max-w-3xl">
         <BreadcrumbCantiere steps={[{ label: 'Chi siamo' }]} />
         <h1 className="heading-section mb-4">
-          Rendiamo trasparente l&apos;edilizia italiana.
+          Rendiamo leggibili le gare d&apos;appalto pubbliche.
         </h1>
         <p className="body-large text-muted-foreground mb-10">
-          {siteConfig.name} e l&apos;aggregatore pubblico dei cantieri edilizi italiani: un servizio editoriale di{' '}
-          {siteConfig.companyName} che raccoglie, normalizza e rende navigabili i dati gia di dominio pubblico,
-          frammentati fra centinaia di Comuni e portali regionali.
+          {siteConfig.name} è il portale pubblico dei bandi e delle gare d&apos;appalto italiane: un servizio editoriale di{' '}
+          {siteConfig.companyName} che raccoglie, normalizza e rende navigabili dati già di dominio pubblico,
+          oggi frammentati e di difficile lettura tra TED, ANAC e portali appalti.
         </p>
 
         <div className="mb-12">
@@ -60,18 +60,18 @@ export default function ChiSiamoPage() {
         </h2>
         <div className="prose prose-neutral max-w-none mb-12">
           <p>
-            Crediamo che la <strong>trasparenza pubblica</strong> sia un pilastro del settore edilizio. Progettisti,
-            imprese, committenti e cittadini hanno diritto a un accesso facile alle informazioni che gia esistono nel
-            dominio pubblico, ma che oggi richiedono ore di navigazione su decine di portali comunali eterogenei.
+            Crediamo che la <strong>trasparenza sugli appalti pubblici</strong> sia un diritto. Imprese, studi,
+            professionisti, cittadini e giornalisti hanno diritto a un accesso facile alle informazioni che già esistono
+            nel dominio pubblico, ma che oggi richiedono ore di lavoro su portali eterogenei e PDF da decifrare.
           </p>
           <p>
-            Italia Cantieri risolve questo problema: <strong>un solo posto, dati normalizzati, ricerca per Comune</strong>,
-            mappe interattive e schede dettagliate. Tutto gratuito, sempre.
+            BandiGareDappalto risolve questo problema: <strong>un solo posto, dati normalizzati, ricerca per categoria CPV</strong>,
+            importi, scadenze e — quando la gara è aggiudicata — chi se l&apos;è aggiudicata. La consultazione è gratuita.
           </p>
           <p>
-            Per chi vuole andare oltre la consultazione e trasformare l&apos;informazione in opportunita di business,
-            il network <strong>ItaliaProgettisti</strong> offre alert email, contatti diretti dei professionisti
-            collegati ai cantieri, esportazioni CSV e dashboard intelligence.
+            Per chi vuole andare oltre la consultazione, il network <strong>ItaliaProgettisti</strong> offre alert sui
+            bandi rilevanti, monitoraggio dei concorrenti, documentazione di gara e la scheda azienda con il track record
+            delle gare vinte. Tutto il transazionale avviene sull&apos;HUB del network.
           </p>
         </div>
 
@@ -79,8 +79,8 @@ export default function ChiSiamoPage() {
           <Globe className="h-6 w-6" /> Il network
         </h2>
         <p className="text-muted-foreground mb-6">
-          Italia Cantieri fa parte di un ecosistema di portali verticali specializzati nel settore edilizia,
-          architettura e design.
+          BandiGareDappalto fa parte di un ecosistema di portali verticali specializzati nel settore edilizia,
+          architettura e appalti pubblici.
         </p>
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-12">
           {siteConfig.network.map((s) => (
@@ -98,35 +98,35 @@ export default function ChiSiamoPage() {
         </ul>
 
         <h2 className="text-2xl font-bold mb-4 inline-flex items-center gap-2">
-          <Users className="h-6 w-6" /> Per chi e Italia Cantieri
+          <Users className="h-6 w-6" /> Per chi è BandiGareDappalto
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
           <div className="rounded-2xl border border-border bg-white p-5">
-            <h3 className="font-semibold mb-2">Progettisti e studi</h3>
+            <h3 className="font-semibold mb-2">Imprese e uffici gare</h3>
             <p className="text-sm text-secondary-text">
-              Intercetta i cantieri prima dei competitor, individua opportunita di collaborazione tecnica e farti
-              trovare dai committenti.
+              Intercetta i bandi giusti per la tua categoria SOA e il tuo importo, monitora i concorrenti e analizza
+              i ribassi del tuo mercato.
             </p>
           </div>
           <div className="rounded-2xl border border-border bg-white p-5">
-            <h3 className="font-semibold mb-2">Imprese edili</h3>
+            <h3 className="font-semibold mb-2">Studi e professionisti</h3>
             <p className="text-sm text-secondary-text">
-              Identifica nuovi appalti privati e pubblici, analizza la concorrenza locale e pianifica strategie
-              commerciali data-driven.
+              Trova le gare di progettazione e direzione lavori (CPV 71), costruisci il tuo track record e fatti
+              trovare dalle stazioni appaltanti.
             </p>
           </div>
           <div className="rounded-2xl border border-border bg-white p-5">
             <h3 className="font-semibold mb-2">Aziende fornitrici</h3>
             <p className="text-sm text-secondary-text">
-              Trova progettisti e imprese attivi nei tuoi territori e settori target. Segmenta lead per tipologia di
-              opera e importo.
+              Individua le imprese che vincono le gare nei tuoi territori e settori target, e segui le opportunità
+              di subfornitura per tipologia di opera e importo.
             </p>
           </div>
           <div className="rounded-2xl border border-border bg-white p-5">
-            <h3 className="font-semibold mb-2">Cittadini e ricercatori</h3>
+            <h3 className="font-semibold mb-2">Cittadini e giornalisti</h3>
             <p className="text-sm text-secondary-text">
-              Consulta i lavori in corso nel tuo quartiere, monitora la trasformazione urbana e accedi alle statistiche
-              aggregate per ricerca o giornalismo.
+              Consulta in chiaro come la PA spende i soldi pubblici: oggetto, importo, ente e aggiudicatari di ogni
+              gara, per ricerca, inchiesta o controllo civico.
             </p>
           </div>
         </div>

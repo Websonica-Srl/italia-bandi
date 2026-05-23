@@ -79,8 +79,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               zIndex: 999,
             }}
           >
-            Italia Cantieri funziona meglio con JavaScript attivo. La ricerca avanzata richiede JS, ma puoi
-            comunque consultare cantieri, regioni e bandi.
+            BandiGareDappalto funziona meglio con JavaScript attivo. La ricerca avanzata richiede JS, ma puoi
+            comunque consultare bandi, categorie e scadenze.
           </div>
         </noscript>
       </body>

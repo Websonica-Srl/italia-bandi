@@ -48,13 +48,13 @@ export default function ContattiPage() {
 
         <div className="rounded-2xl border border-border bg-secondary p-6">
           <Database className="h-5 w-5 mb-2" />
-          <h2 className="font-semibold mb-2">Sei un Comune o un ente pubblico?</h2>
+          <h2 className="font-semibold mb-2">Sei una stazione appaltante o un ente pubblico?</h2>
           <p className="text-sm text-secondary-text mb-3">
-            Siamo interessati a integrare nuove fonti open data. Se il tuo Comune pubblica un albo pretorio digitale,
-            scrivici per integrazione e indicizzazione.
+            Siamo interessati a integrare nuove fonti pubbliche sui bandi e le gare d&apos;appalto. Se il tuo ente
+            pubblica un portale appalti o dati open, scrivici per integrazione e indicizzazione.
           </p>
           <a
-            href={`mailto:${siteConfig.email}?subject=Integrazione%20open%20data%20Comune`}
+            href={`mailto:${siteConfig.email}?subject=Integrazione%20dati%20bandi%20e%20gare`}
             className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-4 py-2 text-sm font-medium"
           >
             <Mail className="h-4 w-4" /> Proponi integrazione

@@ -13,7 +13,7 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     // eslint-disable-next-line no-console
-    console.error('[italia-cantieri] root error:', error);
+    console.error('[bandigaredappalto] root error:', error);
   }, [error]);
 
   return (
@@ -26,8 +26,8 @@ export default function GlobalError({
         <p className="text-secondary-text mb-8 leading-relaxed">
           Un errore inatteso ha bloccato il caricamento. Puoi riprovare o tornare alla home.
           Se il problema persiste, scrivici a{' '}
-          <a href="mailto:info@italiacantieri.it" className="text-foreground underline font-medium">
-            info@italiacantieri.it
+          <a href="mailto:info@bandigaredappalto.it" className="text-foreground underline font-medium">
+            info@bandigaredappalto.it
           </a>
           .
         </p>

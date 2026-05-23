@@ -22,43 +22,51 @@ export default function PrivacyPage() {
         <div className="prose prose-neutral max-w-none">
           <h2>1. Titolare del trattamento</h2>
           <p>
-            <strong>{siteConfig.companyName}</strong> ({siteConfig.companyPiva}) gestisce il sito{' '}
-            <strong>{siteConfig.domain}</strong>. DPO contattabile a{' '}
+            <strong>{siteConfig.companyName}</strong> ({siteConfig.companyPiva}, REA BR-167176, Brindisi) è titolare
+            unico del trattamento per tutto il network ItaliaProgettisti, di cui <strong>{siteConfig.domain}</strong> fa
+            parte. La presente è la <strong>privacy unica di rete</strong>: il registro dei consensi è centralizzato
+            sull&apos;HUB. DPO/contatto privacy:{' '}
             <a href={`mailto:${siteConfig.dpoEmail}`}>{siteConfig.dpoEmail}</a>.
           </p>
 
           <h2>2. Categorie di dati trattati</h2>
           <ul>
             <li>
-              <strong>Dati cantieri da fonti pubbliche</strong>: protocolli, indirizzi, importi, descrizioni provenienti da
-              albi pretori comunali e open data PA. Vedi la pagina{' '}
-              <Link href="/come-trattiamo-i-dati">Come trattiamo i dati</Link> per dettagli.
+              <strong>Dati di gara da fonti pubbliche</strong>: oggetto, stazione appaltante, importi, scadenze, CIG/CUP,
+              CPV, procedura e ragioni sociali degli aggiudicatari (persone giuridiche), provenienti da TED e ANAC.
+              Vedi la pagina <Link href="/come-trattiamo-i-dati">Come trattiamo i dati</Link>.
             </li>
             <li>
               <strong>Dati di navigazione</strong>: IP anonimizzato, browser, pagine visitate (solo con consenso analitico).
             </li>
-            <li><strong>Dati di contatto</strong>: email forniti volontariamente per richieste opt-out / DPO.</li>
+            <li><strong>Dati di contatto</strong>: email forniti volontariamente per richieste opt-out / privacy.</li>
           </ul>
 
           <h2>3. Finalità e base giuridica</h2>
           <ul>
             <li>
-              Pubblicazione dati cantieri ai fini di trasparenza pubblica e libertà di informazione: <strong>Art. 6.1.f
-              GDPR</strong> (legittimo interesse).
+              I dati delle <strong>imprese aggiudicatarie (persone giuridiche)</strong> sono fuori dall&apos;ambito di
+              applicazione del GDPR (Considerando 14).
+            </li>
+            <li>
+              Eventuali dati di <strong>persone fisiche</strong> presenti nelle fonti sono trattati ai fini di
+              informazione e trasparenza del mercato degli appalti: <strong>Art. 6.1.f GDPR</strong> (legittimo
+              interesse), con informativa ex <strong>Art. 14 GDPR</strong> (dati raccolti da terzi).
             </li>
             <li>
               Analisi anonima del traffico per migliorare il servizio: <strong>Art. 6.1.a GDPR</strong> (consenso).
             </li>
             <li>
-              Gestione richieste GDPR e contatti DPO: <strong>Art. 6.1.c GDPR</strong> (obbligo legale).
+              Gestione richieste e contatti privacy: <strong>Art. 6.1.c GDPR</strong> (obbligo legale).
             </li>
           </ul>
 
           <h2>4. Periodo di conservazione</h2>
           <ul>
-            <li>Dati cantieri: per il periodo di rilevanza pubblicistica (10 anni dal rilascio del titolo).</li>
+            <li>Dati di gara e imprese aggiudicatarie (PG): archivio storico, per la rilevanza informativa del dato pubblico.</li>
+            <li>Eventuali dati di persone fisiche: minimizzati e conservati per un massimo di 24-36 mesi, poi de-indicizzati o anonimizzati.</li>
             <li>Dati di navigazione (Google Analytics): 26 mesi.</li>
-            <li>Email contatti DPO: 5 anni dalla chiusura del caso.</li>
+            <li>Email contatti privacy: 5 anni dalla chiusura del caso.</li>
           </ul>
 
           <h2>5. Destinatari</h2>

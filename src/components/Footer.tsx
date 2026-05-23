@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { siteConfig } from '@/lib/site-config';
-import { Mail, Database, HardHat, ArrowUpRight } from 'lucide-react';
+import { Mail, Database, Gavel, ArrowUpRight } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -24,11 +24,11 @@ export default function Footer() {
                 aria-hidden="true"
                 className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-background/10 ring-1 ring-background/20 backdrop-blur-sm"
               >
-                <HardHat className="h-5 w-5" strokeWidth={2} />
+                <Gavel className="h-5 w-5" strokeWidth={2} />
               </span>
               <div>
                 <h3 className="text-2xl font-black tracking-[-0.04em] leading-none">
-                  Italia<span className="opacity-65">Cantieri</span>
+                  Bandi<span className="opacity-65">GareDappalto</span>
                 </h3>
                 <p className="text-[10px] uppercase tracking-[0.22em] text-background/60 mt-1.5">
                   Network ItaliaProgettisti
@@ -36,15 +36,15 @@ export default function Footer() {
               </div>
             </div>
             <p className="text-lg md:text-xl text-background/85 leading-relaxed max-w-md text-pretty">
-              Sai prima dove si lavora in Italia. Cantieri edilizi pubblici e bandi di
-              gara aggregati da fonti ufficiali, aggiornati ogni giorno.
+              Tutte le gare d&apos;appalto pubbliche d&apos;Italia, in chiaro. Bandi, importi,
+              scadenze e aggiudicatari aggregati da fonti ufficiali e resi leggibili.
             </p>
             <div className="mt-8 space-y-2.5">
               <p className="text-xs text-background/55 flex items-center gap-2">
-                <Database className="h-3.5 w-3.5" strokeWidth={1.5} /> Fonti: open data PA + albi pretori comunali
+                <Database className="h-3.5 w-3.5" strokeWidth={1.5} /> Fonti: TED (UE) · ANAC · portali appalti
               </p>
               <p className="text-xs text-background/55">
-                GDPR-compliant · k-anonymity 5 sui cantieri privati
+                GDPR-compliant · solo dati di persone giuridiche
               </p>
             </div>
           </div>
@@ -54,10 +54,11 @@ export default function Footer() {
             <div>
               <h4 className="kpi-hero-label text-background/55 mb-5">Esplora</h4>
               <ul className="space-y-3.5 text-sm">
-                <li><FooterLink href="/regioni">Cantieri per regione</FooterLink></li>
-                <li><FooterLink href="/bandi">Bandi pubblici</FooterLink></li>
-                <li><FooterLink href="/statistiche">Statistiche nazionali</FooterLink></li>
-                <li><FooterLink href="/glossario">Glossario edilizia</FooterLink></li>
+                <li><FooterLink href="/bandi">Tutti i bandi</FooterLink></li>
+                <li><FooterLink href="/categoria/45">Lavori di costruzione</FooterLink></li>
+                <li><FooterLink href="/categoria/71">Architettura e ingegneria</FooterLink></li>
+                <li><FooterLink href="/scadenze">Bandi in scadenza</FooterLink></li>
+                <li><FooterLink href="/glossario">Glossario appalti</FooterLink></li>
                 <li><FooterLink href="/per-pubbliche-amministrazioni">Per la PA</FooterLink></li>
                 <li><FooterLink href="/api-pubbliche">API & sviluppatori</FooterLink></li>
                 <li><FooterLink href="/chi-siamo">Chi siamo</FooterLink></li>
@@ -108,7 +109,7 @@ export default function Footer() {
         {/* Logo wordmark gigante outline editorial */}
         <div className="border-t border-background/15 pt-12 md:pt-16 pb-4 md:pb-8 select-none">
           <div className="footer-logo-display text-balance leading-none">
-            Italia<span className="accent">Cantieri</span>
+            Bandi<span className="accent">GareDappalto</span>
           </div>
         </div>
 
@@ -139,10 +140,10 @@ export default function Footer() {
             Press kit per giornalisti
           </p>
           <p className="text-xs text-background/45 max-w-4xl leading-relaxed">
-            <strong className="text-background/65">Italia Cantieri</strong> aggrega dati pubblici da: Open Data Comune di Bologna (1.759 cantieri),
-            portali Maggioli (5 Comuni del Piemonte), Albo Pretorio Comune di Torino, archivi regionali appalti.
-            Per richieste stampa, dati certificati o interviste contattare <a href="mailto:info@italiacantieri.it" className="underline hover:text-background">info@italiacantieri.it</a>.
-            Citazione consigliata: <em>&ldquo;Italia Cantieri – database pubblico cantieri edilizi italiani (italiacantieri.it)&rdquo;</em>.
+            <strong className="text-background/65">BandiGareDappalto</strong> aggrega dati pubblici dei bandi e delle gare d&apos;appalto
+            da fonti ufficiali: TED (Tenders Electronic Daily, Gazzetta Ufficiale UE), ANAC e portali appalti istituzionali.
+            Per richieste stampa, dati o interviste contattare <a href="mailto:info@bandigaredappalto.it" className="underline hover:text-background">info@bandigaredappalto.it</a>.
+            Citazione consigliata: <em>&ldquo;BandiGareDappalto – portale pubblico delle gare d&apos;appalto italiane (bandigaredappalto.it)&rdquo;</em>.
           </p>
         </div>
       </div>

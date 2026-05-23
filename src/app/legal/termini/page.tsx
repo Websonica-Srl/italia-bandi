@@ -19,9 +19,10 @@ export default function TerminiPage() {
         <div className="prose prose-neutral max-w-none">
           <h2>1. Oggetto del servizio</h2>
           <p>
-            {siteConfig.name} è un aggregatore pubblico di informazioni su cantieri edilizi italiani, raccolte
-            esclusivamente da fonti pubbliche e open data della Pubblica Amministrazione. Il servizio è fornito da{' '}
-            <strong>{siteConfig.companyName}</strong> ({siteConfig.companyPiva}).
+            {siteConfig.name} è un portale pubblico di informazioni sui bandi e le gare d&apos;appalto pubbliche
+            italiane, raccolte esclusivamente da fonti pubbliche e ufficiali (TED, ANAC, portali appalti). Il servizio è
+            fornito da <strong>{siteConfig.companyName}</strong> ({siteConfig.companyPiva}), parte del network
+            ItaliaProgettisti.
           </p>
 
           <h2>2. Accuratezza dei dati</h2>
@@ -62,7 +63,8 @@ export default function TerminiPage() {
 
           <h2>7. Foro competente e legge applicabile</h2>
           <p>
-            I presenti termini sono regolati dalla legge italiana. Foro competente esclusivo: Tribunale di Cuneo.
+            I presenti termini sono regolati dalla legge italiana. Foro competente esclusivo: Tribunale di Brindisi
+            (sede del titolare {siteConfig.companyName}).
           </p>
 
           <p className="text-sm text-muted-foreground border-t border-border pt-4 mt-8">

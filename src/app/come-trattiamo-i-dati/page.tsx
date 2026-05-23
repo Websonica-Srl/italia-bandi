@@ -6,59 +6,59 @@ import BreadcrumbCantiere from '@/components/cantieri/BreadcrumbCantiere';
 
 const trasparenzaOg = ogImageUrl({
   title: 'Come trattiamo i dati',
-  subtitle: 'Trasparenza GDPR · Fonti pubbliche · k-anonymity 5 · Opt-out 30 giorni',
+  subtitle: 'Trasparenza GDPR · Fonti pubbliche TED/ANAC · solo persone giuridiche · Opt-out 30 giorni',
   kind: 'generic',
 });
 
 export const metadata: Metadata = {
   title: 'Come trattiamo i dati — Trasparenza GDPR su fonti, base legale e diritti',
   description:
-    'Tutto quello che serve sapere sul trattamento dati di Italia Cantieri: fonti pubbliche, base legale GDPR, k-anonymity 5 e modulo opt-out. Risposte chiare entro 30 giorni.',
+    'Tutto quello che serve sapere sul trattamento dati di BandiGareDappalto: fonti pubbliche (TED, ANAC), base legale GDPR, regime persone giuridiche/fisiche e modulo opt-out. Risposte chiare entro 30 giorni.',
   alternates: { canonical: '/come-trattiamo-i-dati' },
   openGraph: {
-    title: 'Come trattiamo i dati — Italia Cantieri',
+    title: 'Come trattiamo i dati — BandiGareDappalto',
     description:
-      'Trasparenza GDPR su Italia Cantieri: fonti pubbliche, base legale, k-anonymity 5, modulo opt-out.',
+      'Trasparenza GDPR su BandiGareDappalto: fonti pubbliche TED/ANAC, base legale, regime PG/PF, modulo opt-out.',
     url: '/come-trattiamo-i-dati',
     type: 'website',
     images: [{ url: trasparenzaOg, width: 1200, height: 630, alt: 'Come trattiamo i dati' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Come trattiamo i dati — Italia Cantieri',
-    description: 'Trasparenza GDPR: fonti pubbliche, base legale, k-anonymity 5, opt-out.',
+    title: 'Come trattiamo i dati — BandiGareDappalto',
+    description: 'Trasparenza GDPR: fonti pubbliche TED/ANAC, base legale, regime PG/PF, opt-out.',
     images: [trasparenzaOg],
   },
 };
 
 const faqs = [
   {
-    q: 'Da dove provengono i dati pubblicati su Italia Cantieri?',
-    a: "Esclusivamente da fonti pubbliche e aperte: albo pretorio dei Comuni italiani, open data della Pubblica Amministrazione (es. open data Comune di Bologna, MEPA, portali ANAC), portali appalti regionali. Non raccogliamo dati da fonti private ne da soggetti non autorizzati.",
+    q: 'Da dove provengono i dati pubblicati su BandiGareDappalto?',
+    a: 'Esclusivamente da fonti pubbliche e ufficiali: il portale europeo TED (Tenders Electronic Daily, supplemento della Gazzetta Ufficiale UE), ANAC e i portali appalti istituzionali italiani. I dati delle gare d\'appalto sono pubblici per legge (D.Lgs. 36/2023). Non raccogliamo dati da fonti private né da soggetti non autorizzati.',
   },
   {
-    q: 'Qual e la base legale del trattamento?',
-    a: 'Art. 6.1.f GDPR (legittimo interesse alla trasparenza pubblica e liberta di informazione su dati di rilevanza pubblicistica) + Art. 14 GDPR (informativa per dati raccolti da terzi). Il trattamento e bilanciato con la tutela dei diritti dei titolari, valutati caso per caso.',
+    q: 'Qual è la base legale del trattamento?',
+    a: 'Per i dati di gara e le imprese aggiudicatarie (persone giuridiche) il trattamento è fuori dall\'ambito del GDPR (Considerando 14). Ove fossero presenti dati di persone fisiche, la base legale è l\'Art. 6.1.f GDPR (legittimo interesse all\'informazione e alla trasparenza del mercato), rafforzato dalla natura pubblica della fonte, con informativa ex Art. 14 GDPR (dati raccolti da terzi).',
   },
   {
-    q: "Cos'e la k-anonymity 5 che applicate ai cantieri privati?",
-    a: 'Per cantieri privati (es. ristrutturazioni residenziali), aggreghiamo statisticamente i dati garantendo che ogni gruppo visualizzato contenga almeno 5 cantieri con caratteristiche simili (Comune + categoria + mese). Questo impedisce di risalire al singolo cantiere o committente: vedi solo statistiche aggregate, mai schede personali.',
+    q: 'Pubblicate dati personali di persone fisiche?',
+    a: 'No. Pubblichiamo le ragioni sociali delle imprese aggiudicatarie (persone giuridiche), che sono dati pubblici. Non pubblichiamo dati personali di persone fisiche: né nominativi privati, né contatti del RUP, né partita IVA o codice fiscale. Le nostre viste pubbliche escludono a monte queste informazioni.',
   },
   {
-    q: 'Posso richiedere la rimozione di un cantiere che mi riguarda?',
-    a: "Si. Ai sensi degli Art. 15-22 GDPR puoi esercitare i diritti di accesso, rettifica, cancellazione, limitazione e opposizione. Scrivi al nostro DPO con allegato documento d'identita: la richiesta viene presa in carico entro 30 giorni. Trovi il modulo direttamente in ogni scheda cantiere.",
+    q: 'Per quanto tempo restano online i dati?',
+    a: 'I dati delle gare aggiudicate da imprese (persone giuridiche) restano consultabili come archivio storico. Eventuali dati riferibili a persone fisiche sono soggetti a minimizzazione e a un periodo di conservazione limitato (24-36 mesi), trascorso il quale il nominativo viene de-indicizzato o anonimizzato.',
   },
   {
-    q: 'Pubblicate i nomi dei committenti privati?',
-    a: "No, mai. Pubblichiamo solo dati LAYER 1 ufficiali (riferimenti protocollo, indirizzo, tipologia titolo, importo) per cantieri con visibilita pubblica gia presenti nell'albo pretorio. I cantieri privati appaiono solo in forma aggregata anonima (k-anonymity 5).",
+    q: 'Posso richiedere la rimozione di un dato che mi riguarda?',
+    a: 'Sì. Ai sensi degli Art. 15-22 GDPR puoi esercitare i diritti di accesso, rettifica, cancellazione, limitazione e opposizione. Scrivi al nostro DPO con allegato documento d\'identità: la richiesta viene valutata individualmente e presa in carico entro 30 giorni.',
   },
   {
     q: 'Come vengono protetti i miei dati di navigazione sul sito?',
     a: 'Utilizziamo solo cookie tecnici necessari + cookie analitici opt-in (Google Analytics con IP anonimizzato). Nessun cookie di marketing attivato di default. Cookie banner attivo sulla prima visita, sempre revocabile.',
   },
   {
-    q: 'I dati di Italia Cantieri sono utilizzabili in ambito commerciale?',
-    a: 'I dati pubblicati su questa piattaforma sono accessibili gratuitamente per consultazione. Per utilizzi commerciali strutturati (export massivi, integrazioni API, redistribuzione) e necessario un accordo dedicato: scrivici a info@italiacantieri.it.',
+    q: 'I dati di BandiGareDappalto sono utilizzabili in ambito commerciale?',
+    a: 'I dati pubblicati sono accessibili gratuitamente per consultazione. Per utilizzi commerciali strutturati (export massivi, integrazioni API, redistribuzione) è necessario un accordo dedicato: scrivici a info@bandigaredappalto.it.',
   },
 ];
 
@@ -72,53 +72,60 @@ export default function ComeTrattiamoIDatiPage() {
 
           <h1 className="heading-section mb-4">Come trattiamo i dati</h1>
           <p className="body-large text-muted-foreground mb-10">
-            Italia Cantieri pubblica esclusivamente dati provenienti da fonti pubbliche. Questa pagina spiega in modo
-            trasparente origine dei dati, base legale del trattamento, tecniche di anonimizzazione e diritti che puoi
-            esercitare in qualsiasi momento.
+            BandiGareDappalto pubblica esclusivamente dati provenienti da fonti pubbliche ufficiali. Questa pagina spiega
+            in modo trasparente l&apos;origine dei dati, la base legale del trattamento, il diverso regime tra persone
+            giuridiche e fisiche e i diritti che puoi esercitare in qualsiasi momento.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
             <div className="rounded-2xl border border-border bg-white p-5">
               <Database className="h-6 w-6 text-foreground mb-2" />
-              <h3 className="font-semibold mb-1">Fonti pubbliche verificate</h3>
+              <h3 className="font-semibold mb-1">Fonti pubbliche ufficiali</h3>
               <p className="text-sm text-secondary-text">
-                Albi pretori comunali, open data PA, portali appalti regionali, ANAC. Ogni fonte e dichiarata in scheda.
+                TED (Gazzetta Ufficiale UE), ANAC e portali appalti istituzionali. Ogni bando dichiara la propria fonte.
               </p>
             </div>
             <div className="rounded-2xl border border-border bg-white p-5">
               <Scale className="h-6 w-6 text-foreground mb-2" />
               <h3 className="font-semibold mb-1">Base legale GDPR</h3>
               <p className="text-sm text-secondary-text">
-                Art. 6.1.f (legittimo interesse alla trasparenza) + Art. 14 (informativa terzi).
+                Imprese (PG) fuori GDPR (Cons. 14). Per dati di persone fisiche: Art. 6.1.f + informativa Art. 14.
               </p>
             </div>
             <div className="rounded-2xl border border-border bg-white p-5">
               <Eye className="h-6 w-6 text-foreground mb-2" />
               <h3 className="font-semibold mb-1">Trasparenza totale</h3>
               <p className="text-sm text-secondary-text">
-                Ogni scheda cantiere dichiara la fonte di provenienza e la data di pubblicazione originale.
+                Ogni scheda bando dichiara la fonte di provenienza e la data di pubblicazione originale.
               </p>
             </div>
             <div className="rounded-2xl border border-border bg-white p-5">
               <UserX className="h-6 w-6 text-foreground mb-2" />
-              <h3 className="font-semibold mb-1">k-anonymity 5</h3>
+              <h3 className="font-semibold mb-1">Nessun dato di persone fisiche</h3>
               <p className="text-sm text-secondary-text">
-                I cantieri privati appaiono solo in aggregati con almeno 5 record per gruppo. Mai dati individuali.
+                Le viste pubbliche escludono partita IVA, codice fiscale, contatti RUP e ogni dato personale.
               </p>
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold mb-6">Cos&apos;e Italia Cantieri</h2>
+          <h2 className="text-2xl font-bold mb-6">Cos&apos;è BandiGareDappalto</h2>
           <div className="prose prose-neutral max-w-none mb-12">
             <p>
-              Italia Cantieri e un aggregatore pubblico di informazioni sui cantieri edilizi italiani. Raccogliamo,
-              normalizziamo e pubblichiamo dati provenienti esclusivamente da fonti pubbliche, con l&apos;obiettivo di
-              rendere accessibili e navigabili informazioni che sono gia di dominio pubblico ma frammentate fra
-              centinaia di portali comunali e regionali.
+              BandiGareDappalto è un portale pubblico che aggrega informazioni sui bandi e le gare d&apos;appalto in Italia.
+              Raccogliamo, normalizziamo e pubblichiamo dati provenienti esclusivamente da fonti pubbliche ufficiali, con
+              l&apos;obiettivo di rendere accessibili e navigabili informazioni che sono già di dominio pubblico ma
+              frammentate e di difficile lettura.
             </p>
             <p>
-              Il servizio e gestito da <strong>{siteConfig.companyName}</strong> ({siteConfig.companyPiva}) e fa parte
-              del network ItaliaProgettisti.
+              Distinguiamo due regimi: i dati delle <strong>imprese aggiudicatarie (persone giuridiche)</strong> sono
+              fuori dall&apos;ambito del GDPR e liberamente consultabili; gli eventuali dati riferibili a
+              <strong> persone fisiche</strong> sono trattati con minimizzazione, base giuridica del legittimo interesse
+              e periodo di conservazione limitato.
+            </p>
+            <p>
+              Il servizio è gestito da <strong>{siteConfig.companyName}</strong> ({siteConfig.companyPiva}) e fa parte
+              del network ItaliaProgettisti, che adotta una <strong>privacy unica di rete</strong> con titolare unico e
+              consent logging centralizzato sull&apos;HUB.
             </p>
           </div>
 
@@ -143,12 +150,12 @@ export default function ComeTrattiamoIDatiPage() {
             <Mail className="h-6 w-6 text-amber-700 mb-3" />
             <h2 className="text-2xl font-bold text-amber-900 mb-2">Richiedi opt-out o rimozione</h2>
             <p className="text-amber-900/80 mb-5 leading-relaxed">
-              Se sei il titolare di un cantiere pubblicato e ritieni che il legittimo interesse di Italia Cantieri non
-              prevalga sui tuoi diritti, scrivi al nostro DPO. Ogni richiesta viene valutata individualmente entro 30
-              giorni.
+              Se un dato pubblicato ti riguarda come persona fisica e ritieni che il legittimo interesse di
+              BandiGareDappalto non prevalga sui tuoi diritti, scrivi al nostro DPO. Ogni richiesta viene valutata
+              individualmente entro 30 giorni.
             </p>
             <a
-              href={`mailto:${siteConfig.dpoEmail}?subject=Opt-out%20%2F%20rimozione%20dati%20Italia%20Cantieri`}
+              href={`mailto:${siteConfig.dpoEmail}?subject=Opt-out%20%2F%20rimozione%20dati%20BandiGareDappalto`}
               className="inline-flex items-center gap-2 rounded-full bg-amber-900 text-amber-50 px-5 py-2.5 text-sm font-medium hover:bg-amber-900/90 transition-colors"
             >
               <Mail className="h-4 w-4" /> Contatta il DPO ({siteConfig.dpoEmail})

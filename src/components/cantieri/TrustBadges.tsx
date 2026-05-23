@@ -15,23 +15,23 @@ interface Props {
 const badges = [
   {
     icon: Database,
-    title: 'Fonti pubbliche verificate',
-    desc: 'Solo open data PA e albi pretori dei Comuni italiani.',
+    title: 'Fonti pubbliche ufficiali',
+    desc: 'Solo TED (UE), ANAC e portali appalti istituzionali.',
   },
   {
     icon: RefreshCw,
-    title: 'Aggiornato quotidianamente',
-    desc: 'Nuovi cantieri importati ogni giorno dai portali ufficiali.',
+    title: 'Aggiornato di continuo',
+    desc: 'Nuovi bandi importati automaticamente dalle fonti pubbliche.',
   },
   {
     icon: ShieldCheck,
     title: 'GDPR-compliant',
-    desc: 'k-anonymity 5 sui cantieri privati. Opt-out attivo.',
+    desc: 'Solo dati di persone giuridiche. Nessun dato personale di PF.',
   },
   {
     icon: Lock,
     title: 'Trasparenza totale',
-    desc: 'Ogni scheda dichiara fonte, data e base legale.',
+    desc: 'Ogni bando dichiara fonte, dati e base legale.',
   },
 ];
 
