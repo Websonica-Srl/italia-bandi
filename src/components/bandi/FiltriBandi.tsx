@@ -3,7 +3,8 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { SlidersHorizontal, X, Search } from 'lucide-react';
-import { CPV_GROUP_LABELS, PROCEDURA_LABELS } from '@/lib/bandi-taxonomy';
+import { PROCEDURA_LABELS } from '@websonica/cantieri-core';
+import { cpvGroupLabel } from '@/lib/bandi-taxonomy-extra';
 
 interface CpvOption {
   group: string;
@@ -123,7 +124,7 @@ export default function FiltriBandi({ cpvOptions }: Props) {
               <option value="">Tutte le categorie</option>
               {cpvOptions.map((o) => (
                 <option key={o.group} value={o.group}>
-                  {CPV_GROUP_LABELS[o.group] || `CPV ${o.group}`} ({o.cnt})
+                  {cpvGroupLabel(o.group)} ({o.cnt})
                 </option>
               ))}
             </select>

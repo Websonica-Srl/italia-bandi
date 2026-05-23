@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Clock } from 'lucide-react';
 import { getBandiInScadenza } from '@/lib/supabase/queries/bandi';
 import { bandoTitolo } from '@/lib/utils';
-import { cpvGroupLabel } from '@/lib/bandi-taxonomy';
+import { cpvGroupLabel } from '@/lib/bandi-taxonomy-extra';
 import BandoCard from '@/components/bandi/BandoCard';
 import BreadcrumbCantiere from '@/components/cantieri/BreadcrumbCantiere';
 import FAQ from '@/components/cantieri/FAQ';

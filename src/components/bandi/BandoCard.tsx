@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { Building2, EuroIcon, ArrowRight, Tag, Hash } from 'lucide-react';
 import { Bando } from '@/lib/supabase/queries/bandi';
 import { formatEuro, truncate, bandoTitolo } from '@/lib/utils';
-import { cpvGroupLabel, proceduraLabel } from '@/lib/bandi-taxonomy';
+import { proceduraLabel } from '@websonica/cantieri-core';
+import { cpvGroupLabel } from '@/lib/bandi-taxonomy-extra';
 import BandoScadenzaBadge from './BandoScadenzaBadge';
 
 interface Props {

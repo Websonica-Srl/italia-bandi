@@ -10,9 +10,8 @@ import {
 import { formatNumber, formatEuro, bandoTitolo } from '@/lib/utils';
 import {
   cpvGroupLabel,
-  CPV_GROUP_LABELS,
   CPV_GROUP_EDITORIAL,
-} from '@/lib/bandi-taxonomy';
+} from '@/lib/bandi-taxonomy-extra';
 import BandoCard from '@/components/bandi/BandoCard';
 import BreadcrumbCantiere from '@/components/cantieri/BreadcrumbCantiere';
 import FAQ from '@/components/cantieri/FAQ';
@@ -37,7 +36,9 @@ export async function generateStaticParams() {
 }
 
 function isValidGroup(cpv: string): boolean {
-  return /^\d{2}$/.test(cpv) && !!CPV_GROUP_LABELS[cpv];
+  // Gruppo CPV a 2 cifre noto: la label risolta (package + fallback locale)
+  // deve essere diversa dal codice grezzo.
+  return /^\d{2}$/.test(cpv) && cpvGroupLabel(cpv) !== cpv;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

@@ -1,51 +1,34 @@
 /**
- * Taxonomy bandi — label leggibili per procedura, stato e gruppi CPV.
+ * Estensioni locali MINIME alla taxonomy bandi di `@websonica/cantieri-core`.
  *
- * ⚠️ TEMPORANEO: secondo la spec questi simboli dovrebbero arrivare da
- * `@websonica/cantieri-core` v0.2.0 (PROCEDURA_LABELS, BANDO_STATO_LABELS,
- * CPV_GROUP_LABELS, proceduraLabel/statoBandoLabel/cpvGroupLabel + tipi
- * Bando/GaraVinta/BandiFilters). Il git-dep `#v0.2.0` risolve però al
- * contenuto di v0.1.0, che NON espone ancora la bandi-taxonomy.
- * Quando il package esporrà questi simboli, sostituire gli import qui sotto
- * con `import { ... } from '@websonica/cantieri-core'` e rimuovere questo file.
+ * La taxonomy PRINCIPALE (PROCEDURA_LABELS, BANDO_STATO_LABELS, CPV_GROUP_LABELS,
+ * proceduraLabel, statoBandoLabel, cpvGroupLabel) vive nel package ed è la fonte
+ * di verità. Qui colmiamo SOLO ciò che il package v0.2.0 non espone ancora e che
+ * questo sito usa, senza duplicare la taxonomy.
+ *
+ * TODO: portare in cantieri-core v0.2.x e poi eliminare questo file:
+ *   - funzione `cpvGroup(cpv)` (prefisso a 2 cifre del gruppo CPV)
+ *   - copertura `CPV_GROUP_LABELS` per i gruppi a 2 cifre (il package mappa solo
+ *     44/45/71 + alcuni sotto-prefissi; il sito raggruppa per prime 2 cifre)
+ *   - `CPV_GROUP_EDITORIAL` (testo editoriale per le pagine /categoria/[cpv])
  */
+import { cpvGroupLabel as cpvGroupLabelPkg } from '@websonica/cantieri-core';
 
-/** Procedura di gara → label leggibile (valori reali enum in bandi_gara). */
-export const PROCEDURA_LABELS: Record<string, string> = {
-  aperta: 'Procedura aperta',
-  ristretta: 'Procedura ristretta',
-  negoziata_con_pubblicazione: 'Procedura negoziata con pubblicazione',
-  negoziata_senza_pubblicazione: 'Procedura negoziata senza pubblicazione',
-  dialogo_competitivo: 'Dialogo competitivo',
-  partenariato_innovazione: 'Partenariato per l\'innovazione',
-  affidamento_diretto: 'Affidamento diretto',
-};
-
-export function proceduraLabel(value: string | null | undefined): string {
-  if (!value) return 'Procedura non specificata';
-  return PROCEDURA_LABELS[value] || prettify(value);
-}
-
-/** Stato del bando → label leggibile. */
-export const BANDO_STATO_LABELS: Record<string, string> = {
-  aperto: 'Aperto',
-  in_scadenza: 'In scadenza',
-  scaduto: 'Scaduto',
-  aggiudicato: 'Aggiudicato',
-  annullato: 'Annullato',
-  deserto: 'Andato deserto',
-};
-
-export function statoBandoLabel(value: string | null | undefined): string {
-  if (!value) return 'Stato non disponibile';
-  return BANDO_STATO_LABELS[value] || prettify(value);
+/** Estrae il gruppo CPV (prime 2 cifre) da un codice CPV. */
+export function cpvGroup(cpv: string | null | undefined): string | null {
+  if (!cpv) return null;
+  const g = cpv.replace(/[^0-9]/g, '').slice(0, 2);
+  return g.length === 2 ? g : null;
 }
 
 /**
- * Gruppi CPV (prime 2 cifre) → label di divisione del Vocabolario Comune Appalti.
- * Coprono i gruppi realmente presenti nel dataset + i principali edilizia/servizi.
+ * Label dei gruppi CPV a 2 cifre NON coperti dalla mappa del package.
+ * Il package mappa solo 44/45/71 a 2 cifre (più alcuni sotto-prefissi specifici),
+ * ma il sito raggruppa i bandi per prime 2 cifre (getBandiByCpvGroup), quindi
+ * servono le divisioni CPV restanti per label leggibili, filtri e pagine categoria.
+ * TODO: portare in cantieri-core v0.2.x.
  */
-export const CPV_GROUP_LABELS: Record<string, string> = {
+export const CPV_GROUP_LABELS_2D: Record<string, string> = {
   '03': 'Prodotti agricoli e forestali',
   '09': 'Prodotti petroliferi ed energia',
   '14': 'Prodotti delle miniere e cave',
@@ -63,8 +46,6 @@ export const CPV_GROUP_LABELS: Record<string, string> = {
   '38': 'Apparecchiature di laboratorio e di precisione',
   '39': 'Mobili, arredi ed elettrodomestici',
   '42': 'Macchinari industriali',
-  '44': 'Strutture e materiali da costruzione',
-  '45': 'Lavori di costruzione',
   '48': 'Pacchetti software e sistemi informatici',
   '50': 'Servizi di riparazione e manutenzione',
   '51': 'Servizi di installazione',
@@ -75,7 +56,6 @@ export const CPV_GROUP_LABELS: Record<string, string> = {
   '65': 'Servizi di pubblica utilità',
   '66': 'Servizi finanziari e assicurativi',
   '70': 'Servizi immobiliari',
-  '71': 'Servizi di architettura e ingegneria',
   '72': 'Servizi informatici e affini',
   '73': 'Servizi di ricerca e sviluppo',
   '75': 'Servizi della pubblica amministrazione',
@@ -89,23 +69,30 @@ export const CPV_GROUP_LABELS: Record<string, string> = {
   '98': 'Altri servizi di comunità, sociali e personali',
 };
 
-/** Estrae il gruppo CPV (prime 2 cifre) da un codice CPV. */
-export function cpvGroup(cpv: string | null | undefined): string | null {
-  if (!cpv) return null;
-  const g = cpv.replace(/[^0-9]/g, '').slice(0, 2);
-  return g.length === 2 ? g : null;
-}
-
-/** Label leggibile della divisione CPV a partire da un codice o gruppo. */
+/**
+ * Label leggibile di un gruppo CPV. Fonte primaria: package (`cpvGroupLabelPkg`,
+ * match per prefisso più lungo). Fallback: mappa a 2 cifre locale, per i gruppi
+ * che il package non copre ancora (es. "90", "50", "33"...).
+ * Quando il package restituisce il codice grezzo (nessun match) cadiamo sul
+ * dizionario a 2 cifre, così le pagine/card categoria restano leggibili.
+ */
 export function cpvGroupLabel(cpv: string | null | undefined): string {
-  const g = cpvGroup(cpv) ?? (cpv ? cpv.slice(0, 2) : null);
-  if (!g) return 'Categoria non specificata';
-  return CPV_GROUP_LABELS[g] || `Categoria CPV ${g}`;
+  if (!cpv) return cpvGroupLabelPkg(cpv);
+  const fromPkg = cpvGroupLabelPkg(cpv);
+  // Il package torna il codice grezzo quando non c'è match: in quel caso
+  // proviamo il dizionario a 2 cifre locale.
+  const normalized = cpv.replace(/[^0-9]/g, '');
+  const isRawEcho = fromPkg === cpv || fromPkg === normalized;
+  if (!isRawEcho) return fromPkg;
+  const g = cpvGroup(cpv);
+  if (g && CPV_GROUP_LABELS_2D[g]) return CPV_GROUP_LABELS_2D[g];
+  return fromPkg;
 }
 
 /**
- * Descrizione editoriale estesa per la pagina hub di categoria.
- * Contenuto UNICO (non duplica il dato grezzo CPV) per i gruppi più rilevanti.
+ * Descrizione editoriale estesa per la pagina hub di categoria (contenuto UNICO,
+ * non duplica il dato grezzo CPV). Non è taxonomy ma copy SEO del sito.
+ * TODO: valutare se vive meglio nel CMS/sito che nel package core.
  */
 export const CPV_GROUP_EDITORIAL: Record<
   string,
@@ -144,9 +131,3 @@ export const CPV_GROUP_EDITORIAL: Record<
       'Si aggiudicano questi appalti imprese di igiene ambientale e multiutility, spesso con contratti di lungo periodo.',
   },
 };
-
-function prettify(value: string): string {
-  return value
-    .replace(/_/g, ' ')
-    .replace(/^\w/, (c) => c.toUpperCase());
-}
