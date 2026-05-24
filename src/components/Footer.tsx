@@ -57,6 +57,7 @@ export default function Footer() {
                 <li><FooterLink href="/bandi">Tutti i bandi</FooterLink></li>
                 <li><FooterLink href="/categoria/45">Lavori di costruzione</FooterLink></li>
                 <li><FooterLink href="/categoria/71">Architettura e ingegneria</FooterLink></li>
+                <li><FooterLink href="/classifiche">Classifiche vincitori</FooterLink></li>
                 <li><FooterLink href="/regioni">Bandi per regione</FooterLink></li>
                 <li><FooterLink href="/scadenze">Bandi in scadenza</FooterLink></li>
                 <li><FooterLink href="/glossario">Glossario appalti</FooterLink></li>

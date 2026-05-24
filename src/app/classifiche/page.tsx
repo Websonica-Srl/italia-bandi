@@ -10,7 +10,6 @@ import { regioneSlug } from '@/lib/regioni';
 import { formatNumber } from '@/lib/utils';
 import {
   itemListLd,
-  breadcrumbLd,
   ogImageUrl,
   safeJsonLd,
 } from '@/lib/seo/structured-data';
@@ -79,12 +78,11 @@ export default async function ClassifichePage() {
     })),
     'Classifica imprese per gare d\'appalto vinte in Italia',
   );
-  const breadcrumb = breadcrumbLd([{ name: 'Classifiche' }]);
 
   return (
     <>
+      {/* BreadcrumbList JSON-LD emesso da <BreadcrumbCantiere> (no doppioni). */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(itemList) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumb) }} />
 
       {/* HERO — copy 1.7 */}
       <section className="relative bg-background pt-32 pb-12 md:pt-40 md:pb-16" aria-labelledby="cls-hero">

@@ -13,7 +13,6 @@ import { regioneSlug, regioneNomeFromSlug } from '@/lib/regioni';
 import { formatNumber } from '@/lib/utils';
 import {
   itemListLd,
-  breadcrumbLd,
   ogImageUrl,
   safeJsonLd,
 } from '@/lib/seo/structured-data';
@@ -120,10 +119,6 @@ export default async function ClassificaSegmentoPage({ params }: PageProps) {
       ? `Classifica vincitori categoria ${seg.label}`
       : `Classifica vincitori in ${seg.label}`,
   );
-  const breadcrumb = breadcrumbLd([
-    { name: 'Classifiche', path: '/classifiche' },
-    { name: seg.label },
-  ]);
 
   const faqs = [
     {
@@ -143,8 +138,8 @@ export default async function ClassificaSegmentoPage({ params }: PageProps) {
 
   return (
     <>
+      {/* BreadcrumbList JSON-LD emesso da <BreadcrumbCantiere> (no doppioni). */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(itemList) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumb) }} />
 
       <section className="relative bg-background pt-32 pb-12 md:pt-40 md:pb-16" aria-labelledby="cls-seg-hero">
         <div className="container-zen">

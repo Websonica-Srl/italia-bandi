@@ -24,7 +24,6 @@ import { provinciaFromSigla } from '@/lib/province';
 import { regioneSlug } from '@/lib/regioni';
 import { formatNumber, formatEuro, formatPct } from '@/lib/utils';
 import {
-  breadcrumbLd,
   ogImageUrl,
   safeJsonLd,
 } from '@/lib/seo/structured-data';
@@ -120,11 +119,6 @@ export default async function EntePage({ params }: PageProps) {
       ? regioneSlug(regNome)
       : null;
 
-  const breadcrumb = breadcrumbLd([
-    ...(regSlug ? [{ name: regNome || (provCoerente?.regione ?? ''), path: `/${regSlug}` }] : []),
-    { name: ente },
-  ]);
-
   const orgLd = {
     '@context': 'https://schema.org',
     '@type': 'GovernmentOrganization',
@@ -155,7 +149,7 @@ export default async function EntePage({ params }: PageProps) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumb) }} />
+      {/* BreadcrumbList JSON-LD emesso da <BreadcrumbCantiere> (no doppioni). */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(orgLd) }} />
 
       {/* HERO */}
