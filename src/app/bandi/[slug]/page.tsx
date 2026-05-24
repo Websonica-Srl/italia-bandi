@@ -3,16 +3,20 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, Building2, Briefcase, Hash, FileText, EuroIcon, Database, Tag, MapPin } from 'lucide-react';
 import { getBandoBySlug, getAggiudicatariByBando } from '@/lib/supabase/queries/bandi';
-import { formatDate, formatEuro, bandoTitolo, truncate } from '@/lib/utils';
+import { getBuyer } from '@/lib/supabase/queries/intelligence';
+import { formatDate, formatEuro, formatPct, bandoTitolo, truncate } from '@/lib/utils';
 import { proceduraLabel } from '@websonica/cantieri-core';
 import { cpvGroupLabel, cpvGroup } from '@/lib/bandi-taxonomy-extra';
 import { bandoLd, faqLd, safeJsonLd } from '@/lib/seo/structured-data';
 import { isBandoIndexable } from '@/lib/seo/indexable';
 import { provinciaFromSigla } from '@/lib/province';
 import { regioneSlug } from '@/lib/regioni';
+import { buyerSlug } from '@/lib/buyer';
 import BreadcrumbCantiere from '@/components/cantieri/BreadcrumbCantiere';
 import BandoScadenzaBadge from '@/components/bandi/BandoScadenzaBadge';
 import AggiudicatarioBox from '@/components/bandi/AggiudicatarioBox';
+import CompetitivitaBox from '@/components/bandi/CompetitivitaBox';
+import IncumbentBox from '@/components/bandi/IncumbentBox';
 import DatiPremiumLocked from '@/components/bandi/DatiPremiumLocked';
 
 export const revalidate = 3600;
@@ -70,7 +74,12 @@ export default async function BandoPage({ params }: PageProps) {
   const b = await getBandoBySlug(params.slug);
   if (!b) notFound();
 
-  const aggiudicatari = await getAggiudicatariByBando(b.id);
+  // Aggiudicatari della gara + profilo dell'ente (incumbent) in parallelo.
+  // Il buyer alimenta sia il box "incumbent" sia il cross-link alla scheda ente.
+  const [aggiudicatari, buyer] = await Promise.all([
+    getAggiudicatariByBando(b.id),
+    b.stazione_appaltante ? getBuyer(b.stazione_appaltante) : Promise.resolve(null),
+  ]);
 
   const cpvLabel = cpvGroupLabel(b.cpv_principale);
   const titolo = bandoTitolo(b, cpvLabel);
@@ -162,7 +171,9 @@ export default async function BandoPage({ params }: PageProps) {
                     <dd className="font-semibold text-lg tabular-nums">{formatEuro(b.importo_base)}</dd>
                   </div>
                 )}
-                {b.importo_aggiudicazione != null && <Row label="Aggiudicazione" value={formatEuro(b.importo_aggiudicazione)} />}
+                {b.importo_aggiudicazione != null && <Row label="Importo di aggiudicazione" value={formatEuro(b.importo_aggiudicazione)} />}
+                {b.ribasso_percentuale != null && <Row label="Ribasso di aggiudicazione" value={formatPct(b.ribasso_percentuale, { fraction: false })} />}
+                {b.numero_offerte_ricevute != null && b.numero_offerte_ricevute > 0 && <Row label="Offerte ricevute" value={String(b.numero_offerte_ricevute)} />}
                 {b.data_pubblicazione && <Row label={<><Calendar className="h-3 w-3 inline" /> Pubblicato</>} value={formatDate(b.data_pubblicazione)} />}
                 {b.scadenza_offerte && <Row label="Scadenza offerte" value={formatDate(b.scadenza_offerte)} />}
                 {b.data_aggiudicazione && <Row label="Aggiudicato il" value={formatDate(b.data_aggiudicazione)} />}
@@ -177,13 +188,35 @@ export default async function BandoPage({ params }: PageProps) {
             </div>
           )}
 
-          {/* AGGIUDICATARIO (solo PG) */}
+          {/* AGGIUDICATARIO — storico vincitori (solo PG) */}
           {hasAggiudicazione && (
             <div className="mb-10">
               <AggiudicatarioBox
                 aggiudicatari={aggiudicatari}
                 fallbackRaw={b.aggiudicatario_ragione_sociale_raw}
                 importoAggiudicazione={b.importo_aggiudicazione}
+              />
+            </div>
+          )}
+
+          {/* COMPETITIVITA' — ribasso + n. offerte (M2, dati ANAC descrittivi) */}
+          {(b.ribasso_percentuale != null ||
+            (b.numero_offerte_ricevute != null && b.numero_offerte_ricevute > 0)) && (
+            <div className="mb-10">
+              <CompetitivitaBox
+                numeroOfferte={b.numero_offerte_ricevute}
+                ribasso={b.ribasso_percentuale}
+              />
+            </div>
+          )}
+
+          {/* INCUMBENT — chi vince spesso da questa stazione appaltante (M2) */}
+          {buyer && buyer.top_vincitori && buyer.top_vincitori.length > 0 && b.stazione_appaltante && (
+            <div className="mb-10">
+              <IncumbentBox
+                ente={b.stazione_appaltante}
+                topVincitori={buyer.top_vincitori}
+                nBandi={buyer.n_bandi}
               />
             </div>
           )}
@@ -205,9 +238,18 @@ export default async function BandoPage({ params }: PageProps) {
             </p>
           </div>
 
-          {/* CROSS-LINK GEO + CATEGORIA (silo: la foglia fa risalire equity agli hub) */}
-          {(provCoerente || (grp && regSlug)) && (
+          {/* CROSS-LINK GEO + CATEGORIA + ENTE (silo: la foglia fa risalire equity agli hub) */}
+          {(provCoerente || (grp && regSlug) || (buyer && b.stazione_appaltante)) && (
             <nav aria-label="Bandi correlati" className="mt-8 flex flex-wrap gap-2.5">
+              {buyer && b.stazione_appaltante && (
+                <Link
+                  href={`/ente/${buyerSlug(b.stazione_appaltante)}`}
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-foreground/40 hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <Building2 className="h-3 w-3" strokeWidth={2} />
+                  Tutti i bandi di {truncate(b.stazione_appaltante, 40)}
+                </Link>
+              )}
               {provCoerente && regSlug && (
                 <Link
                   href={`/${regSlug}/${provCoerente.slug}`}
