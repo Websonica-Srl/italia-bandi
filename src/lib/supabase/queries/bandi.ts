@@ -156,6 +156,10 @@ async function fetchAllBandiRows(
       .select(select)
       .range(from, from + PAGE_SIZE - 1);
     if (applyFilters) q = applyFilters(q);
+    // Tie-breaker su colonna UNICA: senza, l'ordinamento con pari-merito
+    // (es. stesso updated_at dell'import bulk ANAC) non è stabile tra le
+    // pagine .range() e produce righe duplicate/mancanti. `id` è univoco.
+    q = q.order('id', { ascending: true });
     const { data, error } = await q;
     if (error) {
       console.error('[bandi] fetchAllBandiRows error:', error.message);
