@@ -6,15 +6,28 @@ import {
   getBandiByRegione,
   getBandiByProvincia,
 } from '@/lib/supabase/queries/bandi';
+import {
+  getLeaderboardSegments,
+  getAllBuyersForParams,
+} from '@/lib/supabase/queries/intelligence';
 import { regioneSlug } from '@/lib/regioni';
 import { provinciaFromSigla } from '@/lib/province';
+import { buyerSlug } from '@/lib/buyer';
 
 export const revalidate = 3600;
 
 /** < 45k = margine di sicurezza sotto il limite Google di 50.000 URL/file. */
 export const CHUNK = 40_000;
-/** Chunk non-bando: id 0 statiche, 1 categorie, 2 regioni, 3 province. */
-export const NON_BANDO_CHUNKS = 4;
+/**
+ * Chunk non-bando: id 0 statiche, 1 categorie, 2 regioni, 3 province,
+ * 4 classifiche (M8), 5 stazioni appaltanti / enti (M6).
+ */
+export const NON_BANDO_CHUNKS = 6;
+
+/** Soglia minima imprese per segmento leaderboard (allineata alle pagine). */
+const LEADERBOARD_MIN = 5;
+/** Solo gli enti con almeno un'aggiudicazione hanno una pagina /ente utile (M6). */
+const ENTE_MIN_AGGIUDICATI = 1;
 
 /**
  * Numero TOTALE di chunk sitemap (non-bando + chunk bandi indicizzabili).
@@ -61,6 +74,7 @@ export default async function sitemap({
     return [
       { url: `${baseUrl}/`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
       { url: `${baseUrl}/bandi`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
+      { url: `${baseUrl}/classifiche`, lastModified: now, changeFrequency: 'daily', priority: 0.85 },
       { url: `${baseUrl}/regioni`, lastModified: now, changeFrequency: 'daily', priority: 0.85 },
       { url: `${baseUrl}/scadenze`, lastModified: now, changeFrequency: 'daily', priority: 0.85 },
       { url: `${baseUrl}/glossario`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
@@ -122,7 +136,39 @@ export default async function sitemap({
     return out;
   }
 
-  // id >= 4 — bandi INDICIZZABILI, chunked da 40k
+  // id 4 — classifiche (indice + segmenti CPV/regione con >= LEADERBOARD_MIN imprese)
+  if (id === 4) {
+    const segments = await getLeaderboardSegments();
+    const out: MetadataRoute.Sitemap = [
+      { url: `${baseUrl}/classifiche`, lastModified: now, changeFrequency: 'daily' as const, priority: 0.85 },
+    ];
+    for (const s of segments.cpv) {
+      if (s.cnt < LEADERBOARD_MIN) continue;
+      out.push({ url: `${baseUrl}/classifiche/cpv-${s.key}`, lastModified: now, changeFrequency: 'daily' as const, priority: 0.7 });
+    }
+    for (const s of segments.regioni) {
+      if (s.cnt < LEADERBOARD_MIN) continue;
+      out.push({ url: `${baseUrl}/classifiche/regione-${regioneSlug(s.key)}`, lastModified: now, changeFrequency: 'daily' as const, priority: 0.7 });
+    }
+    return out;
+  }
+
+  // id 5 — stazioni appaltanti / enti (solo con aggiudicazioni; dedup per slug)
+  if (id === 5) {
+    const buyers = await getAllBuyersForParams();
+    const seen = new Set<string>();
+    const out: MetadataRoute.Sitemap = [];
+    for (const b of buyers) {
+      if ((Number(b.n_aggiudicati) || 0) < ENTE_MIN_AGGIUDICATI) continue;
+      const slug = buyerSlug(b.stazione_appaltante);
+      if (!slug || seen.has(slug)) continue;
+      seen.add(slug);
+      out.push({ url: `${baseUrl}/ente/${slug}`, lastModified: now, changeFrequency: 'weekly' as const, priority: 0.7 });
+    }
+    return out;
+  }
+
+  // id >= 6 — bandi INDICIZZABILI, chunked da 40k
   const slugs = await getIndexableBandiSlugs();
   const chunkIdx = id - NON_BANDO_CHUNKS;
   const slice = slugs.slice(chunkIdx * CHUNK, (chunkIdx + 1) * CHUNK);
