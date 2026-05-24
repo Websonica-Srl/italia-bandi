@@ -9,7 +9,7 @@ import { createServerClient } from '../client';
 
 /** Colonne safe esposte da bandi_gara_public. */
 const BANDO_COLS =
-  'id, slug, cig, cup, numero_bando, tipo_procedura, oggetto, descrizione_completa, importo_base, importo_aggiudicazione, data_pubblicazione, scadenza_offerte, data_aggiudicazione, stazione_appaltante, comune, provincia, regione, categorie, cpv_principale, cpv_codes, stato, aggiudicatario_ragione_sociale_raw, created_at, updated_at';
+  'id, slug, cig, cup, numero_bando, tipo_procedura, oggetto, descrizione_completa, importo_base, importo_aggiudicazione, ribasso_percentuale, numero_offerte_ricevute, data_pubblicazione, scadenza_offerte, data_aggiudicazione, stazione_appaltante, comune, provincia, regione, categorie, cpv_principale, cpv_codes, stato, aggiudicatario_ragione_sociale_raw, created_at, updated_at';
 
 export interface Bando {
   id: string;
@@ -22,6 +22,10 @@ export interface Bando {
   descrizione_completa: string | null;
   importo_base: number | null;
   importo_aggiudicazione: number | null;
+  /** Ribasso % offerto dall'aggiudicatario (campo ANAC, ora in view). */
+  ribasso_percentuale: number | null;
+  /** Numero offerte ricevute in gara (campo ANAC, ora in view). */
+  numero_offerte_ricevute: number | null;
   data_pubblicazione: string | null;
   scadenza_offerte: string | null;
   data_aggiudicazione: string | null;
