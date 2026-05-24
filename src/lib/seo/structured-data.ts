@@ -126,6 +126,30 @@ export function bandoLd(b: Bando, titolo: string, descrizione: string) {
   };
 }
 
+/**
+ * BreadcrumbList JSON-LD — riflette il silo Home › ... › foglia.
+ * Antepone sempre Home (siteConfig.name → "/"). I `path` sono relativi e
+ * vengono resi assoluti qui. L'ultimo item può non avere path (pagina corrente).
+ *
+ * NB: il componente <BreadcrumbCantiere> emette già il proprio BreadcrumbList.
+ * Questo generatore serve quando si vuole il JSON-LD senza renderizzare il
+ * componente, o per centralizzare la logica (single source per altri usi).
+ * Evitare di stampare DUE BreadcrumbList sulla stessa pagina.
+ */
+export function breadcrumbLd(items: { name: string; path?: string }[]) {
+  const full = [{ name: siteConfig.name, path: '/' }, ...items];
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: full.map((it, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: it.name,
+      ...(it.path ? { item: `${siteConfig.baseUrl}${it.path}` } : {}),
+    })),
+  };
+}
+
 /** FAQ schema.org */
 export function faqLd(faqs: { q: string; a: string }[]) {
   return {

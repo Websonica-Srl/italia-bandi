@@ -7,6 +7,9 @@ import { formatDate, formatEuro, bandoTitolo, truncate } from '@/lib/utils';
 import { proceduraLabel } from '@websonica/cantieri-core';
 import { cpvGroupLabel, cpvGroup } from '@/lib/bandi-taxonomy-extra';
 import { bandoLd, faqLd, safeJsonLd } from '@/lib/seo/structured-data';
+import { isBandoIndexable } from '@/lib/seo/indexable';
+import { provinciaFromSigla } from '@/lib/province';
+import { regioneSlug } from '@/lib/regioni';
 import BreadcrumbCantiere from '@/components/cantieri/BreadcrumbCantiere';
 import BandoScadenzaBadge from '@/components/bandi/BandoScadenzaBadge';
 import AggiudicatarioBox from '@/components/bandi/AggiudicatarioBox';
@@ -28,10 +31,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       ? b.descrizione_completa
       : `${titolo}. Stazione appaltante: ${b.stazione_appaltante || 'n.d.'}. Importo a base di gara: ${formatEuro(b.importo_base)}. ${proceduraLabel(b.tipo_procedura)}.`
     ).slice(0, 160);
+  // Indicizzazione selettiva (single source of truth): i bandi thin (oggetto
+  // corto, senza importo) restano noindex,follow → fuori indice ma nel silo.
+  // Self-canonical SEMPRE, anche sui noindex (mai canonical incrociato).
+  const indexable = isBandoIndexable(b);
   return {
     title: `${truncate(titolo, 70)} — Bando di gara`,
     description: desc,
     alternates: { canonical: `/bandi/${b.slug}` },
+    robots: indexable
+      ? { index: true, follow: true }
+      : { index: false, follow: true },
     openGraph: {
       title: truncate(titolo, 90),
       description: desc,
@@ -72,6 +82,17 @@ export default async function BandoPage({ params }: PageProps) {
   const hasAggiudicazione = !!b.aggiudicatario_ragione_sociale_raw || aggiudicatari.length > 0;
   const faqs = bandoFaq(titolo, b.stazione_appaltante || 'n.d.', cpvLabel);
 
+  // GEO: risolve provincia/regione del bando per breadcrumb + cross-link (silo).
+  // La whitelist del package scarta sigle incoerenti con la regione del dato.
+  const prov = provinciaFromSigla(b.provincia || '');
+  const regNomeFromDb = (b.regione || '').trim();
+  const provCoerente = prov && (!regNomeFromDb || prov.regione === regNomeFromDb) ? prov : null;
+  const regSlug = provCoerente
+    ? provCoerente.regioneSlug
+    : regNomeFromDb
+      ? regioneSlug(regNomeFromDb)
+      : null;
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(bandoLd(b, titolo, descrizione)) }} />
@@ -83,6 +104,9 @@ export default async function BandoPage({ params }: PageProps) {
             steps={[
               { label: 'Bandi', href: '/bandi' },
               ...(grp ? [{ label: cpvLabel, href: `/categoria/${grp}` }] : []),
+              ...(provCoerente && regSlug
+                ? [{ label: provCoerente.nome, href: `/${regSlug}/${provCoerente.slug}` }]
+                : []),
               { label: b.cig || truncate(titolo, 40) },
             ]}
           />
@@ -180,6 +204,39 @@ export default async function BandoPage({ params }: PageProps) {
               Maggiori dettagli alla pagina <Link href="/legal/privacy" className="underline underline-offset-2">Privacy</Link>.
             </p>
           </div>
+
+          {/* CROSS-LINK GEO + CATEGORIA (silo: la foglia fa risalire equity agli hub) */}
+          {(provCoerente || (grp && regSlug)) && (
+            <nav aria-label="Bandi correlati" className="mt-8 flex flex-wrap gap-2.5">
+              {provCoerente && regSlug && (
+                <Link
+                  href={`/${regSlug}/${provCoerente.slug}`}
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-foreground/40 hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <MapPin className="h-3 w-3" strokeWidth={2} />
+                  Altri bandi in provincia di {provCoerente.nome}
+                </Link>
+              )}
+              {regSlug && (
+                <Link
+                  href={`/${regSlug}`}
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-foreground/40 hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <MapPin className="h-3 w-3" strokeWidth={2} />
+                  Bandi in {(b.regione || '').trim() || (provCoerente ? provCoerente.regione : '')}
+                </Link>
+              )}
+              {grp && (
+                <Link
+                  href={`/categoria/${grp}`}
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-foreground/40 hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <Tag className="h-3 w-3" strokeWidth={2} />
+                  Altri bandi {cpvLabel.toLowerCase()}
+                </Link>
+              )}
+            </nav>
+          )}
         </div>
       </section>
     </>
