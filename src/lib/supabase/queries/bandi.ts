@@ -248,3 +248,101 @@ export async function getBandiInScadenza(
     limit,
   });
 }
+
+// =====================================================================
+// GEO — pagine regione (/[regione], /regioni)
+// =====================================================================
+
+export interface RegioneStat {
+  /** Nome esatto regione, es. "Lombardia". */
+  regione: string;
+  cnt: number;
+}
+
+/**
+ * Conteggio bandi per regione (solo righe con `regione` valorizzata).
+ * Aggregato lato applicativo sul dataset (~3k righe, no RPC dedicata su view).
+ */
+export async function getBandiByRegione(): Promise<RegioneStat[]> {
+  const supabase: any = createServerClient();
+  const { data, error } = await supabase
+    .from('bandi_gara_public')
+    .select('regione')
+    .not('regione', 'is', null)
+    .limit(5000);
+  if (error || !data) return [];
+  const counts = new Map<string, number>();
+  for (const row of data as { regione: string }[]) {
+    const r = (row.regione || '').trim();
+    if (r) counts.set(r, (counts.get(r) || 0) + 1);
+  }
+  return Array.from(counts.entries())
+    .map(([regione, cnt]) => ({ regione, cnt }))
+    .sort((a, b) => b.cnt - a.cnt);
+}
+
+export interface RegioneStats {
+  totale: number;
+  aperti: number;
+  importoTotaleBase: number;
+  enti: number;
+  /** Top gruppi CPV (prime 2 cifre) presenti nella regione. */
+  topCpv: CpvGroupStat[];
+}
+
+/**
+ * Statistiche reali aggregate per una singola regione (filtro esatto sul nome).
+ * Tutto calcolato sulla view safe `bandi_gara_public`.
+ */
+export async function getRegioneStats(regione: string): Promise<RegioneStats> {
+  const supabase: any = createServerClient();
+  const [totaleRes, apertiRes, rowsRes] = await Promise.all([
+    supabase
+      .from('bandi_gara_public')
+      .select('id', { count: 'exact', head: true })
+      .ilike('regione', regione),
+    supabase
+      .from('bandi_gara_public')
+      .select('id', { count: 'exact', head: true })
+      .ilike('regione', regione)
+      .gte('scadenza_offerte', new Date().toISOString()),
+    supabase
+      .from('bandi_gara_public')
+      .select('importo_base, stazione_appaltante, cpv_principale')
+      .ilike('regione', regione)
+      .limit(5000),
+  ]);
+
+  const rows =
+    (rowsRes.data as {
+      importo_base: number | null;
+      stazione_appaltante: string | null;
+      cpv_principale: string | null;
+    }[]) || [];
+
+  const importoTotaleBase = rows.reduce(
+    (s, r) => s + (Number(r.importo_base) || 0),
+    0,
+  );
+  const enti = new Set(
+    rows.map((r) => r.stazione_appaltante).filter(Boolean),
+  ).size;
+
+  const cpvCounts = new Map<string, number>();
+  for (const r of rows) {
+    const g = (r.cpv_principale || '').replace(/[^0-9]/g, '').slice(0, 2);
+    if (g.length === 2) cpvCounts.set(g, (cpvCounts.get(g) || 0) + 1);
+  }
+  const topCpv = Array.from(cpvCounts.entries())
+    .map(([group, cnt]) => ({ group, cnt }))
+    .sort((a, b) => b.cnt - a.cnt)
+    .slice(0, 6);
+
+  return {
+    totale: totaleRes.count || 0,
+    aperti: apertiRes.count || 0,
+    importoTotaleBase,
+    enti,
+    topCpv,
+  };
+}

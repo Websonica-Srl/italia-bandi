@@ -7,6 +7,7 @@ import { Menu, X, ArrowRight, Gavel } from 'lucide-react';
 const navItems = [
   { label: 'Bandi', href: '/bandi' },
   { label: 'Categorie', href: '/categoria/45' },
+  { label: 'Regioni', href: '/regioni' },
   { label: 'In scadenza', href: '/scadenze' },
   { label: 'Glossario', href: '/glossario' },
   { label: 'Per le PA', href: '/per-pubbliche-amministrazioni' },

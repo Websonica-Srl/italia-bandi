@@ -1,6 +1,11 @@
 import { MetadataRoute } from 'next';
 import { siteConfig } from '@/lib/site-config';
-import { getAllBandiSlugs, getBandiByCpvGroup } from '@/lib/supabase/queries/bandi';
+import {
+  getAllBandiSlugs,
+  getBandiByCpvGroup,
+  getBandiByRegione,
+} from '@/lib/supabase/queries/bandi';
+import { regioneSlug } from '@/lib/regioni';
 
 export const revalidate = 3600;
 
@@ -15,6 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     { url: `${baseUrl}/`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
     { url: `${baseUrl}/bandi`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
+    { url: `${baseUrl}/regioni`, lastModified: now, changeFrequency: 'daily', priority: 0.85 },
     { url: `${baseUrl}/scadenze`, lastModified: now, changeFrequency: 'daily', priority: 0.85 },
     { url: `${baseUrl}/glossario`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${baseUrl}/iscriviti`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
@@ -37,6 +43,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
+  // Regioni (solo quelle con almeno un bando geolocalizzato)
+  const regioni = await getBandiByRegione();
+  const regionePages: MetadataRoute.Sitemap = regioni.map((r) => ({
+    url: `${baseUrl}/${regioneSlug(r.regione)}`,
+    lastModified: now,
+    changeFrequency: 'daily',
+    priority: 0.8,
+  }));
+
   // Schede bando
   const bandi = await getAllBandiSlugs(5000);
   const bandoPages: MetadataRoute.Sitemap = bandi.map((b) => ({
@@ -46,5 +61,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  return [...staticPages, ...categoriaPages, ...bandoPages];
+  return [...staticPages, ...categoriaPages, ...regionePages, ...bandoPages];
 }
