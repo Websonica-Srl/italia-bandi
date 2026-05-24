@@ -53,7 +53,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // Schede bando
-  const bandi = await getAllBandiSlugs(5000);
+  const bandi = await getAllBandiSlugs();
   const bandoPages: MetadataRoute.Sitemap = bandi.map((b) => ({
     url: `${baseUrl}/bandi/${b.slug}`,
     lastModified: b.updated_at ? new Date(b.updated_at) : now,

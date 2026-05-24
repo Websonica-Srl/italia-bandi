@@ -138,17 +138,41 @@ export async function getBandoBySlug(slug: string): Promise<Bando | null> {
   return (data as Bando) || null;
 }
 
-export async function getAllBandiSlugs(
-  limit = 5000,
-): Promise<{ slug: string; updated_at: string }[]> {
+/**
+ * Fetch di TUTTE le righe di `bandi_gara_public` per le colonne richieste,
+ * superando il cap PostgREST di 1000 righe via paginazione `.range()`.
+ * Usato da sitemap + aggregati per-regione/per-CPV (enumerano l'intero dataset).
+ */
+const PAGE_SIZE = 1000;
+async function fetchAllBandiRows(
+  select: string,
+  applyFilters?: (q: any) => any,
+): Promise<any[]> {
   const supabase: any = createServerClient();
-  const { data, error } = await supabase
-    .from('bandi_gara_public')
-    .select('slug, updated_at')
-    .order('updated_at', { ascending: false })
-    .limit(limit);
-  if (error) return [];
-  return (data as any[]) || [];
+  const out: any[] = [];
+  for (let from = 0; ; from += PAGE_SIZE) {
+    let q = supabase
+      .from('bandi_gara_public')
+      .select(select)
+      .range(from, from + PAGE_SIZE - 1);
+    if (applyFilters) q = applyFilters(q);
+    const { data, error } = await q;
+    if (error) {
+      console.error('[bandi] fetchAllBandiRows error:', error.message);
+      break;
+    }
+    if (!data || data.length === 0) break;
+    out.push(...data);
+    if (data.length < PAGE_SIZE) break;
+  }
+  return out;
+}
+
+export async function getAllBandiSlugs(): Promise<{ slug: string; updated_at: string }[]> {
+  // Tutte le schede bando (no cap 1000): paginiamo l'intero dataset per la sitemap.
+  return fetchAllBandiRows('slug, updated_at', (q) =>
+    q.not('slug', 'is', null).order('updated_at', { ascending: false }),
+  );
 }
 
 /** Aggiudicatari (solo colonne safe) di un bando — per AggiudicatarioBox. */
@@ -210,13 +234,11 @@ export interface CpvGroupStat {
  * Calcolato lato applicativo sul dataset (no RPC dedicata su questa view).
  */
 export async function getBandiByCpvGroup(): Promise<CpvGroupStat[]> {
-  const supabase: any = createServerClient();
-  const { data, error } = await supabase
-    .from('bandi_gara_public')
-    .select('cpv_principale')
-    .not('cpv_principale', 'is', null)
-    .limit(5000);
-  if (error || !data) return [];
+  // Aggregato sull'intero dataset (no cap 1000): conteggi CPV corretti.
+  const data = await fetchAllBandiRows('cpv_principale', (q) =>
+    q.not('cpv_principale', 'is', null),
+  );
+  if (!data.length) return [];
   const counts = new Map<string, number>();
   for (const row of data as { cpv_principale: string }[]) {
     const g = (row.cpv_principale || '').replace(/[^0-9]/g, '').slice(0, 2);
@@ -264,13 +286,11 @@ export interface RegioneStat {
  * Aggregato lato applicativo sul dataset (~3k righe, no RPC dedicata su view).
  */
 export async function getBandiByRegione(): Promise<RegioneStat[]> {
-  const supabase: any = createServerClient();
-  const { data, error } = await supabase
-    .from('bandi_gara_public')
-    .select('regione')
-    .not('regione', 'is', null)
-    .limit(5000);
-  if (error || !data) return [];
+  // Aggregato sull'intero dataset (no cap 1000): conteggi per regione corretti.
+  const data = await fetchAllBandiRows('regione', (q) =>
+    q.not('regione', 'is', null),
+  );
+  if (!data.length) return [];
   const counts = new Map<string, number>();
   for (const row of data as { regione: string }[]) {
     const r = (row.regione || '').trim();
