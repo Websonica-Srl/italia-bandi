@@ -6,7 +6,10 @@ import {
   getBandi,
   getBandiByCpvGroup,
   getBandiCountByCpvGroup,
+  getRegioniByCpvGroup,
 } from '@/lib/supabase/queries/bandi';
+import { regioneSlug } from '@/lib/regioni';
+import { MapPin } from 'lucide-react';
 import { formatNumber, formatEuro, bandoTitolo } from '@/lib/utils';
 import {
   cpvGroupLabel,
@@ -69,9 +72,10 @@ export default async function CategoriaPage({ params }: PageProps) {
   const label = cpvGroupLabel(params.cpv);
   const editorial = CPV_GROUP_EDITORIAL[params.cpv];
 
-  const [{ data: bandi, total }, allGroups] = await Promise.all([
+  const [{ data: bandi, total }, allGroups, regioniCpv] = await Promise.all([
     getBandi({ cpvGroup: params.cpv, limit: 12, orderBy: 'data_pubblicazione', orderDirection: 'desc' }),
     getBandiByCpvGroup(),
+    getRegioniByCpvGroup(params.cpv, 8),
   ]);
 
   if (total === 0) notFound();
@@ -164,6 +168,28 @@ export default async function CategoriaPage({ params }: PageProps) {
           </div>
         </div>
       </section>
+
+      {/* BANDI DELLA CATEGORIA PER REGIONE (cross-link categoria↔geo) */}
+      {regioniCpv.length > 0 && (
+        <section className="pb-4 md:pb-8">
+          <div className="container-zen">
+            <h2 className="text-base font-bold mb-4">Bandi {label.toLowerCase()} per regione</h2>
+            <div className="flex flex-wrap gap-2.5">
+              {regioniCpv.map((r) => (
+                <Link
+                  key={r.regione}
+                  href={`/${regioneSlug(r.regione)}`}
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-foreground/40 hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <MapPin className="h-3 w-3" strokeWidth={2} />
+                  {r.regione}
+                  <span className="text-xs text-muted-foreground tabular-nums">{formatNumber(r.cnt)}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ALTRE CATEGORIE */}
       {otherGroups.length > 0 && (

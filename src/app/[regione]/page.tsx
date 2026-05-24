@@ -6,8 +6,10 @@ import {
   getBandi,
   getRegioneStats,
   getBandiByRegione,
+  getProvinceCountByRegione,
 } from '@/lib/supabase/queries/bandi';
 import { REGIONI, regioneNomeFromSlug, regioneSlug, REGIONE_INTRO } from '@/lib/regioni';
+import { provinceDiRegione } from '@/lib/province';
 import { formatNumber, formatEuro, bandoTitolo } from '@/lib/utils';
 import { cpvGroupLabel } from '@/lib/bandi-taxonomy-extra';
 import BandoCard from '@/components/bandi/BandoCard';
@@ -68,7 +70,7 @@ export default async function RegionePage({ params }: PageProps) {
   const nome = regioneNomeFromSlug(params.regione);
   if (!nome) notFound();
 
-  const [{ data: bandi, total }, stats, allRegioni] = await Promise.all([
+  const [{ data: bandi, total }, stats, allRegioni, provCounts] = await Promise.all([
     getBandi({
       regione: nome,
       limit: 12,
@@ -77,11 +79,18 @@ export default async function RegionePage({ params }: PageProps) {
     }),
     getRegioneStats(nome),
     getBandiByRegione(),
+    getProvinceCountByRegione(nome),
   ]);
 
   if (total === 0) notFound();
 
   const intro = REGIONE_INTRO[nome];
+
+  // Province della regione con almeno un bando (link regione → provincia: silo).
+  const province = provinceDiRegione(params.regione)
+    .map((p) => ({ ...p, cnt: provCounts.get(p.sigla) || 0 }))
+    .filter((p) => p.cnt > 0)
+    .sort((a, b) => b.cnt - a.cnt);
 
   // Altre regioni (cross-link interno), escludendo quella corrente.
   const otherRegioni = allRegioni
@@ -172,6 +181,28 @@ export default async function RegionePage({ params }: PageProps) {
           </div>
         </div>
       </section>
+
+      {/* PROVINCE DELLA REGIONE (link regione → provincia, silo GEO) */}
+      {province.length > 0 && (
+        <section className="pb-8 md:pb-12">
+          <div className="container-zen">
+            <h2 className="text-base font-bold mb-4">Bandi di gara per provincia in {nome}</h2>
+            <div className="flex flex-wrap gap-2.5">
+              {province.map((p) => (
+                <Link
+                  key={p.sigla}
+                  href={`/${p.regioneSlug}/${p.slug}`}
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-foreground/40 hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <MapPin className="h-3 w-3" strokeWidth={2} />
+                  {p.nome}
+                  <span className="text-xs text-muted-foreground tabular-nums">{formatNumber(p.cnt)}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* TOP CATEGORIE CPV NELLA REGIONE */}
       {stats.topCpv.length > 0 && (
