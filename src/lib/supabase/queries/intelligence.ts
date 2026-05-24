@@ -185,6 +185,73 @@ export async function getBuyer(
   return (data as BuyerRow) || null;
 }
 
+/**
+ * Risolve uno slug stazione appaltante al nome canonico, gestendo le collisioni
+ * (nomi diversi → stesso slug) in modo deterministico: vince il nome con piu'
+ * bandi (poi alfabetico). Poiche' `buyer_public` non ha lo slug, scarichiamo
+ * solo (stazione_appaltante, n_bandi) e risolviamo lato app — il dataset enti e'
+ * piccolo (8.157) e paginabile.
+ *
+ * NB: usiamo importazione locale di slugify dentro la funzione per non creare
+ * dipendenze circolari nel layer query (intelligence non importa da lib/buyer).
+ */
+async function fetchAllBuyerKeys(): Promise<
+  { stazione_appaltante: string; n_bandi: number }[]
+> {
+  const supabase: any = createServerClient();
+  const PAGE = 1000;
+  const out: { stazione_appaltante: string; n_bandi: number }[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await supabase
+      .from('buyer_public')
+      .select('stazione_appaltante, n_bandi')
+      .order('stazione_appaltante', { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) {
+      console.error('[intelligence] fetchAllBuyerKeys error:', error.message);
+      break;
+    }
+    if (!data || data.length === 0) break;
+    out.push(...data);
+    if (data.length < PAGE) break;
+  }
+  return out;
+}
+
+/**
+ * Slug → nome canonico stazione appaltante. La funzione di slugify e' passata
+ * dal chiamante (lib/buyer.buyerSlug) per restare DRY senza dipendenza circolare.
+ */
+export async function resolveBuyerSlug(
+  slug: string,
+  slugFn: (s: string) => string,
+): Promise<string | null> {
+  const keys = await fetchAllBuyerKeys();
+  let best: { nome: string; n: number } | null = null;
+  for (const k of keys) {
+    if (slugFn(k.stazione_appaltante) !== slug) continue;
+    const n = Number(k.n_bandi) || 0;
+    if (
+      !best ||
+      n > best.n ||
+      (n === best.n && k.stazione_appaltante.localeCompare(best.nome, 'it') < 0)
+    ) {
+      best = { nome: k.stazione_appaltante, n };
+    }
+  }
+  return best ? best.nome : null;
+}
+
+/**
+ * Tutte le coppie (nome, n_bandi) delle stazioni appaltanti — per generare i
+ * params statici di /ente/[slug] e l'indice. Slug calcolato dal chiamante.
+ */
+export async function getAllBuyersForParams(): Promise<
+  { stazione_appaltante: string; n_bandi: number }[]
+> {
+  return fetchAllBuyerKeys();
+}
+
 export interface TopBuyersFilters {
   /** Nome regione (match esatto). */
   regione?: string;
@@ -286,4 +353,148 @@ export async function getLandscape(
     return [];
   }
   return (data as LandscapeRow[]) || [];
+}
+
+/**
+ * Landscape SINTETICO di un gruppo CPV (M7), aggregato sulle righe per regione ×
+ * fascia in un'unica fotografia leggibile in SEO. Pondera i ribassi/offerte/HHI/
+ * RTI/quota_top3 per numero di gare (media pesata) e somma i conteggi. Usato dai
+ * blocchi "quanto e' contendibile" sulle pagine /categoria/[cpv] e /[regione].
+ */
+export interface LandscapeSummary {
+  /** Numero righe di segmento aggregate (regione × fascia). */
+  segmenti: number;
+  n_gare: number;
+  n_aggiudicate: number;
+  n_aperte: number;
+  /** Somma dei vincitori distinti per segmento (proxy di affollamento, non deduplica cross-segmento). */
+  vincitori_distinti_tot: number;
+  /** Media pesata per n_gare. */
+  quota_top3: number | null;
+  hhi: number | null;
+  ribasso_mediano: number | null;
+  offerte_medie: number | null;
+  pct_rti: number | null;
+}
+
+export async function getLandscapeSummary(
+  cpvGroup: string,
+  regione?: string,
+): Promise<LandscapeSummary | null> {
+  const rows = await getLandscape({ cpvGroup, regione, limit: 500 });
+  if (rows.length === 0) return null;
+
+  let nGare = 0,
+    nAgg = 0,
+    nAperte = 0,
+    vincTot = 0;
+  // accumulatori per media pesata sui campi % (peso = n_gare del segmento)
+  let wQuota = 0,
+    wQuotaTot = 0,
+    wHhi = 0,
+    wHhiTot = 0,
+    wRib = 0,
+    wRibTot = 0,
+    wOff = 0,
+    wOffTot = 0,
+    wRti = 0,
+    wRtiTot = 0;
+
+  for (const r of rows) {
+    const g = Number(r.n_gare) || 0;
+    nGare += g;
+    nAgg += Number(r.n_aggiudicate) || 0;
+    nAperte += Number(r.n_aperte) || 0;
+    vincTot += Number(r.vincitori_distinti) || 0;
+    if (r.quota_top3 != null) {
+      wQuota += r.quota_top3 * g;
+      wQuotaTot += g;
+    }
+    if (r.hhi != null) {
+      wHhi += r.hhi * g;
+      wHhiTot += g;
+    }
+    if (r.ribasso_mediano != null) {
+      wRib += r.ribasso_mediano * g;
+      wRibTot += g;
+    }
+    if (r.offerte_medie != null) {
+      wOff += Number(r.offerte_medie) * g;
+      wOffTot += g;
+    }
+    if (r.pct_rti != null) {
+      wRti += r.pct_rti * g;
+      wRtiTot += g;
+    }
+  }
+
+  return {
+    segmenti: rows.length,
+    n_gare: nGare,
+    n_aggiudicate: nAgg,
+    n_aperte: nAperte,
+    vincitori_distinti_tot: vincTot,
+    quota_top3: wQuotaTot > 0 ? wQuota / wQuotaTot : null,
+    hhi: wHhiTot > 0 ? wHhi / wHhiTot : null,
+    ribasso_mediano: wRibTot > 0 ? wRib / wRibTot : null,
+    offerte_medie: wOffTot > 0 ? wOff / wOffTot : null,
+    pct_rti: wRtiTot > 0 ? wRti / wRtiTot : null,
+  };
+}
+
+// =====================================================================
+// M8 — segmenti leaderboard (indice /classifiche)
+// =====================================================================
+
+export interface SegmentCount {
+  key: string;
+  cnt: number;
+}
+
+/**
+ * Gruppi CPV2 presenti in leaderboard con numero di aziende che vincono.
+ * Per l'indice /classifiche (sezione "per categoria"). Aggregato lato app
+ * sull'intero set (11.880 righe, paginato).
+ */
+async function fetchAllLeaderboardDims(): Promise<
+  { top_cpv2: string | null; top_regione: string | null }[]
+> {
+  const supabase: any = createServerClient();
+  const PAGE = 1000;
+  const out: { top_cpv2: string | null; top_regione: string | null }[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await supabase
+      .from('leaderboard_public')
+      .select('top_cpv2, top_regione')
+      .order('firm_slug', { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) {
+      console.error('[intelligence] fetchAllLeaderboardDims error:', error.message);
+      break;
+    }
+    if (!data || data.length === 0) break;
+    out.push(...data);
+    if (data.length < PAGE) break;
+  }
+  return out;
+}
+
+export interface LeaderboardSegments {
+  cpv: SegmentCount[];
+  regioni: SegmentCount[];
+}
+
+export async function getLeaderboardSegments(): Promise<LeaderboardSegments> {
+  const rows = await fetchAllLeaderboardDims();
+  const cpv = new Map<string, number>();
+  const reg = new Map<string, number>();
+  for (const r of rows) {
+    if (r.top_cpv2) cpv.set(r.top_cpv2, (cpv.get(r.top_cpv2) || 0) + 1);
+    if (r.top_regione) reg.set(r.top_regione, (reg.get(r.top_regione) || 0) + 1);
+  }
+  const toSorted = (m: Map<string, number>): SegmentCount[] =>
+    Array.from(m.entries())
+      .map(([key, cnt]) => ({ key, cnt }))
+      .sort((a, b) => b.cnt - a.cnt);
+  return { cpv: toSorted(cpv), regioni: toSorted(reg) };
 }

@@ -51,6 +51,28 @@ export function formatNumber(value: number | null | undefined): string {
 }
 
 /**
+ * Formatta una quota/percentuale per la UI.
+ * Accetta sia una frazione [0,1] (es. 0,47) sia un valore già in punti
+ * percentuali (es. 14,1) tramite il flag `fraction`.
+ * Es: formatPct(0.47) -> "47%" · formatPct(14.1, { fraction: false }) -> "14,1%"
+ */
+export function formatPct(
+  value: number | null | undefined,
+  opts: { fraction?: boolean; decimals?: number } = {},
+): string {
+  if (value === null || value === undefined || Number.isNaN(value)) return '—';
+  const { fraction = true, decimals } = opts;
+  const pct = fraction ? value * 100 : value;
+  const dec = decimals ?? (Number.isInteger(pct) ? 0 : 1);
+  return (
+    new Intl.NumberFormat('it-IT', {
+      minimumFractionDigits: dec,
+      maximumFractionDigits: dec,
+    }).format(pct) + '%'
+  );
+}
+
+/**
  * Slugify standard italiano: lowercase, accenti rimossi, spazi -> -.
  */
 export function slugify(str: string): string {
