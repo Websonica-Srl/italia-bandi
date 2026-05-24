@@ -195,16 +195,20 @@ export async function getBuyer(
  * NB: usiamo importazione locale di slugify dentro la funzione per non creare
  * dipendenze circolari nel layer query (intelligence non importa da lib/buyer).
  */
-async function fetchAllBuyerKeys(): Promise<
-  { stazione_appaltante: string; n_bandi: number }[]
-> {
+export interface BuyerKey {
+  stazione_appaltante: string;
+  n_bandi: number;
+  n_aggiudicati: number;
+}
+
+async function fetchAllBuyerKeys(): Promise<BuyerKey[]> {
   const supabase: any = createServerClient();
   const PAGE = 1000;
-  const out: { stazione_appaltante: string; n_bandi: number }[] = [];
+  const out: BuyerKey[] = [];
   for (let from = 0; ; from += PAGE) {
     const { data, error } = await supabase
       .from('buyer_public')
-      .select('stazione_appaltante, n_bandi')
+      .select('stazione_appaltante, n_bandi, n_aggiudicati')
       .order('stazione_appaltante', { ascending: true })
       .range(from, from + PAGE - 1);
     if (error) {
@@ -246,9 +250,7 @@ export async function resolveBuyerSlug(
  * Tutte le coppie (nome, n_bandi) delle stazioni appaltanti — per generare i
  * params statici di /ente/[slug] e l'indice. Slug calcolato dal chiamante.
  */
-export async function getAllBuyersForParams(): Promise<
-  { stazione_appaltante: string; n_bandi: number }[]
-> {
+export async function getAllBuyersForParams(): Promise<BuyerKey[]> {
   return fetchAllBuyerKeys();
 }
 
@@ -383,12 +385,41 @@ export async function getLandscapeSummary(
 ): Promise<LandscapeSummary | null> {
   const rows = await getLandscape({ cpvGroup, regione, limit: 500 });
   if (rows.length === 0) return null;
+  return aggregateLandscape(rows);
+}
 
+/**
+ * Landscape sintetico di una REGIONE (M7), aggregando tutte le righe
+ * cpv2 × fascia di quella regione in `landscape_public`. Per il blocco "quanto
+ * e' contendibile" sulle pagine /[regione]. Stessa logica di media pesata di
+ * getLandscapeSummary, ma il filtro primario e' la regione (non il CPV).
+ */
+export async function getLandscapeByRegione(
+  regione: string,
+): Promise<LandscapeSummary | null> {
+  const supabase: any = createServerClient();
+  const { data, error } = await supabase
+    .from('landscape_public')
+    .select(
+      'n_gare, n_aggiudicate, n_aperte, vincitori_distinti, hhi, quota_top3, ribasso_mediano, offerte_medie, pct_rti',
+    )
+    .ilike('regione', regione)
+    .limit(2000);
+  if (error) {
+    console.error('[intelligence] getLandscapeByRegione error:', error.message);
+    return null;
+  }
+  const rows = (data as LandscapeRow[]) || [];
+  if (rows.length === 0) return null;
+  return aggregateLandscape(rows);
+}
+
+/** Media pesata per n_gare di un insieme di righe landscape (DRY). */
+function aggregateLandscape(rows: Partial<LandscapeRow>[]): LandscapeSummary {
   let nGare = 0,
     nAgg = 0,
     nAperte = 0,
     vincTot = 0;
-  // accumulatori per media pesata sui campi % (peso = n_gare del segmento)
   let wQuota = 0,
     wQuotaTot = 0,
     wHhi = 0,
@@ -399,7 +430,6 @@ export async function getLandscapeSummary(
     wOffTot = 0,
     wRti = 0,
     wRtiTot = 0;
-
   for (const r of rows) {
     const g = Number(r.n_gare) || 0;
     nGare += g;
@@ -427,7 +457,6 @@ export async function getLandscapeSummary(
       wRtiTot += g;
     }
   }
-
   return {
     segmenti: rows.length,
     n_gare: nGare,

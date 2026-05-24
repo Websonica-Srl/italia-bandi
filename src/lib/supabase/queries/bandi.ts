@@ -66,6 +66,8 @@ export interface BandiFilters {
   /** Solo bandi con scadenza ancora futura. */
   soloAperti?: boolean;
   cig?: string;
+  /** Match esatto sulla stazione appaltante (piu' efficiente del full-text q). */
+  stazioneAppaltante?: string;
   q?: string;
   orderBy?: 'data_pubblicazione' | 'scadenza_offerte' | 'importo_base';
   orderDirection?: 'asc' | 'desc';
@@ -88,6 +90,7 @@ export async function getBandi(
     importo_max,
     soloAperti,
     cig,
+    stazioneAppaltante,
     q,
     orderBy = 'data_pubblicazione',
     orderDirection = 'desc',
@@ -110,6 +113,7 @@ export async function getBandi(
   if (importo_max) query = query.lte('importo_base', importo_max);
   if (soloAperti) query = query.gte('scadenza_offerte', new Date().toISOString());
   if (cig) query = query.eq('cig', cig);
+  if (stazioneAppaltante) query = query.eq('stazione_appaltante', stazioneAppaltante);
   if (q) {
     const safe = q.replace(/[%,()]/g, ' ').trim();
     if (safe)

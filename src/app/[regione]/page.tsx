@@ -8,15 +8,24 @@ import {
   getBandiByRegione,
   getProvinceCountByRegione,
 } from '@/lib/supabase/queries/bandi';
+import {
+  getLandscapeByRegione,
+  getRtiPartners,
+  getLeaderboard,
+} from '@/lib/supabase/queries/intelligence';
 import { REGIONI, regioneNomeFromSlug, regioneSlug, REGIONE_INTRO } from '@/lib/regioni';
 import { provinceDiRegione } from '@/lib/province';
 import { formatNumber, formatEuro, bandoTitolo } from '@/lib/utils';
 import { cpvGroupLabel } from '@/lib/bandi-taxonomy-extra';
 import BandoCard from '@/components/bandi/BandoCard';
+import LandscapeBlock from '@/components/bandi/LandscapeBlock';
+import RtiCoppie from '@/components/bandi/RtiCoppie';
+import LeaderboardTable from '@/components/bandi/LeaderboardTable';
 import BreadcrumbCantiere from '@/components/cantieri/BreadcrumbCantiere';
 import FAQ from '@/components/cantieri/FAQ';
 import { ogImageUrl, itemListLd, safeJsonLd } from '@/lib/seo/structured-data';
 import { siteConfig } from '@/lib/site-config';
+import { Trophy } from 'lucide-react';
 
 export const revalidate = 3600;
 // Slug non in whitelist -> 404 (non genera pagine al volo per route arbitrarie).
@@ -70,17 +79,21 @@ export default async function RegionePage({ params }: PageProps) {
   const nome = regioneNomeFromSlug(params.regione);
   if (!nome) notFound();
 
-  const [{ data: bandi, total }, stats, allRegioni, provCounts] = await Promise.all([
-    getBandi({
-      regione: nome,
-      limit: 12,
-      orderBy: 'data_pubblicazione',
-      orderDirection: 'desc',
-    }),
-    getRegioneStats(nome),
-    getBandiByRegione(),
-    getProvinceCountByRegione(nome),
-  ]);
+  const [{ data: bandi, total }, stats, allRegioni, provCounts, landscape, rti, topVincitori] =
+    await Promise.all([
+      getBandi({
+        regione: nome,
+        limit: 12,
+        orderBy: 'data_pubblicazione',
+        orderDirection: 'desc',
+      }),
+      getRegioneStats(nome),
+      getBandiByRegione(),
+      getProvinceCountByRegione(nome),
+      getLandscapeByRegione(nome),
+      getRtiPartners({ regione: nome, limit: 6 }),
+      getLeaderboard({ regione: nome, limit: 10 }),
+    ]);
 
   if (total === 0) notFound();
 
@@ -222,6 +235,53 @@ export default async function RegionePage({ params }: PageProps) {
                 </Link>
               ))}
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* M7 LANDSCAPE competitivo della regione */}
+      {landscape && (
+        <section className="pb-8 md:pb-12">
+          <div className="container-zen">
+            <LandscapeBlock summary={landscape} segmentoLabel={nome} />
+          </div>
+        </section>
+      )}
+
+      {/* M8 TEASER leaderboard: chi vince di piu' in regione */}
+      {topVincitori.length > 0 && (
+        <section className="pb-8 md:pb-12">
+          <div className="container-zen">
+            <div className="flex items-end justify-between gap-3 mb-5 flex-wrap">
+              <div className="flex items-center gap-2.5">
+                <Trophy className="h-5 w-5 text-construction" strokeWidth={2} />
+                <h2 className="text-xl md:text-2xl font-bold tracking-tight">
+                  Chi vince di piu&apos; in {nome}
+                </h2>
+              </div>
+              <Link
+                href={`/classifiche/regione-${regioneSlug(nome)}`}
+                className="group inline-flex items-center gap-1.5 text-sm font-medium text-foreground rounded-full border border-border bg-white px-5 py-2.5 transition-all hover:border-foreground/30 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                Classifica completa
+                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" strokeWidth={2} />
+              </Link>
+            </div>
+            <LeaderboardTable rows={topVincitori} showCpv ctaCampaign="regione_leaderboard" />
+          </div>
+        </section>
+      )}
+
+      {/* M5 RTI alleanze tipiche della regione */}
+      {rti.length > 0 && (
+        <section className="pb-8 md:pb-12">
+          <div className="container-zen">
+            <RtiCoppie
+              coppie={rti}
+              title={`Alleanze tipiche in ${nome}`}
+              subtitle={`Le coppie di imprese che si aggiudicano piu' spesso insieme le gare in ${nome}, in raggruppamento.`}
+              ctaCampaign="regione_rti"
+            />
           </div>
         </section>
       )}

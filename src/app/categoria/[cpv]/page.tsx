@@ -8,14 +8,22 @@ import {
   getBandiCountByCpvGroup,
   getRegioniByCpvGroup,
 } from '@/lib/supabase/queries/bandi';
+import {
+  getLandscapeSummary,
+  getRtiPartners,
+  getLeaderboard,
+} from '@/lib/supabase/queries/intelligence';
 import { regioneSlug } from '@/lib/regioni';
-import { MapPin } from 'lucide-react';
-import { formatNumber, formatEuro, bandoTitolo } from '@/lib/utils';
+import { MapPin, Trophy } from 'lucide-react';
+import { formatNumber, formatEuro, formatPct, bandoTitolo } from '@/lib/utils';
 import {
   cpvGroupLabel,
   CPV_GROUP_EDITORIAL,
 } from '@/lib/bandi-taxonomy-extra';
 import BandoCard from '@/components/bandi/BandoCard';
+import LandscapeBlock from '@/components/bandi/LandscapeBlock';
+import RtiCoppie from '@/components/bandi/RtiCoppie';
+import LeaderboardTable from '@/components/bandi/LeaderboardTable';
 import BreadcrumbCantiere from '@/components/cantieri/BreadcrumbCantiere';
 import FAQ from '@/components/cantieri/FAQ';
 import { ogImageUrl, itemListLd, safeJsonLd } from '@/lib/seo/structured-data';
@@ -72,11 +80,15 @@ export default async function CategoriaPage({ params }: PageProps) {
   const label = cpvGroupLabel(params.cpv);
   const editorial = CPV_GROUP_EDITORIAL[params.cpv];
 
-  const [{ data: bandi, total }, allGroups, regioniCpv] = await Promise.all([
-    getBandi({ cpvGroup: params.cpv, limit: 12, orderBy: 'data_pubblicazione', orderDirection: 'desc' }),
-    getBandiByCpvGroup(),
-    getRegioniByCpvGroup(params.cpv, 8),
-  ]);
+  const [{ data: bandi, total }, allGroups, regioniCpv, landscape, rti, topVincitori] =
+    await Promise.all([
+      getBandi({ cpvGroup: params.cpv, limit: 12, orderBy: 'data_pubblicazione', orderDirection: 'desc' }),
+      getBandiByCpvGroup(),
+      getRegioniByCpvGroup(params.cpv, 8),
+      getLandscapeSummary(params.cpv),
+      getRtiPartners({ cpvGroup: params.cpv, limit: 6 }),
+      getLeaderboard({ cpvGroup: params.cpv, limit: 10 }),
+    ]);
 
   if (total === 0) notFound();
 
@@ -128,20 +140,83 @@ export default async function CategoriaPage({ params }: PageProps) {
         </div>
       </section>
 
-      {/* CONTENUTO EDITORIALE UNICO */}
-      {editorial && (
+      {/* CONTENUTO EDITORIALE UNICO + CHI SI AGGIUDICA (conteggi reali, copy 1.4) */}
+      <section className="pb-8 md:pb-12">
+        <div className="container-zen">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="rounded-3xl border border-border bg-secondary/30 p-7 md:p-8">
+              <h2 className="text-base font-bold mb-3">Cosa comprende</h2>
+              <p className="text-[15px] text-secondary-text leading-relaxed text-pretty">
+                {editorial?.cosa ||
+                  `La categoria CPV ${params.cpv} "${label}" raggruppa le gare d'appalto pubbliche il cui oggetto rientra in questa divisione del Vocabolario Comune per gli Appalti europeo.`}
+              </p>
+            </div>
+            <div className="rounded-3xl border border-border bg-secondary/30 p-7 md:p-8">
+              <h2 className="text-base font-bold mb-3">Chi si aggiudica queste gare</h2>
+              <p className="text-[15px] text-secondary-text leading-relaxed text-pretty">
+                {landscape && landscape.vincitori_distinti_tot > 0 && landscape.pct_rti != null ? (
+                  <>
+                    In questa categoria hanno vinto{' '}
+                    <strong className="text-foreground">{formatNumber(landscape.vincitori_distinti_tot)}</strong>{' '}
+                    imprese distinte, e{' '}
+                    <strong className="text-foreground">{formatPct(landscape.pct_rti)}</strong>{' '}
+                    delle gare e&apos; andato a un raggruppamento. Pochi nomi ricorrono
+                    spesso: e&apos; il segnale che ti dice se c&apos;e&apos; spazio per te o un
+                    presidio consolidato.
+                  </>
+                ) : (
+                  editorial?.chiVince ||
+                  'In questa categoria contano due cose: quanti nomi diversi vincono davvero e quante gare vanno a un raggruppamento. E\' la differenza tra una categoria aperta e una presidiata. Lo vedi gratis, scheda per scheda.'
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* M7 LANDSCAPE competitivo della categoria */}
+      {landscape && (
         <section className="pb-8 md:pb-12">
           <div className="container-zen">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="rounded-3xl border border-border bg-secondary/30 p-7 md:p-8">
-                <h2 className="text-base font-bold mb-3">Cosa comprende</h2>
-                <p className="text-[15px] text-secondary-text leading-relaxed text-pretty">{editorial.cosa}</p>
+            <LandscapeBlock summary={landscape} segmentoLabel={`la categoria ${label.toLowerCase()}`} />
+          </div>
+        </section>
+      )}
+
+      {/* M8 TEASER leaderboard: chi vince di piu' in questa categoria */}
+      {topVincitori.length > 0 && (
+        <section className="pb-8 md:pb-12">
+          <div className="container-zen">
+            <div className="flex items-end justify-between gap-3 mb-5 flex-wrap">
+              <div className="flex items-center gap-2.5">
+                <Trophy className="h-5 w-5 text-construction" strokeWidth={2} />
+                <h2 className="text-xl md:text-2xl font-bold tracking-tight">
+                  Chi vince di piu&apos; {label.toLowerCase()}
+                </h2>
               </div>
-              <div className="rounded-3xl border border-border bg-secondary/30 p-7 md:p-8">
-                <h2 className="text-base font-bold mb-3">Chi si aggiudica queste gare</h2>
-                <p className="text-[15px] text-secondary-text leading-relaxed text-pretty">{editorial.chiVince}</p>
-              </div>
+              <Link
+                href={`/classifiche/cpv-${params.cpv}`}
+                className="group inline-flex items-center gap-1.5 text-sm font-medium text-foreground rounded-full border border-border bg-white px-5 py-2.5 transition-all hover:border-foreground/30 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                Classifica completa
+                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" strokeWidth={2} />
+              </Link>
             </div>
+            <LeaderboardTable rows={topVincitori} showZona ctaCampaign="categoria_leaderboard" />
+          </div>
+        </section>
+      )}
+
+      {/* M5 RTI alleanze tipiche della categoria */}
+      {rti.length > 0 && (
+        <section className="pb-8 md:pb-12">
+          <div className="container-zen">
+            <RtiCoppie
+              coppie={rti}
+              title={`Alleanze tipiche ${label.toLowerCase()}`}
+              subtitle="Le coppie di imprese che si aggiudicano piu' spesso insieme le gare di questa categoria."
+              ctaCampaign="categoria_rti"
+            />
           </div>
         </section>
       )}
@@ -211,6 +286,24 @@ export default async function CategoriaPage({ params }: PageProps) {
           </div>
         </section>
       )}
+
+      {/* CTA pagina + smarco (copy 1.4) */}
+      <section className="py-12 md:py-16">
+        <div className="container-zen max-w-3xl text-center">
+          <p className="text-lg md:text-xl font-light text-secondary-text mb-2 text-pretty">
+            Una lista per CPV ce l&apos;hanno tutti. La classifica di chi vince per CPV, no.
+          </p>
+          <a
+            href={`https://www.italiaprogettisti.com/register?utm_source=bandigaredappalto&utm_medium=referral&utm_campaign=categoria_cpv&intent=bidder-landscape`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group mt-4 inline-flex items-center gap-2 rounded-full bg-foreground text-background px-6 py-3 text-sm font-semibold transition-all hover:scale-[1.03] hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            Scopri quanto e&apos; &quot;tua&quot; una gara di questa categoria
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" strokeWidth={2} />
+          </a>
+        </div>
+      </section>
 
       <section className="py-12 md:py-20">
         <div className="container-zen max-w-4xl">

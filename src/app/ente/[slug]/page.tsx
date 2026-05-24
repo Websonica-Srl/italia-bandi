@@ -43,8 +43,12 @@ interface PageProps {
 }
 
 /**
- * Pre-render dei 300 enti piu' attivi (per n_bandi) con almeno un'aggiudicazione;
+ * Pre-render dei 120 enti piu' attivi (per n_bandi) con almeno un'aggiudicazione;
  * gli altri sono ISR on-demand (dynamicParams = true). Dedup per slug.
+ * NB: la sezione "ultimi bandi dell'ente" usa una query per stazione appaltante
+ * non indicizzata (seq scan ~1,6s su 50k righe); tenere basso il batch evita
+ * lo statement timeout per concorrenza in build. La sezione e' comunque
+ * tollerante al timeout (fallback vuoto). Indice DB consigliato a regime.
  */
 export async function generateStaticParams() {
   try {
@@ -58,7 +62,7 @@ export async function generateStaticParams() {
       if (!slug || seen.has(slug)) continue;
       seen.add(slug);
       params.push({ slug });
-      if (params.length >= 300) break;
+      if (params.length >= 120) break;
     }
     return params;
   } catch {
@@ -96,15 +100,14 @@ export default async function EntePage({ params }: PageProps) {
   const buyer = await getBuyer(ente);
   if (!buyer) notFound();
 
-  // Ultimi bandi dell'ente (cerca per nome esatto della stazione appaltante).
-  const { data: bandi } = await getBandi({
-    q: ente,
+  // Ultimi bandi dell'ente — match esatto sulla stazione appaltante (efficiente,
+  // niente full-text su 50k righe → evita lo statement timeout in build).
+  const { data: bandiEnte } = await getBandi({
+    stazioneAppaltante: ente,
     limit: 6,
     orderBy: 'data_pubblicazione',
     orderDirection: 'desc',
   });
-  // Filtra ai soli bandi davvero di questo ente (q e' full-text, puo' allargare).
-  const bandiEnte = bandi.filter((b) => b.stazione_appaltante === ente).slice(0, 6);
 
   const grp = buyer.top_cpv2;
   const cpvLabel = grp ? cpvGroupLabel(grp) : null;
