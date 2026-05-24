@@ -75,7 +75,7 @@ export default function LandscapeBlock({ summary, segmentoLabel }: Props) {
         <Metric
           icon={<TrendingDown className="h-4 w-4" strokeWidth={2} />}
           value={
-            summary.ribasso_mediano != null
+            summary.ribasso_mediano != null && summary.ribasso_mediano > 0
               ? formatPct(summary.ribasso_mediano, { fraction: false })
               : '—'
           }
@@ -97,7 +97,7 @@ export default function LandscapeBlock({ summary, segmentoLabel }: Props) {
             delle gare.{' '}
           </>
         ) : null}
-        {summary.ribasso_mediano != null ? (
+        {summary.ribasso_mediano != null && summary.ribasso_mediano > 0 ? (
           <>
             Il ribasso mediano storico in questo segmento e&apos;{' '}
             <strong className="text-foreground">

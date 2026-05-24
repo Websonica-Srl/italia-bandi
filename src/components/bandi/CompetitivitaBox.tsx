@@ -16,7 +16,8 @@ interface Props {
  */
 export default function CompetitivitaBox({ numeroOfferte, ribasso }: Props) {
   const hasOfferte = numeroOfferte != null && numeroOfferte > 0;
-  const hasRibasso = ribasso != null;
+  // ribasso 0 = dato non affidabile/mancante (non un vero 0%) → trattato come n.d.
+  const hasRibasso = ribasso != null && ribasso > 0;
   if (!hasOfferte && !hasRibasso) return null;
 
   return (

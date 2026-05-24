@@ -139,7 +139,7 @@ export default async function EntePage({ params }: PageProps) {
         ? `Tra le imprese che si aggiudicano piu' spesso le gare di ${ente} compaiono ${buyer.top_vincitori.slice(0, 3).map((v) => v.nome.replace(/\s+/g, ' ').trim().slice(0, 60)).join(', ')}. Mostriamo solo ragioni sociali di persone giuridiche, nel rispetto del GDPR.`
         : `Quando una gara di ${ente} viene aggiudicata, mostriamo la ragione sociale del vincitore (solo persone giuridiche, GDPR).`,
     },
-    ...(buyer.ribasso_mediano != null
+    ...(buyer.ribasso_mediano != null && buyer.ribasso_mediano > 0
       ? [{
           q: `Qual e' il ribasso mediano delle gare di ${ente}?`,
           a: `Sulle gare aggiudicate da ${ente} il ribasso mediano storico e' ${formatPct(buyer.ribasso_mediano, { fraction: false })}. E' una statistica descrittiva sullo storico dell'ente, non una previsione sulle gare future.`,
@@ -189,7 +189,7 @@ export default async function EntePage({ params }: PageProps) {
             <StatCard
               icon={<TrendingDown className="h-4 w-4" strokeWidth={2} />}
               label="Ribasso mediano storico"
-              value={buyer.ribasso_mediano != null ? formatPct(buyer.ribasso_mediano, { fraction: false }) : '—'}
+              value={buyer.ribasso_mediano != null && buyer.ribasso_mediano > 0 ? formatPct(buyer.ribasso_mediano, { fraction: false }) : '—'}
             />
           </div>
           {/* riga secondaria: offerte medie / valore base / categoria / zona */}
