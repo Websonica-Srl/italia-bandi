@@ -6,7 +6,7 @@ import { bandoTitolo } from '@/lib/utils';
 import { proceduraLabel } from '@websonica/cantieri-core';
 import { cpvGroupLabel } from '@/lib/bandi-taxonomy-extra';
 import { provinciaFromSigla } from '@/lib/province';
-import BandoCard from '@/components/bandi/BandoCard';
+import BandiListPaywall from '@/components/bandi/BandiListPaywall';
 import FiltriBandi from '@/components/bandi/FiltriBandi';
 import BreadcrumbCantiere from '@/components/cantieri/BreadcrumbCantiere';
 import { ogImageUrl, itemListLd, safeJsonLd } from '@/lib/seo/structured-data';
@@ -157,11 +157,13 @@ export default async function BandiPage({ searchParams }: PageProps) {
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-                    {bandi.map((b) => (
-                      <BandoCard key={b.id} bando={b} />
-                    ))}
-                  </div>
+                  {/* Soft-paywall: prime 6 card nitide, resto sfocato + CTA
+                      registrazione. Filtri e paginazione restano funzionanti. */}
+                  <BandiListPaywall
+                    bandi={bandi}
+                    total={total}
+                    gridClassName="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5"
+                  />
 
                   {/* Paginazione */}
                   {totalPages > 1 && (

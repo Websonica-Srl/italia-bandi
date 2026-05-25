@@ -17,7 +17,7 @@ import { REGIONI, regioneNomeFromSlug, regioneSlug, REGIONE_INTRO } from '@/lib/
 import { provinceDiRegione } from '@/lib/province';
 import { formatNumber, formatEuro, bandoTitolo } from '@/lib/utils';
 import { cpvGroupLabel } from '@/lib/bandi-taxonomy-extra';
-import BandoCard from '@/components/bandi/BandoCard';
+import BandiListPaywall from '@/components/bandi/BandiListPaywall';
 import LandscapeBlock from '@/components/bandi/LandscapeBlock';
 import RtiCoppie from '@/components/bandi/RtiCoppie';
 import LeaderboardTable from '@/components/bandi/LeaderboardTable';
@@ -304,11 +304,7 @@ export default async function RegionePage({ params }: PageProps) {
               <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" strokeWidth={2} />
             </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
-            {bandi.map((b) => (
-              <BandoCard key={b.id} bando={b} />
-            ))}
-          </div>
+          <BandiListPaywall bandi={bandi} total={stats.totale} />
         </div>
       </section>
 
