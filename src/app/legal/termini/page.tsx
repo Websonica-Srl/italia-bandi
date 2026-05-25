@@ -20,7 +20,7 @@ export default function TerminiPage() {
           <h2>1. Oggetto del servizio</h2>
           <p>
             {siteConfig.name} è un portale pubblico di informazioni sui bandi e le gare d&apos;appalto pubbliche
-            italiane, raccolte esclusivamente da fonti pubbliche e ufficiali (TED, ANAC, portali appalti). Il servizio è
+            italiane, raccolte esclusivamente da fonti ufficiali e pubbliche (portali appalti istituzionali). Il servizio è
             fornito da <strong>{siteConfig.companyName}</strong> ({siteConfig.companyPiva}), parte del network
             ItaliaProgettisti.
           </p>

@@ -16,7 +16,7 @@ const badges = [
   {
     icon: Database,
     title: 'Fonti pubbliche ufficiali',
-    desc: 'Solo TED (UE), ANAC e portali appalti istituzionali.',
+    desc: 'Solo portali appalti istituzionali italiani ed europei.',
   },
   {
     icon: RefreshCw,

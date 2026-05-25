@@ -33,7 +33,7 @@ export default function PrivacyPage() {
           <ul>
             <li>
               <strong>Dati di gara da fonti pubbliche</strong>: oggetto, stazione appaltante, importi, scadenze, CIG/CUP,
-              CPV, procedura e ragioni sociali degli aggiudicatari (persone giuridiche), provenienti da TED e ANAC.
+              CPV, procedura e ragioni sociali degli aggiudicatari (persone giuridiche), provenienti da fonti ufficiali e pubbliche.
               Vedi la pagina <Link href="/come-trattiamo-i-dati">Come trattiamo i dati</Link>.
             </li>
             <li>
@@ -70,11 +70,11 @@ export default function PrivacyPage() {
           </ul>
 
           <h2>5. Destinatari</h2>
-          <ul>
-            <li>Supabase Inc. (USA) — hosting database, con Standard Contractual Clauses.</li>
-            <li>Google LLC — Google Analytics (solo con consenso), IP anonimizzato.</li>
-            <li>Railway Inc. (USA) — hosting applicativo.</li>
-          </ul>
+          <p>
+            L&apos;elenco completo dei destinatari e dei responsabili/sub-responsabili del trattamento è
+            disponibile su richiesta scrivendo a{' '}
+            <a href={`mailto:${siteConfig.dpoEmail}`}>{siteConfig.dpoEmail}</a>.
+          </p>
 
           <h2>6. Diritti dell&apos;interessato</h2>
           <p>

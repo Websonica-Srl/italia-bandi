@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   description:
     'BandiGareDappalto valorizza la trasparenza degli appalti pubblici. Citazione standardizzata della fonte, dataset, press kit per stampa e ricerca. Servizio editoriale di AZIENDA 365 SRL.',
   alternates: { canonical: '/per-pubbliche-amministrazioni' },
+  // Pagina fuori indice e fuori menu: raggiungibile solo via URL diretto.
+  robots: { index: false, follow: false },
   openGraph: {
     title: 'Per Pubbliche Amministrazioni — BandiGareDappalto',
     description: 'Trasparenza appalti, dataset, press kit per stampa e ricerca.',
@@ -49,7 +51,7 @@ export default async function PerPubblicheAmministrazioniPage() {
     { label: 'Con termine ancora aperto', value: formatNumber(stats.scadFuture) },
     { label: 'Stazioni appaltanti', value: formatNumber(stats.enti) },
     { label: 'Valore a base di gara', value: formatEuro(stats.importoTotaleBase, { compact: true }) },
-    { label: 'Fonti', value: 'TED · ANAC' },
+    { label: 'Fonti', value: 'Ufficiali e pubbliche' },
     { label: 'Conformità', value: 'GDPR (solo PG)' },
     { label: 'Aggiornamento dati', value: 'Continuo' },
     { label: 'Consultazione', value: 'Gratuita' },

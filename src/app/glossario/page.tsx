@@ -59,7 +59,7 @@ const TERMS: GlossaryTerm[] = [
     termCode: 'CIG',
     name: 'Codice Identificativo Gara',
     definition:
-      'Il CIG (Codice Identificativo Gara) è un codice alfanumerico univoco rilasciato dall\'ANAC per ogni procedura di affidamento pubblico, a prescindere dall\'importo. Obbligatorio dal 2010 per la tracciabilità dei flussi finanziari (L. 136/2010). Senza CIG il contratto è nullo e l\'impresa non può fatturare alla Pubblica Amministrazione.',
+      'Il CIG (Codice Identificativo Gara) è un codice alfanumerico univoco rilasciato dall\'autorità di vigilanza sui contratti pubblici per ogni procedura di affidamento pubblico, a prescindere dall\'importo. Obbligatorio dal 2010 per la tracciabilità dei flussi finanziari (L. 136/2010). Senza CIG il contratto è nullo e l\'impresa non può fatturare alla Pubblica Amministrazione.',
     example: 'Ogni bando di gara riporta il proprio CIG: è il codice da indicare in fattura e in tutti i pagamenti collegati all\'appalto.',
     relatedPath: '/bandi',
   },
@@ -82,7 +82,7 @@ const TERMS: GlossaryTerm[] = [
     termCode: 'SOA',
     name: 'Attestazione SOA',
     definition:
-      'L\'attestazione SOA (Società Organismi di Attestazione) è il documento obbligatorio per partecipare a gare pubbliche di lavori di importo superiore a 150.000 €. Certifica la capacità tecnico-economica dell\'impresa nelle categorie OG (opere generali) e OS (opere specializzate). Rilasciata da organismi privati autorizzati dall\'ANAC, ha validità di 5 anni con verifica triennale.',
+      'L\'attestazione SOA (Società Organismi di Attestazione) è il documento obbligatorio per partecipare a gare pubbliche di lavori di importo superiore a 150.000 €. Certifica la capacità tecnico-economica dell\'impresa nelle categorie OG (opere generali) e OS (opere specializzate). Rilasciata da organismi privati autorizzati dall\'autorità di vigilanza sui contratti pubblici, ha validità di 5 anni con verifica triennale.',
     example: 'Un\'impresa che vuole partecipare alla gara per costruire una scuola deve possedere la SOA OG1 nella classifica adeguata all\'importo.',
     relatedPath: '/bandi',
   },
@@ -204,17 +204,10 @@ const TERMS: GlossaryTerm[] = [
       'Il MEPA (Mercato Elettronico della Pubblica Amministrazione) è la piattaforma di e-procurement gestita da Consip su cui le amministrazioni acquistano beni e servizi sotto-soglia direttamente dai cataloghi delle imprese abilitate. Riduce tempi e costi degli affidamenti di importo contenuto.',
   },
   {
-    termCode: 'ANAC',
-    name: 'Autorità Nazionale Anticorruzione',
+    termCode: 'BDNCP',
+    name: 'Banca Dati Nazionale dei Contratti Pubblici',
     definition:
-      'L\'ANAC (Autorità Nazionale Anticorruzione) è l\'autorità indipendente che vigila sui contratti pubblici, rilascia i CIG, gestisce la Banca Dati Nazionale dei Contratti Pubblici e pubblica i dati delle gare. È la fonte istituzionale primaria per la trasparenza degli appalti in Italia.',
-    relatedPath: '/come-trattiamo-i-dati',
-  },
-  {
-    termCode: 'TED',
-    name: 'Tenders Electronic Daily',
-    definition:
-      'Il TED (Tenders Electronic Daily) è il supplemento online della Gazzetta Ufficiale dell\'Unione Europea dedicato agli appalti pubblici. Pubblica i bandi di rilevanza comunitaria (sopra-soglia) di tutti gli Stati membri. È una delle fonti pubbliche da cui BandiGareDappalto aggrega i dati delle gare.',
+      'La Banca Dati Nazionale dei Contratti Pubblici è il registro istituzionale che raccoglie le informazioni sulle procedure di affidamento pubblico in Italia, dalla pubblicazione del bando all\'aggiudicazione. È, insieme ai portali appalti istituzionali italiani ed europei, una delle fonti ufficiali e pubbliche da cui BandiGareDappalto aggrega i dati delle gare.',
     relatedPath: '/come-trattiamo-i-dati',
   },
   {
@@ -233,7 +226,7 @@ const TERMS: GlossaryTerm[] = [
     termCode: 'SopraSoglia',
     name: 'Appalto sopra-soglia',
     definition:
-      'Un appalto è sopra-soglia quando il suo importo supera le soglie comunitarie. In questo caso è obbligatoria la pubblicazione anche a livello europeo (TED) e si applicano le procedure ordinarie (aperta o ristretta) con tempi e garanzie maggiori.',
+      'Un appalto è sopra-soglia quando il suo importo supera le soglie comunitarie. In questo caso è obbligatoria la pubblicazione anche a livello europeo (Gazzetta Ufficiale UE) e si applicano le procedure ordinarie (aperta o ristretta) con tempi e garanzie maggiori.',
     relatedPath: '/bandi',
   },
 ];

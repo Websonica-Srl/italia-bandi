@@ -76,8 +76,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       : `Chi vince le gare d'appalto in ${seg.label}`;
   const description =
     seg.kind === 'cpv'
-      ? `Le imprese che vincono di piu' le gare d'appalto della categoria "${seg.label}" (CPV ${seg.code}) in Italia: classifica per gare aggiudicate e raggruppamenti. Dati pubblici TED e ANAC.`
-      : `Le imprese che vincono di piu' le gare d'appalto pubbliche in ${seg.label}: classifica per gare aggiudicate, categoria prevalente e raggruppamenti. Dati pubblici TED e ANAC.`;
+      ? `Le imprese che vincono di piu' le gare d'appalto della categoria "${seg.label}" (CPV ${seg.code}) in Italia: classifica per gare aggiudicate e raggruppamenti. Dati da fonti ufficiali e pubbliche.`
+      : `Le imprese che vincono di piu' le gare d'appalto pubbliche in ${seg.label}: classifica per gare aggiudicate, categoria prevalente e raggruppamenti. Dati da fonti ufficiali e pubbliche.`;
   const ogImage = ogImageUrl({
     title: seg.kind === 'cpv' ? `Classifica ${seg.label}` : `Classifica ${seg.label}`,
     subtitle: 'Chi vince di piu\' le gare d\'appalto',
@@ -128,7 +128,7 @@ export default async function ClassificaSegmentoPage({ params }: PageProps) {
           : `Chi vince di piu' le gare d'appalto in ${seg.label}?`,
       a: `La classifica sopra elenca le imprese con piu' gare d'appalto aggiudicate ${
         seg.kind === 'cpv' ? `nella categoria CPV ${seg.code} (${seg.label})` : `in ${seg.label}`
-      }, su un dataset di oltre 36.000 aggiudicazioni da fonti pubbliche (TED, ANAC). Mostriamo solo ragioni sociali di persone giuridiche.`,
+      }, su un dataset di oltre 36.000 aggiudicazioni da fonti ufficiali e pubbliche. Mostriamo solo ragioni sociali di persone giuridiche.`,
     },
     {
       q: 'Questi numeri sono una garanzia di vittoria?',

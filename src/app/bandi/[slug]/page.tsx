@@ -199,7 +199,7 @@ export default async function BandoPage({ params }: PageProps) {
             </div>
           )}
 
-          {/* COMPETITIVITA' — ribasso + n. offerte (M2, dati ANAC descrittivi) */}
+          {/* COMPETITIVITA' — ribasso + n. offerte (M2, dati descrittivi da fonte pubblica) */}
           {(b.ribasso_percentuale != null ||
             (b.numero_offerte_ricevute != null && b.numero_offerte_ricevute > 0)) && (
             <div className="mb-10">
@@ -232,7 +232,7 @@ export default async function BandoPage({ params }: PageProps) {
               <Database className="h-4 w-4" strokeWidth={2} /> Trasparenza fonte
             </h2>
             <p className="text-sm text-secondary-text">
-              Dati raccolti da fonti pubbliche (TED, ANAC, portali appalti). I bandi di gara sono pubblici per legge
+              Dati raccolti da fonti ufficiali e pubbliche (portali appalti istituzionali). I bandi di gara sono pubblici per legge
               (D.Lgs. 36/2023). Trattamento conforme al GDPR: pubblichiamo solo dati di persone giuridiche.
               Maggiori dettagli alla pagina <Link href="/legal/privacy" className="underline underline-offset-2">Privacy</Link>.
             </p>

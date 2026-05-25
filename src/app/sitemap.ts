@@ -80,7 +80,8 @@ export default async function sitemap({
       { url: `${baseUrl}/scadenze`, lastModified: now, changeFrequency: 'daily', priority: 0.85 },
       { url: `${baseUrl}/glossario`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
       { url: `${baseUrl}/iscriviti`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
-      { url: `${baseUrl}/per-pubbliche-amministrazioni`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
+      // /per-pubbliche-amministrazioni e' noindex (fuori indice + fuori menu):
+      // non va in sitemap per non dare segnali contraddittori a Google.
       { url: `${baseUrl}/api-pubbliche`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
       { url: `${baseUrl}/come-trattiamo-i-dati`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
       { url: `${baseUrl}/chi-siamo`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },

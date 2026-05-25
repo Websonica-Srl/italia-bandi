@@ -6,19 +6,19 @@ import BreadcrumbCantiere from '@/components/cantieri/BreadcrumbCantiere';
 
 const trasparenzaOg = ogImageUrl({
   title: 'Come trattiamo i dati',
-  subtitle: 'Trasparenza GDPR · Fonti pubbliche TED/ANAC · solo persone giuridiche · Opt-out 30 giorni',
+  subtitle: 'Trasparenza GDPR · Fonti ufficiali e pubbliche · solo persone giuridiche · Opt-out 30 giorni',
   kind: 'generic',
 });
 
 export const metadata: Metadata = {
   title: 'Come trattiamo i dati — Trasparenza GDPR su fonti, base legale e diritti',
   description:
-    'Tutto quello che serve sapere sul trattamento dati di BandiGareDappalto: fonti pubbliche (TED, ANAC), base legale GDPR, regime persone giuridiche/fisiche e modulo opt-out. Risposte chiare entro 30 giorni.',
+    'Tutto quello che serve sapere sul trattamento dati di BandiGareDappalto: fonti ufficiali e pubbliche, base legale GDPR, regime persone giuridiche/fisiche e modulo opt-out. Risposte chiare entro 30 giorni.',
   alternates: { canonical: '/come-trattiamo-i-dati' },
   openGraph: {
     title: 'Come trattiamo i dati — BandiGareDappalto',
     description:
-      'Trasparenza GDPR su BandiGareDappalto: fonti pubbliche TED/ANAC, base legale, regime PG/PF, modulo opt-out.',
+      'Trasparenza GDPR su BandiGareDappalto: fonti ufficiali e pubbliche, base legale, regime PG/PF, modulo opt-out.',
     url: '/come-trattiamo-i-dati',
     type: 'website',
     images: [{ url: trasparenzaOg, width: 1200, height: 630, alt: 'Come trattiamo i dati' }],
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Come trattiamo i dati — BandiGareDappalto',
-    description: 'Trasparenza GDPR: fonti pubbliche TED/ANAC, base legale, regime PG/PF, opt-out.',
+    description: 'Trasparenza GDPR: fonti ufficiali e pubbliche, base legale, regime PG/PF, opt-out.',
     images: [trasparenzaOg],
   },
 };
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 const faqs = [
   {
     q: 'Da dove provengono i dati pubblicati su BandiGareDappalto?',
-    a: 'Esclusivamente da fonti pubbliche e ufficiali: il portale europeo TED (Tenders Electronic Daily, supplemento della Gazzetta Ufficiale UE), ANAC e i portali appalti istituzionali italiani. I dati delle gare d\'appalto sono pubblici per legge (D.Lgs. 36/2023). Non raccogliamo dati da fonti private né da soggetti non autorizzati.',
+    a: 'Esclusivamente da fonti ufficiali e pubbliche: i portali istituzionali degli appalti italiani ed europei (inclusa la Gazzetta Ufficiale UE). I dati delle gare d\'appalto sono pubblici per legge (D.Lgs. 36/2023). Non raccogliamo dati da fonti private né da soggetti non autorizzati.',
   },
   {
     q: 'Qual è la base legale del trattamento?',
@@ -82,7 +82,7 @@ export default function ComeTrattiamoIDatiPage() {
               <Database className="h-6 w-6 text-foreground mb-2" />
               <h3 className="font-semibold mb-1">Fonti pubbliche ufficiali</h3>
               <p className="text-sm text-secondary-text">
-                TED (Gazzetta Ufficiale UE), ANAC e portali appalti istituzionali. Ogni bando dichiara la propria fonte.
+                Portali istituzionali degli appalti italiani ed europei (inclusa la Gazzetta Ufficiale UE). Ogni bando dichiara la propria fonte.
               </p>
             </div>
             <div className="rounded-2xl border border-border bg-white p-5">

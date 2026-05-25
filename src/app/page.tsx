@@ -74,7 +74,7 @@ const homeHowTo = howToLd(
 const homepageFaq = [
   {
     q: 'Da dove provengono i dati pubblicati su BandiGareDappalto?',
-    a: 'Esclusivamente da fonti pubbliche: il portale europeo TED (Tenders Electronic Daily), ANAC e i portali appalti istituzionali italiani. I dati delle gare d\'appalto sono pubblici per legge (D.Lgs. 36/2023, Codice dei Contratti Pubblici).',
+    a: 'Esclusivamente da fonti ufficiali e pubbliche: i portali istituzionali degli appalti italiani ed europei. I dati delle gare d\'appalto sono pubblici per legge (D.Lgs. 36/2023, Codice dei Contratti Pubblici).',
   },
   {
     q: 'La consultazione dei bandi è gratuita?',
@@ -124,7 +124,7 @@ export default async function HomePage() {
         BandiGareDappalto è il portale pubblico dei bandi e delle gare d&apos;appalto in Italia: raccoglie {formatNumber(stats.totale)} bandi
         pubblici da {formatNumber(stats.enti)} stazioni appaltanti, per un valore complessivo di {formatEuro(stats.importoTotaleBase, { compact: true })} a base
         di gara. Per ogni gara mostriamo oggetto, ente, importo, scadenza, CIG, CUP, categoria CPV e aggiudicatario. Dati provenienti da fonti
-        pubbliche (TED, ANAC), consultabili gratuitamente e trattati nel rispetto del GDPR.
+        ufficiali e pubbliche, consultabili gratuitamente e trattati nel rispetto del GDPR.
       </p>
 
       {/* HERO minimal HUB-aligned */}
@@ -133,7 +133,7 @@ export default async function HomePage() {
           <div className="max-w-5xl mx-auto text-center">
             <p className="mb-10 inline-flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
               <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2} />
-              <span>Gare d&apos;appalto pubbliche · Fonti TED e ANAC · Solo persone giuridiche</span>
+              <span>Gare d&apos;appalto pubbliche · Fonti ufficiali e pubbliche · Solo persone giuridiche</span>
             </p>
 
             <h1
@@ -206,7 +206,7 @@ export default async function HomePage() {
 
       <IntentSplitBandi />
 
-      {/* CATEGORIE CPV — la dimensione di navigazione forte (geo non disponibile sui dati TED) */}
+      {/* CATEGORIE CPV — la dimensione di navigazione forte (geo non sempre disponibile sui dati grezzi) */}
       <SectionWrapper
         spacing="default"
         tone="muted"
@@ -281,7 +281,7 @@ export default async function HomePage() {
         tone="muted"
         eyebrow="Quello che il bando nudo non dice"
         title="Sul bando leggi le regole. Da noi leggi la partita."
-        subtitle="I dati ANAC e TED dicono cosa esiste. Noi aggiungiamo le tre cose che decidono se vale la pena correre."
+        subtitle="Le fonti ufficiali e pubbliche dicono cosa esiste. Noi aggiungiamo le tre cose che decidono se vale la pena correre."
         headerMaxW="lg"
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border-t border-border">
@@ -378,7 +378,7 @@ export default async function HomePage() {
               </a>
             </div>
             <p className="mt-10 text-xs text-muted-foreground max-w-xl mx-auto">
-              Dati provenienti da fonti pubbliche (TED, ANAC), trattati nel rispetto del GDPR. Solo persone giuridiche, nessun dato personale di persone fisiche.
+              Dati provenienti da fonti ufficiali e pubbliche, trattati nel rispetto del GDPR. Solo persone giuridiche, nessun dato personale di persone fisiche.
             </p>
           </div>
         </div>

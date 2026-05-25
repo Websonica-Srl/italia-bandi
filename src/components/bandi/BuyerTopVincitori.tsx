@@ -13,7 +13,7 @@ interface Props {
  * Lista "A chi aggiudica questo ente" (M6) — i vincitori ricorrenti di una
  * stazione appaltante, da `buyer_public.top_vincitori` (jsonb nome+gare).
  * Solo ragioni sociali di persone giuridiche; il testo grezzo viene ripulito e
- * accorciato (alcuni record ANAC contengono descrizioni RTI lunghe).
+ * accorciato (alcuni record contengono descrizioni RTI lunghe).
  */
 export default function BuyerTopVincitori({ vincitori, ente }: Props) {
   if (!vincitori || vincitori.length === 0) return null;

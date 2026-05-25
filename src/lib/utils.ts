@@ -86,7 +86,7 @@ export function slugify(str: string): string {
 
 /**
  * Titolo leggibile di un bando.
- * I dati TED hanno spesso l'oggetto degradato (es. "I"): in quel caso
+ * I dati grezzi hanno spesso l'oggetto degradato (es. "I"): in quel caso
  * costruiamo un fallback usando ente + categoria CPV + CIG.
  */
 export function bandoTitolo(b: {

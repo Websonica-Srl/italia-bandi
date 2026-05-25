@@ -23,7 +23,7 @@ const license = [
   { label: 'Natura dei dati', value: 'Pubblici per legge (D.Lgs. 36/2023)' },
   { label: 'Attribuzione', value: 'bandigaredappalto.it (AZIENDA 365 SRL)' },
   { label: 'Soggetti', value: 'Solo persone giuridiche' },
-  { label: 'Fonti', value: 'TED · ANAC' },
+  { label: 'Fonti', value: 'Ufficiali e pubbliche' },
 ];
 
 export default function ApiPubblichePage() {
@@ -31,7 +31,7 @@ export default function ApiPubblichePage() {
     '@context': 'https://schema.org',
     '@type': 'WebAPI',
     name: `API ${siteConfig.name}`,
-    description: 'Accesso programmatico ai dati dei bandi e delle gare d\'appalto pubbliche italiane aggregati da fonti pubbliche (TED, ANAC).',
+    description: 'Accesso programmatico ai dati dei bandi e delle gare d\'appalto pubbliche italiane aggregati da fonti ufficiali e pubbliche.',
     documentation: `${siteConfig.baseUrl}/api-pubbliche`,
     provider: { '@type': 'Organization', name: siteConfig.companyName, url: siteConfig.baseUrl },
     isAccessibleForFree: true,

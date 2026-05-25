@@ -73,7 +73,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!prov) return { title: 'Provincia non trovata' };
   const { totale } = await getProvinciaStats(prov.sigla);
   const title = `Bandi e gare d'appalto ${prov.nome} (provincia)`;
-  const description = `${formatNumber(totale)} bandi e gare d'appalto pubbliche nella provincia di ${prov.nome} (${prov.regione}): importi, scadenze, stazioni appaltanti, comuni e chi vince le gare. Dati pubblici TED e ANAC.`;
+  const description = `${formatNumber(totale)} bandi e gare d'appalto pubbliche nella provincia di ${prov.nome} (${prov.regione}): importi, scadenze, stazioni appaltanti, comuni e chi vince le gare. Dati da fonti ufficiali e pubbliche.`;
   const ogImage = ogImageUrl({
     title: `Bandi ${prov.nome}`,
     subtitle: `Provincia · ${prov.regione} · gare d'appalto pubbliche`,
@@ -138,7 +138,7 @@ export default async function ProvinciaPage({ params }: PageProps) {
   const faqs = [
     {
       q: `Quanti bandi di gara ci sono nella provincia di ${prov.nome}?`,
-      a: `Nella provincia di ${prov.nome} tracciamo ${formatNumber(stats.totale)} bandi e gare d'appalto pubbliche, di cui ${formatNumber(stats.aperti)} con termine di presentazione delle offerte ancora aperto. L'elenco si aggiorna automaticamente dalle fonti pubbliche (TED, ANAC).`,
+      a: `Nella provincia di ${prov.nome} tracciamo ${formatNumber(stats.totale)} bandi e gare d'appalto pubbliche, di cui ${formatNumber(stats.aperti)} con termine di presentazione delle offerte ancora aperto. L'elenco si aggiorna automaticamente dalle fonti ufficiali e pubbliche.`,
     },
     {
       q: `Quali stazioni appaltanti bandiscono gare nella provincia di ${prov.nome}?`,

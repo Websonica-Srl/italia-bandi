@@ -22,7 +22,7 @@ export const revalidate = 3600;
 
 const TITLE = 'Classifiche dei vincitori delle gare d\'appalto in Italia';
 const DESCRIPTION =
-  'Chi vince di piu\' le gare d\'appalto pubbliche in Italia: le classifiche delle imprese vincitrici ricorrenti, per categoria CPV e per regione. Dati pubblici da TED e ANAC.';
+  'Chi vince di piu\' le gare d\'appalto pubbliche in Italia: le classifiche delle imprese vincitrici ricorrenti, per categoria CPV e per regione. Dati pubblici da fonti ufficiali e pubbliche.';
 
 export async function generateMetadata(): Promise<Metadata> {
   const ogImage = ogImageUrl({
@@ -49,7 +49,7 @@ export async function generateMetadata(): Promise<Metadata> {
 const faqs = [
   {
     q: 'Come sono calcolate queste classifiche?',
-    a: 'Contiamo, per ogni impresa, il numero di gare d\'appalto pubbliche aggiudicate sul nostro dataset (oltre 36.000 aggiudicazioni da fonti TED e ANAC). Le classifiche raggruppano i vincitori per categoria CPV e per regione prevalente. Mostriamo solo ragioni sociali di persone giuridiche, nel rispetto del GDPR.',
+    a: 'Contiamo, per ogni impresa, il numero di gare d\'appalto pubbliche aggiudicate sul nostro dataset (oltre 36.000 aggiudicazioni da fonti ufficiali e pubbliche). Le classifiche raggruppano i vincitori per categoria CPV e per regione prevalente. Mostriamo solo ragioni sociali di persone giuridiche, nel rispetto del GDPR.',
   },
   {
     q: 'Cosa significa "in RTI" nelle classifiche?',

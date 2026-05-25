@@ -18,7 +18,7 @@ const PAGE_SIZE = 24;
 
 const bandiOg = ogImageUrl({
   title: 'Bandi e gare d\'appalto pubbliche in Italia',
-  subtitle: 'Procedure aperte, ristrette e negoziate · fonti pubbliche TED e ANAC',
+  subtitle: 'Procedure aperte, ristrette e negoziate · fonti ufficiali e pubbliche',
   kind: 'bando',
 });
 
@@ -47,7 +47,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   return {
     title: 'Bandi e gare d\'appalto pubbliche in Italia — elenco completo',
     description:
-      'Elenco dei bandi e delle gare d\'appalto pubbliche in Italia: filtra per categoria CPV, procedura, importo a base di gara e scadenza. Dati pubblici da TED e ANAC.',
+      'Elenco dei bandi e delle gare d\'appalto pubbliche in Italia: filtra per categoria CPV, procedura, importo a base di gara e scadenza. Dati pubblici da fonti ufficiali e pubbliche.',
     alternates: { canonical: '/bandi' },
     // Le pagine di ricerca/filtro dinamiche non vanno indicizzate: la lista
     // base /bandi è la canonica indicizzabile.
@@ -132,7 +132,7 @@ export default async function BandiPage({ searchParams }: PageProps) {
           <h1 className="heading-section mb-3">Bandi e gare d&apos;appalto pubbliche</h1>
           <p className="body-default text-muted-foreground mb-8 max-w-2xl">
             {total > 0
-              ? `${total.toLocaleString('it-IT')} bandi pubblici${activeBits.length ? ` — ${activeBits.join(', ')}` : ''}, aggregati da fonti pubbliche (TED, ANAC).`
+              ? `${total.toLocaleString('it-IT')} bandi pubblici${activeBits.length ? ` — ${activeBits.join(', ')}` : ''}, aggregati da fonti ufficiali e pubbliche.`
               : 'Nessun bando corrisponde ai filtri selezionati.'}
           </p>
 

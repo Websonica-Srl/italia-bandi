@@ -75,7 +75,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const buyer = await getBuyer(ente);
   if (!buyer) return { title: 'Stazione appaltante non trovata' };
   const title = `${ente} — bandi e gare d'appalto`;
-  const description = `${formatNumber(buyer.n_bandi)} bandi pubblicati da ${ente}: cosa appalta, a chi aggiudica, ribasso mediano e offerte medie. Dati pubblici da TED e ANAC.`;
+  const description = `${formatNumber(buyer.n_bandi)} bandi pubblicati da ${ente}: cosa appalta, a chi aggiudica, ribasso mediano e offerte medie. Dati pubblici da fonti ufficiali e pubbliche.`;
   const ogImage = ogImageUrl({
     title: ente,
     subtitle: 'Stazione appaltante · gare d\'appalto pubbliche',
@@ -131,7 +131,7 @@ export default async function EntePage({ params }: PageProps) {
   const faqs = [
     {
       q: `Quanti bandi ha pubblicato ${ente}?`,
-      a: `${ente} ha pubblicato ${formatNumber(buyer.n_bandi)} bandi di gara nel nostro dataset, di cui ${formatNumber(buyer.n_aggiudicati)} gia' aggiudicati${buyer.n_aperti > 0 ? ` e ${formatNumber(buyer.n_aperti)} con termine ancora aperto` : ''}. L'elenco si aggiorna dalle fonti pubbliche (TED, ANAC).`,
+      a: `${ente} ha pubblicato ${formatNumber(buyer.n_bandi)} bandi di gara nel nostro dataset, di cui ${formatNumber(buyer.n_aggiudicati)} gia' aggiudicati${buyer.n_aperti > 0 ? ` e ${formatNumber(buyer.n_aperti)} con termine ancora aperto` : ''}. L'elenco si aggiorna dalle fonti ufficiali e pubbliche.`,
     },
     {
       q: `Chi vince le gare di ${ente}?`,
@@ -279,7 +279,7 @@ export default async function EntePage({ params }: PageProps) {
         <div className="container-zen max-w-5xl">
           <div className="rounded-2xl border border-border bg-secondary/50 p-5">
             <p className="text-sm text-secondary-text">
-              Dati raccolti da fonti pubbliche (TED, ANAC, portali appalti). I bandi
+              Dati raccolti da fonti ufficiali e pubbliche (portali appalti istituzionali). I bandi
               di gara sono pubblici per legge (D.Lgs. 36/2023). Pubblichiamo solo dati
               di persone giuridiche, nessun dato personale di persone fisiche.
               Dettagli alla pagina <Link href="/legal/privacy" className="underline underline-offset-2">Privacy</Link>.

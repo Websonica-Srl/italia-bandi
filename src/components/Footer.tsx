@@ -41,7 +41,7 @@ export default function Footer() {
             </p>
             <div className="mt-8 space-y-2.5">
               <p className="text-xs text-background/55 flex items-center gap-2">
-                <Database className="h-3.5 w-3.5" strokeWidth={1.5} /> Fonti: TED (UE) · ANAC · portali appalti
+                <Database className="h-3.5 w-3.5" strokeWidth={1.5} /> Fonti ufficiali e pubbliche · portali appalti istituzionali
               </p>
               <p className="text-xs text-background/55">
                 GDPR-compliant · solo dati di persone giuridiche
@@ -61,7 +61,6 @@ export default function Footer() {
                 <li><FooterLink href="/regioni">Bandi per regione</FooterLink></li>
                 <li><FooterLink href="/scadenze">Bandi in scadenza</FooterLink></li>
                 <li><FooterLink href="/glossario">Glossario appalti</FooterLink></li>
-                <li><FooterLink href="/per-pubbliche-amministrazioni">Per la PA</FooterLink></li>
                 <li><FooterLink href="/api-pubbliche">API & sviluppatori</FooterLink></li>
                 <li><FooterLink href="/chi-siamo">Chi siamo</FooterLink></li>
                 <li><FooterLink href="/contatti">Contatti</FooterLink></li>
@@ -143,7 +142,7 @@ export default function Footer() {
           </p>
           <p className="text-xs text-background/45 max-w-4xl leading-relaxed">
             <strong className="text-background/65">BandiGareDappalto</strong> aggrega dati pubblici dei bandi e delle gare d&apos;appalto
-            da fonti ufficiali: TED (Tenders Electronic Daily, Gazzetta Ufficiale UE), ANAC e portali appalti istituzionali.
+            da fonti ufficiali e pubbliche: i portali appalti istituzionali italiani ed europei (inclusa la Gazzetta Ufficiale UE).
             Per richieste stampa, dati o interviste contattare <a href="mailto:info@bandigaredappalto.it" className="underline hover:text-background">info@bandigaredappalto.it</a>.
             Citazione consigliata: <em>&ldquo;BandiGareDappalto – portale pubblico delle gare d&apos;appalto italiane (bandigaredappalto.it)&rdquo;</em>.
           </p>

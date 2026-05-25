@@ -89,7 +89,7 @@ export default function DatiPremiumLocked({ slug }: Props) {
       </div>
 
       <p className="text-[11px] text-muted-foreground mt-4 leading-relaxed">
-        Dati di gara provenienti da fonti pubbliche (TED, ANAC, portali appalti).
+        Dati di gara provenienti da fonti ufficiali e pubbliche (portali appalti istituzionali).
         Conformità GDPR garantita: non pubblichiamo dati personali di persone fisiche.
       </p>
     </section>

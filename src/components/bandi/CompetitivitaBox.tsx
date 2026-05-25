@@ -2,14 +2,14 @@ import { Users2, TrendingDown, Gauge } from 'lucide-react';
 import { formatNumber, formatPct } from '@/lib/utils';
 
 interface Props {
-  /** Numero offerte ricevute in gara (campo ANAC). */
+  /** Numero offerte ricevute in gara (campo da fonte pubblica). */
   numeroOfferte: number | null;
-  /** Ribasso % dell'aggiudicatario (campo ANAC). */
+  /** Ribasso % dell'aggiudicatario (campo da fonte pubblica). */
   ribasso: number | null;
 }
 
 /**
- * Box competitivita' della SINGOLA gara (M2) — dati ANAC ora in view:
+ * Box competitivita' della SINGOLA gara (M2) — dati da fonte pubblica ora in view:
  * numero di offerte ricevute e ribasso di aggiudicazione. Statistica
  * DESCRITTIVA del bando, non un consiglio ("dove c'e' ressa, il tuo tempo vale
  * di piu' altrove"). Renderizza solo se almeno un campo e' valorizzato.

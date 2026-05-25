@@ -89,7 +89,7 @@ export default async function RegioniPage() {
               appaltanti, una diversa intensità di spesa per opere e servizi e categorie merceologiche prevalenti. Aggregando
               i bandi per regione è possibile leggere a colpo d&apos;occhio dove si concentrano le gare, quali enti pubblicano
               di più e in quali ambiti — dai lavori di costruzione (CPV 45) ai servizi di architettura e ingegneria (CPV 71).
-              I dati provengono da fonti pubbliche (TED, ANAC) e riguardano esclusivamente persone giuridiche.
+              I dati provengono da fonti ufficiali e pubbliche e riguardano esclusivamente persone giuridiche.
             </p>
           </div>
         </div>

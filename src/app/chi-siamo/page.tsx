@@ -48,7 +48,7 @@ export default function ChiSiamoPage() {
         <p className="body-large text-muted-foreground mb-10">
           {siteConfig.name} è il portale pubblico dei bandi e delle gare d&apos;appalto italiane: un servizio editoriale di{' '}
           {siteConfig.companyName} che raccoglie, normalizza e rende navigabili dati già di dominio pubblico,
-          oggi frammentati e di difficile lettura tra TED, ANAC e portali appalti.
+          oggi frammentati e di difficile lettura tra i diversi portali appalti istituzionali.
         </p>
 
         <div className="mb-12">

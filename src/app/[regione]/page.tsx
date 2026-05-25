@@ -52,10 +52,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!nome) return { title: 'Regione non trovata' };
   const { totale } = await getRegioneStats(nome);
   const title = `Bandi e gare d'appalto ${nome}`;
-  const description = `${formatNumber(totale)} bandi e gare d'appalto pubbliche in ${nome}: importi a base d'asta, scadenze, stazioni appaltanti e categorie CPV. Dati pubblici aggiornati da TED e ANAC.`;
+  const description = `${formatNumber(totale)} bandi e gare d'appalto pubbliche in ${nome}: importi a base d'asta, scadenze, stazioni appaltanti e categorie CPV. Dati pubblici aggiornati da fonti ufficiali e pubbliche.`;
   const ogImage = ogImageUrl({
     title: `Bandi ${nome}`,
-    subtitle: 'Gare d\'appalto pubbliche · fonti TED e ANAC',
+    subtitle: 'Gare d\'appalto pubbliche · fonti ufficiali e pubbliche',
     kind: 'regione',
     count: formatNumber(totale),
     label: 'bandi pubblici',
@@ -128,7 +128,7 @@ export default async function RegionePage({ params }: PageProps) {
   const faqs = [
     {
       q: `Quanti bandi di gara ci sono in ${nome}?`,
-      a: `Attualmente tracciamo ${formatNumber(stats.totale)} bandi e gare d'appalto pubbliche in ${nome}, di cui ${formatNumber(stats.aperti)} con termine di presentazione delle offerte ancora aperto. L'elenco si aggiorna automaticamente dalle fonti pubbliche (TED, ANAC).`,
+      a: `Attualmente tracciamo ${formatNumber(stats.totale)} bandi e gare d'appalto pubbliche in ${nome}, di cui ${formatNumber(stats.aperti)} con termine di presentazione delle offerte ancora aperto. L'elenco si aggiorna automaticamente dalle fonti ufficiali e pubbliche.`,
     },
     {
       q: `Quali sono le categorie di appalto più frequenti in ${nome}?`,
