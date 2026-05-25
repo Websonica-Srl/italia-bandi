@@ -120,7 +120,7 @@ export default async function ClassifichePage() {
           <p className="text-sm text-muted-foreground mb-6">
             Classifica generale per numero di gare d&apos;appalto pubbliche aggiudicate.
           </p>
-          <LeaderboardTable rows={topGlobale} ctaCampaign="leaderboard_index" />
+          <LeaderboardTable rows={topGlobale} ctaCampaign="leaderboard_index" unlockNoun="imprese in classifica" />
         </div>
       </section>
 

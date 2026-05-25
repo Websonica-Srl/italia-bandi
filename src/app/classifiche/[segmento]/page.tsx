@@ -179,6 +179,7 @@ export default async function ClassificaSegmentoPage({ params }: PageProps) {
             showCpv={seg.kind === 'regione'}
             showZona={seg.kind === 'cpv'}
             ctaCampaign="leaderboard_segmento"
+            unlockNoun="imprese in classifica"
           />
         </div>
       </section>
