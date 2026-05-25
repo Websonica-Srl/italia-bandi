@@ -110,7 +110,8 @@ export async function getBandi(
   if (cpv) query = query.like('cpv_principale', `${cpv}%`);
   if (procedura) query = query.eq('tipo_procedura', procedura);
   if (stato) query = query.eq('stato', stato);
-  if (regione) query = query.ilike('regione', regione);
+  // match ESATTO (canonico) → usa l'indice bandi_regione_pub_idx (ilike = seq-scan 6s → timeout 3s anon)
+  if (regione) query = query.eq('regione', regione);
   // provincia = SIGLA (es. "MI") nella view → match esatto (non pattern).
   if (provincia) query = query.eq('provincia', provincia);
   if (importo_min) query = query.gte('importo_base', importo_min);
@@ -404,7 +405,7 @@ export async function getRegioneStats(regione: string): Promise<RegioneStats> {
     supabase
       .from('bandi_gara_public')
       .select('cpv_principale')
-      .ilike('regione', regione)
+      .eq('regione', regione)
       .limit(5000),
   ]);
 
@@ -480,7 +481,7 @@ export async function getProvinceCountByRegione(
   regione: string,
 ): Promise<Map<string, number>> {
   const data = await fetchAllBandiRows('provincia', (q) =>
-    q.ilike('regione', regione).not('provincia', 'is', null),
+    q.eq('regione', regione).not('provincia', 'is', null),
   );
   const counts = new Map<string, number>();
   for (const r of data as { provincia: string }[]) {
