@@ -15,9 +15,9 @@ interface Props {
  * Fallback conservativi se i prop non sono passati (no query a vuoto sul componente).
  */
 export default function TrustStrip({ totaleCantieri, totaleSoggetti, totaleFirms }: Props) {
-  const cantieriLabel = totaleCantieri ? `${formatNumber(totaleCantieri)}+` : '6.500+';
-  const soggettiLabel = totaleSoggetti ? formatNumber(totaleSoggetti) : '38.000+';
-  const firmsLabel = totaleFirms ? `${formatNumber(totaleFirms)}+` : '37.000+';
+  const cantieriLabel = totaleCantieri ? `${formatNumber(totaleCantieri)}` : '—';
+  const soggettiLabel = totaleSoggetti ? formatNumber(totaleSoggetti) : '—';
+  const firmsLabel = totaleFirms ? `${formatNumber(totaleFirms)}` : '—';
 
   return (
     <section

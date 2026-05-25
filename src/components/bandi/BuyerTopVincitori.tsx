@@ -41,7 +41,7 @@ export default function BuyerTopVincitori({ vincitori, ente }: Props) {
       <p className="text-sm text-secondary-text mb-5 leading-relaxed">
         Le imprese che si sono aggiudicate piu&apos; gare bandite da{' '}
         <strong className="text-foreground">{ente}</strong>. Un operatore che
-        ricorre spesso e&apos; un incumbent radicato da considerare prima di partecipare.
+        ricorre spesso e&apos; gia&apos; radicato: da considerare prima di partecipare.
       </p>
 
       <ul className="space-y-2.5">

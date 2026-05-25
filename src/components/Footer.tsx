@@ -133,7 +133,7 @@ export default function Footer() {
           </div>
         </div>
         <p className="mt-3 text-xs text-background/40 max-w-3xl">
-          {siteConfig.companyName} · {siteConfig.companyPiva} · Dati aggregati a fini informativi · Base legale: Art. 6.1.f GDPR (legittimo interesse)
+          {siteConfig.companyName} · {siteConfig.companyPiva} · Dati aggregati a fini informativi · Base legale: Art. 6, par. 1, lett. f) GDPR (legittimo interesse)
         </p>
 
         {/* Press kit per giornalisti — citazione standardizzata */}

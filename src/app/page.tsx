@@ -133,7 +133,7 @@ export default async function HomePage() {
           <div className="max-w-5xl mx-auto text-center">
             <p className="mb-10 inline-flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
               <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2} />
-              <span>Bandi e gare d&apos;appalto · Fonti pubbliche · GDPR</span>
+              <span>Gare d&apos;appalto pubbliche · Fonti TED e ANAC · Solo persone giuridiche</span>
             </p>
 
             <h1
@@ -141,14 +141,14 @@ export default async function HomePage() {
               className="font-black tracking-[-0.055em] leading-[0.88] text-foreground text-balance"
               style={{ fontSize: 'clamp(2.5rem, 7.5vw + 0.5rem, 7rem)' }}
             >
-              Tutte le gare<br />
-              d&apos;appalto pubbliche,{' '}
-              <em className="italic font-black text-construction">in chiaro</em>.
+              Gli altri ti dicono quali bandi escono.<br />
+              Noi chi li{' '}
+              <em className="italic font-black text-construction">vince</em>.
             </h1>
 
             <p className="mt-10 md:mt-14 text-lg md:text-2xl font-light leading-relaxed text-secondary-text max-w-3xl mx-auto text-pretty">
-              Oggetto, ente, importo, scadenze e chi vince. I bandi pubblici italiani
-              aggregati da TED e ANAC, curati e leggibili. Senza opacità, senza abbonamenti per consultare.
+              Chi si aggiudica le gare, con quale raggruppamento e a che ribasso. L&apos;intelligence
+              su 50.882 bandi e 11.901 imprese vincitrici. La consultazione è gratuita.
             </p>
 
             <div className="mt-12 md:mt-16 max-w-2xl mx-auto">
@@ -279,16 +279,16 @@ export default async function HomePage() {
         spacing="default"
         align="center"
         tone="muted"
-        eyebrow="Perché qui e non altrove"
-        title="Non solo il dato grezzo: il contesto che conta"
-        subtitle="I dati ANAC e TED sono pubblici ma frammentati e illeggibili. Noi li rendiamo navigabili e ci aggiungiamo l'unica cosa che il dato grezzo non dice."
+        eyebrow="Quello che il bando nudo non dice"
+        title="Sul bando leggi le regole. Da noi leggi la partita."
+        subtitle="I dati ANAC e TED dicono cosa esiste. Noi aggiungiamo le tre cose che decidono se vale la pena correre."
         headerMaxW="lg"
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border-t border-border">
           {[
-            { icon: FileSearch, title: 'Curatela e leggibilità', body: 'Ogni gara ha categoria CPV, procedura e importo normalizzati, con etichette comprensibili. Niente PDF da decifrare.' },
-            { icon: Award, title: 'Chi vince le gare', body: 'Quando la gara è aggiudicata mostriamo l\'impresa o il raggruppamento vincitore: il track record che il bando nudo non racconta.' },
-            { icon: ShieldCheck, title: 'Trasparenza GDPR', body: 'Solo dati di persone giuridiche e fonte dichiarata. Nessun dato personale di persone fisiche pubblicato.' },
+            { icon: Award, title: 'Chi vince da quell\'ente', body: 'Quando una gara è aggiudicata, mostriamo la ragione sociale del vincitore, singolo o in raggruppamento. È il track record che il bando da solo non racconta.' },
+            { icon: FileSearch, title: 'Quanto è affollata', body: 'Su una stessa gara sono arrivate fino a 575 offerte. Sapere dove c\'è la ressa ti dice su cosa non sprecare giorni di lavoro.' },
+            { icon: ShieldCheck, title: 'Con chi si vince (RTI)', body: 'Metà delle gare si aggiudica in raggruppamento: 25.495 su tutto il mercato. Vedere chi si allea con chi vale quanto vedere chi compete da solo.' },
           ].map((s, i) => {
             const Icon = s.icon;
             return (
@@ -352,11 +352,11 @@ export default async function HomePage() {
               <span aria-hidden="true" className="h-px w-8 bg-foreground/30" />
             </p>
             <h2 className="font-black tracking-[-0.04em] leading-[0.95] text-foreground text-balance mb-8" style={{ fontSize: 'clamp(2rem, 4vw + 0.5rem, 4.5rem)' }}>
-              Vinci più gare<br className="hidden md:block" /> con i dati dalla tua parte.
+              Tu vedi il tuo bando.<br className="hidden md:block" /> Noi vediamo tutto il mercato.
             </h2>
             <p className="text-base md:text-lg text-secondary-text leading-relaxed max-w-2xl mx-auto mb-12">
-              Iscriviti gratis al network. Alert sui bandi della tua categoria, monitoraggio dei
-              concorrenti e accesso ai documenti di gara. Niente carta di credito per iniziare.
+              Crea un account gratuito sulla rete: alert sulle gare della tua categoria, affinità
+              bando-azienda e dossier sui concorrenti. Gratis per iniziare.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
               <a

@@ -38,7 +38,7 @@ const faqs = [
   },
   {
     q: 'Qual è la base legale del trattamento?',
-    a: 'Per i dati di gara e le imprese aggiudicatarie (persone giuridiche) il trattamento è fuori dall\'ambito del GDPR (Considerando 14). Ove fossero presenti dati di persone fisiche, la base legale è l\'Art. 6.1.f GDPR (legittimo interesse all\'informazione e alla trasparenza del mercato), rafforzato dalla natura pubblica della fonte, con informativa ex Art. 14 GDPR (dati raccolti da terzi).',
+    a: 'Per i dati di gara e le imprese aggiudicatarie (persone giuridiche) il trattamento è fuori dall\'ambito del GDPR (Considerando 14). Ove fossero presenti dati di persone fisiche, la base legale è l\'Art. 6, par. 1, lett. f) GDPR (legittimo interesse all\'informazione e alla trasparenza del mercato), rafforzato dalla natura pubblica della fonte, con informativa ex Art. 14 GDPR (dati raccolti da terzi).',
   },
   {
     q: 'Pubblicate dati personali di persone fisiche?',
@@ -89,7 +89,7 @@ export default function ComeTrattiamoIDatiPage() {
               <Scale className="h-6 w-6 text-foreground mb-2" />
               <h3 className="font-semibold mb-1">Base legale GDPR</h3>
               <p className="text-sm text-secondary-text">
-                Imprese (PG) fuori GDPR (Cons. 14). Per dati di persone fisiche: Art. 6.1.f + informativa Art. 14.
+                Imprese (PG) fuori GDPR (Cons. 14). Per dati di persone fisiche: Art. 6, par. 1, lett. f) + informativa Art. 14.
               </p>
             </div>
             <div className="rounded-2xl border border-border bg-white p-5">

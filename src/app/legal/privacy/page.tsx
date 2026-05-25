@@ -50,11 +50,11 @@ export default function PrivacyPage() {
             </li>
             <li>
               Eventuali dati di <strong>persone fisiche</strong> presenti nelle fonti sono trattati ai fini di
-              informazione e trasparenza del mercato degli appalti: <strong>Art. 6.1.f GDPR</strong> (legittimo
+              informazione e trasparenza del mercato degli appalti: <strong>Art. 6, par. 1, lett. f) GDPR</strong> (legittimo
               interesse), con informativa ex <strong>Art. 14 GDPR</strong> (dati raccolti da terzi).
             </li>
             <li>
-              Analisi anonima del traffico per migliorare il servizio: <strong>Art. 6.1.a GDPR</strong> (consenso).
+              Analisi anonima del traffico per migliorare il servizio: <strong>Art. 6, par. 1, lett. a) GDPR</strong> (consenso).
             </li>
             <li>
               Gestione richieste e contatti privacy: <strong>Art. 6.1.c GDPR</strong> (obbligo legale).
