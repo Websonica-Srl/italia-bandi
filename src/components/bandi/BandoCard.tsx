@@ -13,7 +13,7 @@ interface Props {
 }
 
 /**
- * Card bando — usata in home, /bandi, /categoria/[cpv], /scadenze.
+ * Card bando — usata in home, /bandi, /categoria/[slug], /scadenze.
  * Gestisce l'oggetto degradato dei dati TED con fallback editoriale.
  */
 export default function BandoCard({ bando, externalBase }: Props) {

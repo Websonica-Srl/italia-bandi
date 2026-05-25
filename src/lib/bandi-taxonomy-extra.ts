@@ -10,7 +10,7 @@
  *   - funzione `cpvGroup(cpv)` (prefisso a 2 cifre del gruppo CPV)
  *   - copertura `CPV_GROUP_LABELS` per i gruppi a 2 cifre (il package mappa solo
  *     44/45/71 + alcuni sotto-prefissi; il sito raggruppa per prime 2 cifre)
- *   - `CPV_GROUP_EDITORIAL` (testo editoriale per le pagine /categoria/[cpv])
+ *   - `CPV_GROUP_EDITORIAL` (testo editoriale per le pagine /categoria/[slug])
  */
 import { cpvGroupLabel as cpvGroupLabelPkg } from '@websonica/cantieri-core';
 
@@ -70,6 +70,45 @@ export const CPV_GROUP_LABELS_2D: Record<string, string> = {
 };
 
 /**
+ * Slugify deterministico: minuscole, accenti rimossi (NFD), spazi → '-',
+ * scarta ogni carattere non [a-z0-9-], collassa i trattini multipli.
+ */
+function slugify(label: string): string {
+  return label
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '') // diacritici
+    .toLowerCase()
+    .replace(/&/g, ' e ')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-{2,}/g, '-');
+}
+
+/**
+ * Slug parlante per gruppo CPV (2 cifre) → derivato dalle label leggibili.
+ * Es. '45' → 'lavori-di-costruzione', '71' → 'servizi-di-architettura-e-ingegneria',
+ * '90' → 'servizi-ambientali-e-di-smaltimento-rifiuti'. Generato per OGNI gruppo
+ * con label nota — sia quelli del package (44/45/71...) sia quelli del dizionario
+ * locale a 2 cifre — così gli URL sono parlanti per tutte le categorie navigabili.
+ *
+ * NB: definito DOPO `cpvGroupLabel` (vedi sotto) tramite costruzione lazy: per
+ * evitare problemi di ordine di valutazione lo popoliamo iterando i gruppi 00-99
+ * e risolvendo la label via la stessa funzione usata dalle pagine.
+ */
+export const CPV_GROUP_SLUGS: Record<string, string> = {};
+const SLUG_TO_CPV_GROUP: Record<string, string> = {};
+
+/** Gruppo CPV (2 cifre) → slug parlante. Fallback: il gruppo stesso. */
+export function cpvGroupToSlug(group: string): string {
+  return CPV_GROUP_SLUGS[group] || group;
+}
+
+/** Slug parlante → gruppo CPV (2 cifre), oppure null se non riconosciuto. */
+export function slugToCpvGroup(slug: string): string | null {
+  return SLUG_TO_CPV_GROUP[slug] || null;
+}
+
+/**
  * Label leggibile di un gruppo CPV. Fonte primaria: package (`cpvGroupLabelPkg`,
  * match per prefisso più lungo). Fallback: mappa a 2 cifre locale, per i gruppi
  * che il package non copre ancora (es. "90", "50", "33"...).
@@ -88,6 +127,24 @@ export function cpvGroupLabel(cpv: string | null | undefined): string {
   if (g && CPV_GROUP_LABELS_2D[g]) return CPV_GROUP_LABELS_2D[g];
   return fromPkg;
 }
+
+/**
+ * Popola CPV_GROUP_SLUGS / SLUG_TO_CPV_GROUP per TUTTI i gruppi a 2 cifre con
+ * label nota (package + dizionario locale). Eseguito una sola volta al load del
+ * modulo. In caso di collisione di slug (improbabile) vince il primo gruppo.
+ */
+(() => {
+  for (let n = 0; n <= 99; n++) {
+    const group = String(n).padStart(2, '0');
+    const label = cpvGroupLabel(group);
+    // Scarta i gruppi senza label leggibile (label === codice grezzo).
+    if (label === group) continue;
+    const slug = slugify(label);
+    if (!slug) continue;
+    CPV_GROUP_SLUGS[group] = slug;
+    if (!SLUG_TO_CPV_GROUP[slug]) SLUG_TO_CPV_GROUP[slug] = group;
+  }
+})();
 
 /**
  * Descrizione editoriale estesa per la pagina hub di categoria (contenuto UNICO,

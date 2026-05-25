@@ -22,7 +22,7 @@ import {
 } from '@/lib/province';
 import { PROVINCIA_INTRO } from '@/lib/province';
 import { formatNumber, formatEuro, bandoTitolo } from '@/lib/utils';
-import { cpvGroupLabel } from '@/lib/bandi-taxonomy-extra';
+import { cpvGroupLabel, cpvGroupToSlug } from '@/lib/bandi-taxonomy-extra';
 import BandoCard from '@/components/bandi/BandoCard';
 import BreadcrumbCantiere from '@/components/cantieri/BreadcrumbCantiere';
 import FAQ from '@/components/cantieri/FAQ';
@@ -241,7 +241,7 @@ export default async function ProvinciaPage({ params }: PageProps) {
               {stats.topCpv.map((c) => (
                 <Link
                   key={c.group}
-                  href={`/categoria/${c.group}`}
+                  href={`/categoria/${cpvGroupToSlug(c.group)}`}
                   className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-foreground/40 hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <Tag className="h-3 w-3" strokeWidth={2} />

@@ -20,7 +20,7 @@ interface Props {
  * Filtri bandi — naviga a /bandi con querystring.
  * Le pagine /bandi con querystring di ricerca/filtro sono noindex (gestito
  * lato page con generateMetadata): il valore unico SEO è la lista base + le
- * pagine /categoria/[cpv] indicizzabili.
+ * pagine /categoria/[slug] indicizzabili.
  */
 export default function FiltriBandi({ cpvOptions }: Props) {
   const router = useRouter();

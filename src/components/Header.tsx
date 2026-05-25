@@ -6,7 +6,7 @@ import { Menu, X, ArrowRight, Gavel } from 'lucide-react';
 
 const navItems = [
   { label: 'Bandi', href: '/bandi' },
-  { label: 'Categorie', href: '/categoria/45' },
+  { label: 'Categorie', href: '/categoria/lavori-di-costruzione' },
   { label: 'Classifiche', href: '/classifiche' },
   { label: 'Regioni', href: '/regioni' },
   { label: 'In scadenza', href: '/scadenze' },

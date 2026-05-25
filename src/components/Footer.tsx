@@ -55,8 +55,8 @@ export default function Footer() {
               <h4 className="kpi-hero-label text-background/55 mb-5">Esplora</h4>
               <ul className="space-y-3.5 text-sm">
                 <li><FooterLink href="/bandi">Tutti i bandi</FooterLink></li>
-                <li><FooterLink href="/categoria/45">Lavori di costruzione</FooterLink></li>
-                <li><FooterLink href="/categoria/71">Architettura e ingegneria</FooterLink></li>
+                <li><FooterLink href="/categoria/lavori-di-costruzione">Lavori di costruzione</FooterLink></li>
+                <li><FooterLink href="/categoria/servizi-di-architettura-e-ingegneria">Architettura e ingegneria</FooterLink></li>
                 <li><FooterLink href="/classifiche">Classifiche vincitori</FooterLink></li>
                 <li><FooterLink href="/regioni">Bandi per regione</FooterLink></li>
                 <li><FooterLink href="/scadenze">Bandi in scadenza</FooterLink></li>

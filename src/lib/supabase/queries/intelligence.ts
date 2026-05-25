@@ -361,7 +361,7 @@ export async function getLandscape(
  * Landscape SINTETICO di un gruppo CPV (M7), aggregato sulle righe per regione ×
  * fascia in un'unica fotografia leggibile in SEO. Pondera i ribassi/offerte/HHI/
  * RTI/quota_top3 per numero di gare (media pesata) e somma i conteggi. Usato dai
- * blocchi "quanto e' contendibile" sulle pagine /categoria/[cpv] e /[regione].
+ * blocchi "quanto e' contendibile" sulle pagine /categoria/[slug] e /[regione].
  */
 export interface LandscapeSummary {
   /** Numero righe di segmento aggregate (regione × fascia). */

@@ -13,7 +13,7 @@ import {
   getBandiByCpvGroup,
 } from '@/lib/supabase/queries/bandi';
 import { formatNumber, formatEuro, bandoTitolo } from '@/lib/utils';
-import { cpvGroupLabel } from '@/lib/bandi-taxonomy-extra';
+import { cpvGroupLabel, cpvGroupToSlug } from '@/lib/bandi-taxonomy-extra';
 import { ogImageUrl, howToLd, safeJsonLd, itemListLd } from '@/lib/seo/structured-data';
 import { siteConfig, hubUrl } from '@/lib/site-config';
 
@@ -155,9 +155,9 @@ export default async function HomePage() {
               <SearchBandi placeholder="Cerca per oggetto, ente o CIG…" />
               <p className="mt-5 text-sm text-muted-foreground">
                 Sfoglia per categoria:{' '}
-                <Link href="/categoria/45" className="text-foreground underline-offset-4 hover:underline transition-colors">Lavori di costruzione</Link>
+                <Link href="/categoria/lavori-di-costruzione" className="text-foreground underline-offset-4 hover:underline transition-colors">Lavori di costruzione</Link>
                 {' · '}
-                <Link href="/categoria/71" className="text-foreground underline-offset-4 hover:underline transition-colors">Architettura e ingegneria</Link>
+                <Link href="/categoria/servizi-di-architettura-e-ingegneria" className="text-foreground underline-offset-4 hover:underline transition-colors">Architettura e ingegneria</Link>
                 {' · '}
                 <Link href="/scadenze" className="text-muted-foreground hover:text-foreground underline-offset-4 hover:underline transition-colors">in scadenza</Link>
               </p>
@@ -229,7 +229,7 @@ export default async function HomePage() {
           {topCpv.map((c) => (
             <Link
               key={c.group}
-              href={`/categoria/${c.group}`}
+              href={`/categoria/${cpvGroupToSlug(c.group)}`}
               className="group relative bg-white border border-border rounded-3xl p-7 md:p-8 transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-foreground/30 hover:shadow-[0_18px_40px_-18px_rgba(17,17,17,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               aria-label={`Bandi della categoria ${cpvGroupLabel(c.group)}`}
             >

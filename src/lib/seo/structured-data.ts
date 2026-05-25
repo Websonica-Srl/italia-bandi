@@ -74,7 +74,7 @@ export function websiteLd() {
   };
 }
 
-/** ItemList per le liste di bandi (home, /bandi, /categoria/[cpv], /scadenze). */
+/** ItemList per le liste di bandi (home, /bandi, /categoria/[slug], /scadenze). */
 export function itemListLd(
   items: { name: string; url: string }[],
   listName?: string,

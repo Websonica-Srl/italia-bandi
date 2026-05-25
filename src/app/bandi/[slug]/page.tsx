@@ -6,7 +6,7 @@ import { getBandoBySlug, getAggiudicatariByBando } from '@/lib/supabase/queries/
 import { getBuyer } from '@/lib/supabase/queries/intelligence';
 import { formatDate, formatEuro, formatPct, bandoTitolo, truncate } from '@/lib/utils';
 import { proceduraLabel } from '@websonica/cantieri-core';
-import { cpvGroupLabel, cpvGroup } from '@/lib/bandi-taxonomy-extra';
+import { cpvGroupLabel, cpvGroup, cpvGroupToSlug } from '@/lib/bandi-taxonomy-extra';
 import { bandoLd, faqLd, safeJsonLd } from '@/lib/seo/structured-data';
 import { isBandoIndexable } from '@/lib/seo/indexable';
 import { provinciaFromSigla } from '@/lib/province';
@@ -112,7 +112,7 @@ export default async function BandoPage({ params }: PageProps) {
           <BreadcrumbCantiere
             steps={[
               { label: 'Bandi', href: '/bandi' },
-              ...(grp ? [{ label: cpvLabel, href: `/categoria/${grp}` }] : []),
+              ...(grp ? [{ label: cpvLabel, href: `/categoria/${cpvGroupToSlug(grp)}` }] : []),
               ...(provCoerente && regSlug
                 ? [{ label: provCoerente.nome, href: `/${regSlug}/${provCoerente.slug}` }]
                 : []),
@@ -127,7 +127,7 @@ export default async function BandoPage({ params }: PageProps) {
               </span>
               {grp && (
                 <Link
-                  href={`/categoria/${grp}`}
+                  href={`/categoria/${cpvGroupToSlug(grp)}`}
                   className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1 text-xs font-medium text-foreground border border-border hover:border-foreground/40 transition-colors"
                 >
                   <Tag className="h-3 w-3" strokeWidth={2} /> {cpvLabel}
@@ -270,7 +270,7 @@ export default async function BandoPage({ params }: PageProps) {
               )}
               {grp && (
                 <Link
-                  href={`/categoria/${grp}`}
+                  href={`/categoria/${cpvGroupToSlug(grp)}`}
                   className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-foreground/40 hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <Tag className="h-3 w-3" strokeWidth={2} />

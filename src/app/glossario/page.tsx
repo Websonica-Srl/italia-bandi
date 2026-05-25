@@ -76,7 +76,7 @@ const TERMS: GlossaryTerm[] = [
     definition:
       'Il CPV (Vocabolario Comune per gli Appalti) è la classificazione europea standard che identifica l\'oggetto di un appalto pubblico tramite un codice numerico. Le prime due cifre indicano la divisione (es. 45 = lavori di costruzione, 71 = servizi di architettura e ingegneria). Permette di cercare le gare per tipologia in tutta l\'Unione Europea.',
     example: 'Una gara per la progettazione di una scuola avrà un CPV che inizia per 71 (servizi di architettura e ingegneria).',
-    relatedPath: '/categoria/45',
+    relatedPath: '/categoria/lavori-di-costruzione',
   },
   {
     termCode: 'SOA',
@@ -162,14 +162,14 @@ const TERMS: GlossaryTerm[] = [
     name: 'Categorie OG (Opere Generali)',
     definition:
       'Le categorie OG (Opere Generali) sono le classificazioni SOA per opere edili e civili generali (OG1 edifici civili e industriali, OG2 restauro beni tutelati, OG3 strade e ponti, e così via fino a OG13). Indicano l\'ambito di lavori per cui un\'impresa è qualificata a partecipare alle gare pubbliche sopra 150.000 €.',
-    relatedPath: '/categoria/45',
+    relatedPath: '/categoria/lavori-di-costruzione',
   },
   {
     termCode: 'OS',
     name: 'Categorie OS (Opere Specializzate)',
     definition:
       'Le categorie OS (Opere Specializzate) sono le classificazioni SOA per lavori specialistici (OS1-OS35): ad esempio OS6 finiture, OS8 strutture in cemento armato, OS28 impianti termici, OS30 impianti elettrici. Alcune sono a qualificazione obbligatoria: l\'impresa deve possederle o subappaltarle a una specializzata.',
-    relatedPath: '/categoria/45',
+    relatedPath: '/categoria/lavori-di-costruzione',
   },
   {
     termCode: 'OEPV',

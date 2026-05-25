@@ -13,6 +13,7 @@ import {
 import { regioneSlug } from '@/lib/regioni';
 import { provinciaFromSigla } from '@/lib/province';
 import { buyerSlug } from '@/lib/buyer';
+import { cpvGroupToSlug } from '@/lib/bandi-taxonomy-extra';
 
 export const revalidate = 3600;
 
@@ -94,7 +95,7 @@ export default async function sitemap({
   if (id === 1) {
     const groups = await getBandiByCpvGroup();
     return groups.map((g) => ({
-      url: `${baseUrl}/categoria/${g.group}`,
+      url: `${baseUrl}/categoria/${cpvGroupToSlug(g.group)}`,
       lastModified: now,
       changeFrequency: 'daily' as const,
       priority: 0.8,

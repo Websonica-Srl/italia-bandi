@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { ArrowRight, ShieldCheck, Tag } from 'lucide-react';
 import {
   getBandi,
@@ -18,6 +18,8 @@ import { MapPin, Trophy } from 'lucide-react';
 import { formatNumber, formatEuro, formatPct, bandoTitolo } from '@/lib/utils';
 import {
   cpvGroupLabel,
+  cpvGroupToSlug,
+  slugToCpvGroup,
   CPV_GROUP_EDITORIAL,
 } from '@/lib/bandi-taxonomy-extra';
 import BandoCard from '@/components/bandi/BandoCard';
@@ -32,35 +34,55 @@ import { siteConfig } from '@/lib/site-config';
 export const revalidate = 3600;
 
 interface PageProps {
-  params: { cpv: string };
+  params: { slug: string };
 }
 
-/** Pre-render le pagine categoria dei gruppi CPV realmente presenti. */
+/**
+ * Pre-render le pagine categoria dei gruppi CPV realmente presenti, usando gli
+ * SLUG parlanti (URL SEO) e non più i codici numerici.
+ */
 export async function generateStaticParams() {
   try {
     const groups = await getBandiByCpvGroup();
-    return groups.map((g) => ({ cpv: g.group }));
+    return groups.map((g) => ({ slug: cpvGroupToSlug(g.group) }));
   } catch {
     // Se l'env Supabase non è disponibile a build time, renderizza on-demand.
     return [];
   }
 }
 
-function isValidGroup(cpv: string): boolean {
-  // Gruppo CPV a 2 cifre noto: la label risolta (package + fallback locale)
-  // deve essere diversa dal codice grezzo.
-  return /^\d{2}$/.test(cpv) && cpvGroupLabel(cpv) !== cpv;
+/**
+ * Risolve lo slug di rotta nel gruppo CPV a 2 cifre.
+ * - slug parlante noto → gruppo
+ * - vecchio URL numerico (/^\d+$/) → ritorna { group, redirectTo } per 308
+ * - altrimenti null → notFound
+ */
+function resolveSlug(
+  slug: string,
+): { group: string; redirectTo: string | null } | null {
+  // Vecchio URL numerico: 301/308 permanente verso lo slug parlante.
+  if (/^\d+$/.test(slug)) {
+    const group = slug.padStart(2, '0').slice(0, 2);
+    if (cpvGroupLabel(group) === group) return null; // gruppo ignoto → 404
+    return { group, redirectTo: `/categoria/${cpvGroupToSlug(group)}` };
+  }
+  const group = slugToCpvGroup(slug);
+  if (!group) return null;
+  return { group, redirectTo: null };
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  if (!isValidGroup(params.cpv)) return { title: 'Categoria non trovata' };
-  const label = cpvGroupLabel(params.cpv);
-  const count = await getBandiCountByCpvGroup(params.cpv);
-  const title = `Bandi di gara ${label} (CPV ${params.cpv}) in Italia`;
-  const description = `${count} bandi e gare d'appalto per la categoria "${label}" (CPV ${params.cpv}): importi, scadenze e aggiudicatari. Dati pubblici aggiornati.`;
+  const resolved = resolveSlug(params.slug);
+  if (!resolved) return { title: 'Categoria non trovata' };
+  const cpv = resolved.group;
+  const slug = cpvGroupToSlug(cpv);
+  const label = cpvGroupLabel(cpv);
+  const count = await getBandiCountByCpvGroup(cpv);
+  const title = `Bandi di gara ${label} (CPV ${cpv}) in Italia`;
+  const description = `${count} bandi e gare d'appalto per la categoria "${label}" (CPV ${cpv}): importi, scadenze e aggiudicatari. Dati pubblici aggiornati.`;
   const ogImage = ogImageUrl({
     title: `Bandi ${label}`,
-    subtitle: `Categoria CPV ${params.cpv} · gare d'appalto pubbliche`,
+    subtitle: `Categoria CPV ${cpv} · gare d'appalto pubbliche`,
     kind: 'bando',
     count: formatNumber(count),
     label: 'bandi pubblici',
@@ -68,32 +90,36 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title,
     description,
-    alternates: { canonical: `/categoria/${params.cpv}` },
-    openGraph: { title, description, url: `/categoria/${params.cpv}`, type: 'website', images: [{ url: ogImage, width: 1200, height: 630, alt: title }] },
+    alternates: { canonical: `/categoria/${slug}` },
+    openGraph: { title, description, url: `/categoria/${slug}`, type: 'website', images: [{ url: ogImage, width: 1200, height: 630, alt: title }] },
     twitter: { card: 'summary_large_image', title, description, images: [ogImage] },
   };
 }
 
 export default async function CategoriaPage({ params }: PageProps) {
-  if (!isValidGroup(params.cpv)) notFound();
+  const resolved = resolveSlug(params.slug);
+  if (!resolved) notFound();
+  // Vecchio URL numerico → 308 permanente verso lo slug parlante.
+  if (resolved.redirectTo) permanentRedirect(resolved.redirectTo);
 
-  const label = cpvGroupLabel(params.cpv);
-  const editorial = CPV_GROUP_EDITORIAL[params.cpv];
+  const cpv = resolved.group;
+  const label = cpvGroupLabel(cpv);
+  const editorial = CPV_GROUP_EDITORIAL[cpv];
 
   const [{ data: bandi, total }, allGroups, regioniCpv, landscape, rti, topVincitori] =
     await Promise.all([
-      getBandi({ cpvGroup: params.cpv, limit: 12, orderBy: 'data_pubblicazione', orderDirection: 'desc' }),
+      getBandi({ cpvGroup: cpv, limit: 12, orderBy: 'data_pubblicazione', orderDirection: 'desc' }),
       getBandiByCpvGroup(),
-      getRegioniByCpvGroup(params.cpv, 8),
-      getLandscapeSummary(params.cpv),
-      getRtiPartners({ cpvGroup: params.cpv, limit: 6 }),
-      getLeaderboard({ cpvGroup: params.cpv, limit: 10 }),
+      getRegioniByCpvGroup(cpv, 8),
+      getLandscapeSummary(cpv),
+      getRtiPartners({ cpvGroup: cpv, limit: 6 }),
+      getLeaderboard({ cpvGroup: cpv, limit: 10 }),
     ]);
 
   if (total === 0) notFound();
 
   const importoTot = bandi.reduce((s, b) => s + (Number(b.importo_base) || 0), 0);
-  const otherGroups = allGroups.filter((g) => g.group !== params.cpv).slice(0, 6);
+  const otherGroups = allGroups.filter((g) => g.group !== cpv).slice(0, 6);
 
   const itemList = itemListLd(
     bandi.map((b) => ({ name: bandoTitolo(b, label), url: `${siteConfig.baseUrl}/bandi/${b.slug}` })),
@@ -102,12 +128,12 @@ export default async function CategoriaPage({ params }: PageProps) {
 
   const faqs = [
     {
-      q: `Cosa comprende la categoria CPV ${params.cpv} (${label})?`,
-      a: editorial?.cosa || `La categoria CPV ${params.cpv} "${label}" raggruppa le gare d'appalto pubbliche il cui oggetto rientra in questa divisione del Vocabolario Comune per gli Appalti europeo.`,
+      q: `Cosa comprende la categoria CPV ${cpv} (${label})?`,
+      a: editorial?.cosa || `La categoria CPV ${cpv} "${label}" raggruppa le gare d'appalto pubbliche il cui oggetto rientra in questa divisione del Vocabolario Comune per gli Appalti europeo.`,
     },
     {
       q: `Quanti bandi sono disponibili per la categoria ${label}?`,
-      a: `Attualmente abbiamo ${formatNumber(total)} bandi pubblici tracciati nella categoria CPV ${params.cpv}. L'elenco si aggiorna automaticamente dalle fonti pubbliche.`,
+      a: `Attualmente abbiamo ${formatNumber(total)} bandi pubblici tracciati nella categoria CPV ${cpv}. L'elenco si aggiorna automaticamente dalle fonti pubbliche.`,
     },
     {
       q: `Chi vince le gare della categoria ${label}?`,
@@ -126,7 +152,7 @@ export default async function CategoriaPage({ params }: PageProps) {
             <BreadcrumbCantiere steps={[{ label: 'Bandi', href: '/bandi' }, { label }]} />
             <p className="mb-8 inline-flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
               <Tag className="h-3.5 w-3.5" strokeWidth={2} />
-              <span>Categoria CPV {params.cpv} · Gare d&apos;appalto</span>
+              <span>Categoria CPV {cpv} · Gare d&apos;appalto</span>
             </p>
             <h1 id="cat-hero-heading" className="font-black tracking-[-0.05em] leading-[0.92] text-foreground text-balance mb-8" style={{ fontSize: 'clamp(2.25rem, 5.5vw + 0.5rem, 5rem)' }}>
               Bandi di gara<br className="hidden sm:block" />{' '}
@@ -134,7 +160,7 @@ export default async function CategoriaPage({ params }: PageProps) {
             </h1>
             <p className="text-lg md:text-xl font-light leading-relaxed text-secondary-text max-w-3xl text-pretty">
               <span className="font-black tabular-nums text-foreground text-2xl md:text-3xl mr-1.5 tracking-tight">{formatNumber(total)}</span>
-              bandi pubblici nella categoria CPV {params.cpv}. {editorial?.intro || `Gare d'appalto il cui oggetto rientra nella divisione "${label}" del Vocabolario Comune per gli Appalti europeo.`}
+              bandi pubblici nella categoria CPV {cpv}. {editorial?.intro || `Gare d'appalto il cui oggetto rientra nella divisione "${label}" del Vocabolario Comune per gli Appalti europeo.`}
             </p>
           </div>
         </div>
@@ -148,7 +174,7 @@ export default async function CategoriaPage({ params }: PageProps) {
               <h2 className="text-base font-bold mb-3">Cosa comprende</h2>
               <p className="text-[15px] text-secondary-text leading-relaxed text-pretty">
                 {editorial?.cosa ||
-                  `La categoria CPV ${params.cpv} "${label}" raggruppa le gare d'appalto pubbliche il cui oggetto rientra in questa divisione del Vocabolario Comune per gli Appalti europeo.`}
+                  `La categoria CPV ${cpv} "${label}" raggruppa le gare d'appalto pubbliche il cui oggetto rientra in questa divisione del Vocabolario Comune per gli Appalti europeo.`}
               </p>
             </div>
             <div className="rounded-3xl border border-border bg-secondary/30 p-7 md:p-8">
@@ -195,7 +221,7 @@ export default async function CategoriaPage({ params }: PageProps) {
                 </h2>
               </div>
               <Link
-                href={`/classifiche/cpv-${params.cpv}`}
+                href={`/classifiche/cpv-${cpv}`}
                 className="group inline-flex items-center gap-1.5 text-sm font-medium text-foreground rounded-full border border-border bg-white px-5 py-2.5 transition-all hover:border-foreground/30 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 Classifica completa
@@ -231,7 +257,7 @@ export default async function CategoriaPage({ params }: PageProps) {
                 {bandi.length} gare recenti per un valore complessivo di {formatEuro(importoTot, { compact: true })} a base di gara.
               </p>
             </div>
-            <Link href={`/bandi?cpv=${params.cpv}`} className="group inline-flex items-center gap-1.5 text-sm font-medium text-foreground rounded-full border border-border bg-white px-5 py-2.5 transition-all hover:border-foreground/30 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+            <Link href={`/bandi?cpv=${cpv}`} className="group inline-flex items-center gap-1.5 text-sm font-medium text-foreground rounded-full border border-border bg-white px-5 py-2.5 transition-all hover:border-foreground/30 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
               Tutti i bandi di questa categoria
               <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" strokeWidth={2} />
             </Link>
@@ -275,7 +301,7 @@ export default async function CategoriaPage({ params }: PageProps) {
               {otherGroups.map((g) => (
                 <Link
                   key={g.group}
-                  href={`/categoria/${g.group}`}
+                  href={`/categoria/${cpvGroupToSlug(g.group)}`}
                   className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-foreground/40 hover:-translate-y-0.5 hover:shadow-sm"
                 >
                   {cpvGroupLabel(g.group)}

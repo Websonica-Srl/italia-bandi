@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Building2, Users, Trophy, MapPin, Tag } from 'lucide-react';
 import type { LeaderboardRow } from '@/lib/supabase/queries/intelligence';
-import { cpvGroupLabel } from '@/lib/bandi-taxonomy-extra';
+import { cpvGroupLabel, cpvGroupToSlug } from '@/lib/bandi-taxonomy-extra';
 import { formatNumber, formatPct } from '@/lib/utils';
 import { hubUrl } from '@/lib/site-config';
 
@@ -102,7 +102,7 @@ export default function LeaderboardTable({
                     <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
                       {r.top_cpv2 ? (
                         <Link
-                          href={`/categoria/${r.top_cpv2}`}
+                          href={`/categoria/${cpvGroupToSlug(r.top_cpv2)}`}
                           className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
                         >
                           <Tag className="h-3 w-3" strokeWidth={2} aria-hidden="true" />
