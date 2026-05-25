@@ -297,7 +297,7 @@ export default async function RegionePage({ params }: PageProps) {
               </p>
             </div>
             <Link
-              href={`/bandi?q=${encodeURIComponent(nome)}`}
+              href={`/bandi?regione=${encodeURIComponent(nome)}`}
               className="group inline-flex items-center gap-1.5 text-sm font-medium text-foreground rounded-full border border-border bg-white px-5 py-2.5 transition-all hover:border-foreground/30 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               Cerca altri bandi in {nome}

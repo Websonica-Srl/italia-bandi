@@ -28,6 +28,7 @@ interface PageProps {
     cpv?: string;
     procedura?: string;
     provincia?: string;
+    regione?: string;
     importo_min?: string;
     importo_max?: string;
     aperti?: string;
@@ -38,7 +39,7 @@ interface PageProps {
 /** È una "ricerca/filtro dinamica"? In tal caso noindex (anti-duplicazione SEO). */
 function isFiltered(sp: PageProps['searchParams']): boolean {
   return Boolean(
-    sp.q || sp.cpv || sp.procedura || sp.provincia || sp.importo_min || sp.importo_max || sp.aperti || sp.page,
+    sp.q || sp.cpv || sp.procedura || sp.provincia || sp.regione || sp.importo_min || sp.importo_max || sp.aperti || sp.page,
   );
 }
 
@@ -72,6 +73,7 @@ export default async function BandiPage({ searchParams }: PageProps) {
     cpvGroup: searchParams.cpv,
     procedura: searchParams.procedura,
     provincia: searchParams.provincia,
+    regione: searchParams.regione,
     importo_min: searchParams.importo_min ? Number(searchParams.importo_min) : undefined,
     importo_max: searchParams.importo_max ? Number(searchParams.importo_max) : undefined,
     soloAperti: searchParams.aperti === '1',
@@ -95,6 +97,7 @@ export default async function BandiPage({ searchParams }: PageProps) {
     const pInfo = provinciaFromSigla(searchParams.provincia);
     activeBits.push(pInfo ? `provincia di ${pInfo.nome}` : `provincia ${searchParams.provincia}`);
   }
+  if (searchParams.regione) activeBits.push(searchParams.regione);
   if (searchParams.aperti === '1') activeBits.push('termine aperto');
   if (searchParams.q) activeBits.push(`"${searchParams.q}"`);
 
@@ -113,6 +116,7 @@ export default async function BandiPage({ searchParams }: PageProps) {
     if (searchParams.cpv) qs.set('cpv', searchParams.cpv);
     if (searchParams.procedura) qs.set('procedura', searchParams.procedura);
     if (searchParams.provincia) qs.set('provincia', searchParams.provincia);
+    if (searchParams.regione) qs.set('regione', searchParams.regione);
     if (searchParams.importo_min) qs.set('importo_min', searchParams.importo_min);
     if (searchParams.importo_max) qs.set('importo_max', searchParams.importo_max);
     if (searchParams.aperti) qs.set('aperti', searchParams.aperti);
