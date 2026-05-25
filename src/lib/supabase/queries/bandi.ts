@@ -98,9 +98,13 @@ export async function getBandi(
     offset = 0,
   } = filters;
 
+  // count:'planned' (stima del planner, ~istantanea e accurata su questo dataset)
+  // invece di 'exact': l'exact-count via window sul view sanitizzato (50k righe)
+  // sfora il statement_timeout di 3s di anon → la query falliva e la lista restava
+  // VUOTA (es. /bandi, /scadenze). Il fetch della pagina è ~108ms.
   let query = supabase
     .from('bandi_gara_public')
-    .select(BANDO_COLS, { count: 'exact' });
+    .select(BANDO_COLS, { count: 'planned' });
 
   if (cpvGroup) query = query.like('cpv_principale', `${cpvGroup}%`);
   if (cpv) query = query.like('cpv_principale', `${cpv}%`);
@@ -261,25 +265,20 @@ export interface BandiStats {
 /** Statistiche reali aggregate per la homepage / blocchi dati. */
 export async function getBandiStats(): Promise<BandiStats> {
   const supabase: any = createServerClient();
-  const [totaleRes, scadRes, importoRes] = await Promise.all([
-    supabase.from('bandi_gara_public').select('id', { count: 'exact', head: true }),
-    supabase
-      .from('bandi_gara_public')
-      .select('id', { count: 'exact', head: true })
-      .gte('scadenza_offerte', new Date().toISOString()),
-    // somma importi: leggiamo importo_base e sommiamo lato server (dataset ~1.5k)
-    supabase.from('bandi_gara_public').select('importo_base, stazione_appaltante'),
-  ]);
-
-  const rows = (importoRes.data as { importo_base: number | null; stazione_appaltante: string | null }[]) || [];
-  const importoTotaleBase = rows.reduce((s, r) => s + (Number(r.importo_base) || 0), 0);
-  const enti = new Set(rows.map((r) => r.stazione_appaltante).filter(Boolean)).size;
-
+  // RPC aggregata lato DB (count/sum/count-distinct in una query, ~170ms): rimpiazza
+  // i count:'exact' (che andavano in timeout 3s → 0) e il select non limitato che
+  // calcolava enti/importo su sole ~1000 righe (cap PostgREST) sotto-contandoli.
+  const { data, error } = await supabase.rpc('get_bandi_home_stats');
+  const r = (data as any[])?.[0];
+  if (error || !r) {
+    console.error('[bandi] getBandiStats RPC error:', error?.message);
+    return { totale: 0, scadFuture: 0, enti: 0, importoTotaleBase: 0 };
+  }
   return {
-    totale: totaleRes.count || 0,
-    scadFuture: scadRes.count || 0,
-    enti,
-    importoTotaleBase,
+    totale: Number(r.totale) || 0,
+    scadFuture: Number(r.scad_future) || 0,
+    enti: Number(r.enti) || 0,
+    importoTotaleBase: Number(r.importo_totale_base) || 0,
   };
 }
 
@@ -398,37 +397,20 @@ export interface RegioneStats {
  */
 export async function getRegioneStats(regione: string): Promise<RegioneStats> {
   const supabase: any = createServerClient();
-  const [totaleRes, apertiRes, rowsRes] = await Promise.all([
+  // totale/aperti/enti/importo via RPC aggregata (no count:'exact' in timeout → 0).
+  // topCpv resta calcolato su un campione (top categorie regione, dato secondario).
+  const [statsRes, cpvRowsRes] = await Promise.all([
+    supabase.rpc('get_bandi_regione_stats', { p_regione: regione }),
     supabase
       .from('bandi_gara_public')
-      .select('id', { count: 'exact', head: true })
-      .ilike('regione', regione),
-    supabase
-      .from('bandi_gara_public')
-      .select('id', { count: 'exact', head: true })
-      .ilike('regione', regione)
-      .gte('scadenza_offerte', new Date().toISOString()),
-    supabase
-      .from('bandi_gara_public')
-      .select('importo_base, stazione_appaltante, cpv_principale')
+      .select('cpv_principale')
       .ilike('regione', regione)
       .limit(5000),
   ]);
 
+  const s = (statsRes.data as any[])?.[0];
   const rows =
-    (rowsRes.data as {
-      importo_base: number | null;
-      stazione_appaltante: string | null;
-      cpv_principale: string | null;
-    }[]) || [];
-
-  const importoTotaleBase = rows.reduce(
-    (s, r) => s + (Number(r.importo_base) || 0),
-    0,
-  );
-  const enti = new Set(
-    rows.map((r) => r.stazione_appaltante).filter(Boolean),
-  ).size;
+    (cpvRowsRes.data as { cpv_principale: string | null }[]) || [];
 
   const cpvCounts = new Map<string, number>();
   for (const r of rows) {
@@ -441,10 +423,10 @@ export async function getRegioneStats(regione: string): Promise<RegioneStats> {
     .slice(0, 6);
 
   return {
-    totale: totaleRes.count || 0,
-    aperti: apertiRes.count || 0,
-    importoTotaleBase,
-    enti,
+    totale: Number(s?.totale) || 0,
+    aperti: Number(s?.aperti) || 0,
+    importoTotaleBase: Number(s?.importo_totale_base) || 0,
+    enti: Number(s?.enti) || 0,
     topCpv,
   };
 }
