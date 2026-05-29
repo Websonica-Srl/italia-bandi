@@ -3,7 +3,7 @@ import { Building2, EuroIcon, ArrowRight, Tag, Hash } from 'lucide-react';
 import { Bando } from '@/lib/supabase/queries/bandi';
 import { formatEuro, truncate, bandoTitolo } from '@/lib/utils';
 import { proceduraLabel } from '@websonica/cantieri-core';
-import { cpvGroupLabel } from '@/lib/bandi-taxonomy-extra';
+import { cpvGroupLabel } from '@websonica/cantieri-core';
 import BandoScadenzaBadge from './BandoScadenzaBadge';
 
 interface Props {

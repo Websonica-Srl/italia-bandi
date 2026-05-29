@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { SlidersHorizontal, X, Search } from 'lucide-react';
 import { PROCEDURA_LABELS } from '@websonica/cantieri-core';
-import { cpvGroupLabel } from '@/lib/bandi-taxonomy-extra';
+import { cpvGroupLabel } from '@websonica/cantieri-core';
 
 interface CpvOption {
   group: string;

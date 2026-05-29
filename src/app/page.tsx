@@ -13,7 +13,7 @@ import {
   getBandiByCpvGroup,
 } from '@/lib/supabase/queries/bandi';
 import { formatNumber, formatEuro, bandoTitolo } from '@/lib/utils';
-import { cpvGroupLabel, cpvGroupToSlug } from '@/lib/bandi-taxonomy-extra';
+import { cpvGroupLabel, cpvGroupToSlug } from '@websonica/cantieri-core';
 import { ogImageUrl, howToLd, safeJsonLd, itemListLd } from '@/lib/seo/structured-data';
 import { siteConfig, hubUrl } from '@/lib/site-config';
 

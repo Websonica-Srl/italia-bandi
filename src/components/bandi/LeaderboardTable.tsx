@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Building2, Users, Trophy, MapPin, Tag, Lock, ArrowRight } from 'lucide-react';
 import type { LeaderboardRow } from '@/lib/supabase/queries/intelligence';
-import { cpvGroupLabel, cpvGroupToSlug } from '@/lib/bandi-taxonomy-extra';
+import { cpvGroupLabel, cpvGroupToSlug } from '@websonica/cantieri-core';
 import { formatNumber, formatPct } from '@/lib/utils';
 import { hubUrl } from '@/lib/site-config';
 

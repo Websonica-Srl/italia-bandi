@@ -22,7 +22,7 @@ import {
 } from '@/lib/province';
 import { PROVINCIA_INTRO } from '@/lib/province';
 import { formatNumber, formatEuro, bandoTitolo } from '@/lib/utils';
-import { cpvGroupLabel, cpvGroupToSlug } from '@/lib/bandi-taxonomy-extra';
+import { cpvGroupLabel, cpvGroupToSlug } from '@websonica/cantieri-core';
 import BandiListPaywall from '@/components/bandi/BandiListPaywall';
 import BreadcrumbCantiere from '@/components/cantieri/BreadcrumbCantiere';
 import FAQ from '@/components/cantieri/FAQ';

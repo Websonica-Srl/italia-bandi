@@ -13,7 +13,7 @@ import {
 import { regioneSlug } from '@/lib/regioni';
 import { provinciaFromSigla } from '@/lib/province';
 import { buyerSlug } from '@/lib/buyer';
-import { cpvGroupToSlug } from '@/lib/bandi-taxonomy-extra';
+import { cpvGroupToSlug } from '@websonica/cantieri-core';
 
 export const revalidate = 3600;
 

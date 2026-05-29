@@ -21,7 +21,7 @@ import {
   cpvGroupToSlug,
   slugToCpvGroup,
   CPV_GROUP_EDITORIAL,
-} from '@/lib/bandi-taxonomy-extra';
+} from '@websonica/cantieri-core';
 import BandoCard from '@/components/bandi/BandoCard';
 import LandscapeBlock from '@/components/bandi/LandscapeBlock';
 import RtiCoppie from '@/components/bandi/RtiCoppie';

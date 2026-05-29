@@ -19,7 +19,7 @@ import {
 } from '@/lib/supabase/queries/intelligence';
 import { getBandi } from '@/lib/supabase/queries/bandi';
 import { buyerSlug, fasciaImportoLabel } from '@/lib/buyer';
-import { cpvGroupLabel, cpvGroup, cpvGroupToSlug } from '@/lib/bandi-taxonomy-extra';
+import { cpvGroupLabel, cpvGroup, cpvGroupToSlug } from '@websonica/cantieri-core';
 import { provinciaFromSigla } from '@/lib/province';
 import { regioneSlug } from '@/lib/regioni';
 import { formatNumber, formatEuro, formatPct } from '@/lib/utils';

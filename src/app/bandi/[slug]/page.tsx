@@ -5,8 +5,7 @@ import { Calendar, Building2, Briefcase, Hash, FileText, EuroIcon, Database, Tag
 import { getBandoBySlug, getAggiudicatariByBando } from '@/lib/supabase/queries/bandi';
 import { getBuyer } from '@/lib/supabase/queries/intelligence';
 import { formatDate, formatEuro, formatPct, bandoTitolo, truncate } from '@/lib/utils';
-import { proceduraLabel } from '@websonica/cantieri-core';
-import { cpvGroupLabel, cpvGroup, cpvGroupToSlug } from '@/lib/bandi-taxonomy-extra';
+import { proceduraLabel, cpvGroupLabel, cpvGroup, cpvGroupToSlug } from '@websonica/cantieri-core';
 import { bandoLd, faqLd, safeJsonLd } from '@/lib/seo/structured-data';
 import { isBandoIndexable } from '@/lib/seo/indexable';
 import { provinciaFromSigla } from '@/lib/province';

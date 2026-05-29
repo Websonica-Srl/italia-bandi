@@ -8,7 +8,7 @@ import {
   getRtiPartners,
   getLandscapeSummary,
 } from '@/lib/supabase/queries/intelligence';
-import { cpvGroupLabel } from '@/lib/bandi-taxonomy-extra';
+import { cpvGroupLabel } from '@websonica/cantieri-core';
 import { regioneSlug, regioneNomeFromSlug } from '@/lib/regioni';
 import { formatNumber } from '@/lib/utils';
 import {

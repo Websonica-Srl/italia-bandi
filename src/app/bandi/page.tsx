@@ -4,7 +4,7 @@ import { Briefcase } from 'lucide-react';
 import { getBandi, getBandiByCpvGroup, BandiFilters } from '@/lib/supabase/queries/bandi';
 import { bandoTitolo } from '@/lib/utils';
 import { proceduraLabel } from '@websonica/cantieri-core';
-import { cpvGroupLabel } from '@/lib/bandi-taxonomy-extra';
+import { cpvGroupLabel } from '@websonica/cantieri-core';
 import { provinciaFromSigla } from '@/lib/province';
 import BandiListPaywall from '@/components/bandi/BandiListPaywall';
 import FiltriBandi from '@/components/bandi/FiltriBandi';

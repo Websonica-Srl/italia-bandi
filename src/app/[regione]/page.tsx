@@ -16,7 +16,7 @@ import {
 import { REGIONI, regioneNomeFromSlug, regioneSlug, REGIONE_INTRO } from '@/lib/regioni';
 import { provinceDiRegione } from '@/lib/province';
 import { formatNumber, formatEuro, bandoTitolo } from '@/lib/utils';
-import { cpvGroupLabel } from '@/lib/bandi-taxonomy-extra';
+import { cpvGroupLabel } from '@websonica/cantieri-core';
 import BandiListPaywall from '@/components/bandi/BandiListPaywall';
 import LandscapeBlock from '@/components/bandi/LandscapeBlock';
 import RtiCoppie from '@/components/bandi/RtiCoppie';
