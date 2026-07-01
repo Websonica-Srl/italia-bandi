@@ -41,7 +41,7 @@ export default function LandscapeBlock({ summary, segmentoLabel }: Props) {
               Panorama competitivo
             </p>
             <h2 id="landscape-heading" className="text-base md:text-lg font-bold leading-tight">
-              Quanto e&apos; contendibile {segmentoLabel}
+              Quanto è contendibile {segmentoLabel}
             </h2>
           </div>
         </div>
@@ -92,14 +92,14 @@ export default function LandscapeBlock({ summary, segmentoLabel }: Props) {
         {summary.quota_top3 != null ? (
           <>
             Nel segmento <strong className="text-foreground">{segmentoLabel}</strong>{' '}
-            i tre operatori piu&apos; attivi si aggiudicano{' '}
+            i tre operatori più attivi si aggiudicano{' '}
             <strong className="text-foreground">{formatPct(summary.quota_top3)}</strong>{' '}
             delle gare.{' '}
           </>
         ) : null}
         {summary.ribasso_mediano != null && summary.ribasso_mediano > 0 ? (
           <>
-            Il ribasso mediano storico in questo segmento e&apos;{' '}
+            Il ribasso mediano storico in questo segmento è{' '}
             <strong className="text-foreground">
               {formatPct(summary.ribasso_mediano, { fraction: false })}
             </strong>

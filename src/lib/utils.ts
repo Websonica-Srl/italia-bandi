@@ -30,6 +30,34 @@ export function truncate(str: string, length: number): string {
 }
 
 /**
+ * Decodifica le entita' HTML piu' comuni presenti nei dati grezzi ANAC
+ * (entita' numeriche decimali/esadecimali + entita' nominali basilari).
+ * Es: "attivit&#224;" -> "attività" · "Sant&#039;Arsenio" -> "Sant'Arsenio".
+ */
+export function decodeEntities(input?: string | null): string {
+  if (!input) return '';
+  const fromCp = (cp: number, original: string): string => {
+    // Evita RangeError su entità malformate (codepoint fuori range o surrogati):
+    // un singolo record sporco non deve far crashare l'intera pagina di listing.
+    if (!Number.isFinite(cp) || cp < 0 || cp > 0x10ffff || (cp >= 0xd800 && cp <= 0xdfff)) return original;
+    try {
+      return String.fromCodePoint(cp);
+    } catch {
+      return original;
+    }
+  };
+  return input
+    .replace(/&#(\d+);/g, (m, n) => fromCp(Number(n), m))
+    .replace(/&#x([0-9a-fA-F]+);/g, (m, h) => fromCp(parseInt(h, 16), m))
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&');
+}
+
+/**
  * Formatta importo EUR con separatore migliaia italiano e simbolo €.
  * Es: 12345.67 -> "12.345,67 €"
  */
@@ -95,12 +123,12 @@ export function bandoTitolo(b: {
   cpv_principale?: string | null;
   cig?: string | null;
 }, cpvLabel?: string): string {
-  const oggetto = (b.oggetto || '').trim();
+  const oggetto = decodeEntities(b.oggetto).trim();
   if (oggetto.length >= 6) return oggetto;
   // Fallback editoriale: "<categoria CPV> — <ente>" o CIG
   const parts: string[] = [];
   if (cpvLabel) parts.push(cpvLabel);
-  if (b.stazione_appaltante) parts.push(b.stazione_appaltante);
+  if (b.stazione_appaltante) parts.push(decodeEntities(b.stazione_appaltante));
   if (parts.length > 0) return parts.join(' — ');
   return b.cig ? `Bando di gara ${b.cig}` : 'Bando di gara pubblico';
 }

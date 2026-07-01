@@ -83,7 +83,7 @@ export default function BandiListPaywall({
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-gradient-to-b from-background/30 via-background/80 to-background px-6 text-center">
             <p className="max-w-md text-sm md:text-base font-medium text-foreground text-pretty">
               <Lock className="inline h-4 w-4 mr-1.5 -mt-0.5 text-construction" strokeWidth={2} aria-hidden="true" />
-              Iscriviti gratis per vedere tutti i {formatNumber(totalCount)} bandi
+              Iscriviti gratis per sbloccare tutti i {formatNumber(totalCount)} bandi, con ricerca avanzata, alert ed export
             </p>
             <a
               href={UNLOCK_HREF}

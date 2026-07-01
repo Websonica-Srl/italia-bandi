@@ -11,6 +11,7 @@ import {
   getBandiInScadenza,
   getBandiStats,
   getBandiByCpvGroup,
+  getAggStats,
 } from '@/lib/supabase/queries/bandi';
 import { formatNumber, formatEuro, bandoTitolo } from '@/lib/utils';
 import { cpvGroupLabel, cpvGroupToSlug } from '@websonica/cantieri-core';
@@ -95,11 +96,12 @@ const homepageFaq = [
 ];
 
 export default async function HomePage() {
-  const [stats, recentiRes, scadenzeRes, cpvGroups] = await Promise.all([
+  const [stats, recentiRes, scadenzeRes, cpvGroups, agg] = await Promise.all([
     getBandiStats(),
     getBandi({ limit: 6, orderBy: 'data_pubblicazione', orderDirection: 'desc' }),
     getBandiInScadenza(6),
     getBandiByCpvGroup(),
+    getAggStats(),
   ]);
 
   const recenti = recentiRes.data;
@@ -148,7 +150,7 @@ export default async function HomePage() {
 
             <p className="mt-10 md:mt-14 text-lg md:text-2xl font-light leading-relaxed text-secondary-text max-w-3xl mx-auto text-pretty">
               Chi si aggiudica le gare, con quale raggruppamento e a che ribasso. L&apos;intelligence
-              su 50.882 bandi e 11.901 imprese vincitrici. La consultazione è gratuita.
+              su {formatNumber(stats.totale)} bandi e {formatNumber(agg.imprese)} imprese vincitrici. La consultazione è gratuita.
             </p>
 
             <div className="mt-12 md:mt-16 max-w-2xl mx-auto">
@@ -288,7 +290,7 @@ export default async function HomePage() {
           {[
             { icon: Award, title: 'Chi vince da quell\'ente', body: 'Quando una gara è aggiudicata, mostriamo la ragione sociale del vincitore, singolo o in raggruppamento. È il track record che il bando da solo non racconta.' },
             { icon: FileSearch, title: 'Quanto è affollata', body: 'Su una stessa gara sono arrivate fino a 575 offerte. Sapere dove c\'è la ressa ti dice su cosa non sprecare giorni di lavoro.' },
-            { icon: ShieldCheck, title: 'Con chi si vince (RTI)', body: 'Metà delle gare si aggiudica in raggruppamento: 25.495 su tutto il mercato. Vedere chi si allea con chi vale quanto vedere chi compete da solo.' },
+            { icon: ShieldCheck, title: 'Con chi si vince (RTI)', body: `Sono ${formatNumber(agg.gareRti)} le gare aggiudicate in raggruppamento (RTI). Vedere chi si allea con chi vale quanto vedere chi compete da solo.` },
           ].map((s, i) => {
             const Icon = s.icon;
             return (

@@ -34,7 +34,7 @@ export default function CompetitivitaBox({ numeroOfferte, ribasso }: Props) {
             Quanto era affollata
           </p>
           <h2 id="competitivita-heading" className="text-base md:text-lg font-bold leading-tight">
-            Competitivita&apos; di questa gara
+            Competitività di questa gara
           </h2>
         </div>
       </div>
@@ -70,10 +70,10 @@ export default function CompetitivitaBox({ numeroOfferte, ribasso }: Props) {
 
       <p className="mt-5 text-sm text-secondary-text leading-relaxed">
         {hasOfferte
-          ? 'Il numero di offerte ricevute misura quanto era contesa la gara: dove c\'e\' ressa, il tuo tempo vale di piu\' altrove. '
+          ? 'Il numero di offerte ricevute misura quanto era contesa la gara: dove c\'è ressa, il tuo tempo vale di più altrove. '
           : ''}
         {hasRibasso
-          ? 'Il ribasso di aggiudicazione e\' lo sconto offerto dal vincitore sull\'importo a base di gara. '
+          ? 'Il ribasso di aggiudicazione è lo sconto offerto dal vincitore sull\'importo a base di gara. '
           : ''}
         Sono dati storici di questa procedura, non una previsione.
       </p>

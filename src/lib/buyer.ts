@@ -12,7 +12,7 @@
  * Lo slug NON contiene dati sensibili: il nome della stazione appaltante e' un
  * ente pubblico (persona giuridica), dato di gara pubblico per legge.
  */
-import { slugify, truncate } from '@/lib/utils';
+import { slugify, truncate, decodeEntities } from '@/lib/utils';
 
 /** Slug stabile per una stazione appaltante. */
 export function buyerSlug(stazioneAppaltante: string): string {
@@ -27,7 +27,7 @@ export function buyerSlug(stazioneAppaltante: string): string {
  */
 export function cleanRagioneSociale(raw: string | null | undefined): string {
   if (!raw) return 'Operatore economico';
-  const oneLine = raw.replace(/\s+/g, ' ').trim();
+  const oneLine = decodeEntities(raw).replace(/\s+/g, ' ').trim();
   return truncate(oneLine, 90);
 }
 

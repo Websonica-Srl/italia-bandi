@@ -59,7 +59,7 @@ const TERMS: GlossaryTerm[] = [
     termCode: 'CIG',
     name: 'Codice Identificativo Gara',
     definition:
-      'Il CIG (Codice Identificativo Gara) è un codice alfanumerico univoco rilasciato dall\'autorità di vigilanza sui contratti pubblici per ogni procedura di affidamento pubblico, a prescindere dall\'importo. Obbligatorio dal 2010 per la tracciabilità dei flussi finanziari (L. 136/2010). Senza CIG il contratto è nullo e l\'impresa non può fatturare alla Pubblica Amministrazione.',
+      'Il CIG (Codice Identificativo Gara) è un codice alfanumerico univoco rilasciato dall\'ANAC (Autorità Nazionale Anticorruzione) per ogni procedura di affidamento pubblico, a prescindere dall\'importo. Obbligatorio dal 2010 per la tracciabilità dei flussi finanziari (L. 136/2010). Senza CIG il contratto è nullo e l\'impresa non può fatturare alla Pubblica Amministrazione.',
     example: 'Ogni bando di gara riporta il proprio CIG: è il codice da indicare in fattura e in tutti i pagamenti collegati all\'appalto.',
     relatedPath: '/bandi',
   },
@@ -82,7 +82,7 @@ const TERMS: GlossaryTerm[] = [
     termCode: 'SOA',
     name: 'Attestazione SOA',
     definition:
-      'L\'attestazione SOA (Società Organismi di Attestazione) è il documento obbligatorio per partecipare a gare pubbliche di lavori di importo superiore a 150.000 €. Certifica la capacità tecnico-economica dell\'impresa nelle categorie OG (opere generali) e OS (opere specializzate). Rilasciata da organismi privati autorizzati dall\'autorità di vigilanza sui contratti pubblici, ha validità di 5 anni con verifica triennale.',
+      'L\'attestazione SOA (Società Organismi di Attestazione) è il documento obbligatorio per partecipare a gare pubbliche di lavori di importo superiore a 150.000 €. Certifica la capacità tecnico-economica dell\'impresa nelle categorie OG (opere generali) e OS (opere specializzate). Rilasciata da organismi privati autorizzati dall\'ANAC (Autorità Nazionale Anticorruzione), ha validità di 5 anni con verifica triennale.',
     example: 'Un\'impresa che vuole partecipare alla gara per costruire una scuola deve possedere la SOA OG1 nella classifica adeguata all\'importo.',
     relatedPath: '/bandi',
   },

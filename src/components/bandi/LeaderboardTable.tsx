@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Building2, Users, Trophy, MapPin, Tag, Lock, ArrowRight } from 'lucide-react';
 import type { LeaderboardRow } from '@/lib/supabase/queries/intelligence';
 import { cpvGroupLabel, cpvGroupToSlug } from '@websonica/cantieri-core';
-import { formatNumber, formatPct } from '@/lib/utils';
+import { formatNumber, formatPct, decodeEntities } from '@/lib/utils';
 import { hubUrl } from '@/lib/site-config';
 
 interface Props {
@@ -21,8 +21,6 @@ interface Props {
   previewRows?: number;
   /** Cap massimo di righe sfocate mostrate sotto la preview (default 15). */
   blurRows?: number;
-  /** Sostantivo per la CTA di sblocco: "vincitori" | "risultati" | "gare"... */
-  unlockNoun?: string;
 }
 
 /** Header della tabella ranking — condiviso tra zona nitida e zona sfocata. */
@@ -81,7 +79,7 @@ function LeaderRow({
       <td className="px-4 py-3">
         <span className="inline-flex items-start gap-2 font-semibold text-foreground">
           <Building2 className="h-4 w-4 mt-0.5 flex-shrink-0 text-muted-foreground" strokeWidth={1.75} />
-          <span className="leading-snug">{r.firm_name}</span>
+          <span className="leading-snug">{decodeEntities(r.firm_name)}</span>
         </span>
       </td>
       <td className="px-4 py-3 text-right">
@@ -157,7 +155,6 @@ export default function LeaderboardTable({
   ctaIntent = 'bidder-leaderboard',
   previewRows = 5,
   blurRows = 15,
-  unlockNoun = 'vincitori',
 }: Props) {
   if (rows.length === 0) return null;
 
@@ -220,7 +217,7 @@ export default function LeaderboardTable({
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-gradient-to-b from-card/40 via-card/80 to-card px-6 text-center">
             <p className="max-w-md text-sm md:text-base font-medium text-foreground text-pretty">
               <Lock className="inline h-4 w-4 mr-1.5 -mt-0.5 text-construction" strokeWidth={2} aria-hidden="true" />
-              Iscriviti gratis per vedere tutte le {formatNumber(rows.length)} {unlockNoun}
+              Iscriviti gratis per sbloccare tutte le {formatNumber(rows.length)} imprese in classifica, con alert ed export.
             </p>
             <a
               href={unlockHref}

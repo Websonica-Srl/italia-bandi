@@ -8,6 +8,12 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
 let cached: ReturnType<typeof createClient> | null = null;
 
+// Fetch con cache Next (revalidate 60s): evita che il data-cache di Next serva
+// risultati stantii dopo un aggiornamento del DB (liste vuote in prod dopo un
+// re-deploy) e riduce le chiamate ripetute a PostgREST entro la finestra ISR.
+const cachedFetch: typeof fetch = (input, init) =>
+  fetch(input as any, { ...(init as any), next: { revalidate: 60 } });
+
 function getClient() {
   if (!supabaseUrl || !supabaseAnonKey) {
     // Client "no-op": qualsiasi query fallirà in modo controllato (le query
@@ -18,6 +24,7 @@ function getClient() {
   if (!cached) {
     cached = createClient(supabaseUrl, supabaseAnonKey, {
       auth: { persistSession: false },
+      global: { fetch: cachedFetch },
     });
   }
   return cached;
@@ -44,7 +51,10 @@ function noopClient(): any {
     Promise.resolve(NOOP_RESULT),
     chain,
   );
-  return { from: () => chainable };
+  // `.rpc(...)` deve comportarsi come `.from(...)`: ritorna il chainable così
+  // che un await risolva NOOP_RESULT invece di lanciare TypeError quando le env
+  // Supabase mancano (build senza credenziali).
+  return { from: () => chainable, rpc: () => chainable };
 }
 
 export function createServerClient() {

@@ -8,6 +8,7 @@ import {
   getRtiPartners,
   getLandscapeSummary,
 } from '@/lib/supabase/queries/intelligence';
+import { getAggStats } from '@/lib/supabase/queries/bandi';
 import { cpvGroupLabel } from '@websonica/cantieri-core';
 import { regioneSlug, regioneNomeFromSlug } from '@/lib/regioni';
 import { formatNumber } from '@/lib/utils';
@@ -80,7 +81,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       : `Le imprese che vincono di piu' le gare d'appalto pubbliche in ${seg.label}: classifica per gare aggiudicate, categoria prevalente e raggruppamenti. Dati da fonti ufficiali e pubbliche.`;
   const ogImage = ogImageUrl({
     title: seg.kind === 'cpv' ? `Classifica ${seg.label}` : `Classifica ${seg.label}`,
-    subtitle: 'Chi vince di piu\' le gare d\'appalto',
+    subtitle: 'Chi vince di più le gare d\'appalto',
     kind: 'stats',
     label: 'gare vinte',
   });
@@ -102,10 +103,11 @@ export default async function ClassificaSegmentoPage({ params }: PageProps) {
   const rtiFilter =
     seg.kind === 'cpv' ? { cpvGroup: seg.code, limit: 8 } : { regione: seg.nome, limit: 8 };
 
-  const [rows, rti, landscape] = await Promise.all([
+  const [rows, rti, landscape, agg] = await Promise.all([
     getLeaderboard(lbFilter),
     getRtiPartners(rtiFilter),
     seg.kind === 'cpv' ? getLandscapeSummary(seg.code) : Promise.resolve(null),
+    getAggStats(),
   ]);
 
   if (rows.length === 0) notFound();
@@ -124,15 +126,15 @@ export default async function ClassificaSegmentoPage({ params }: PageProps) {
     {
       q:
         seg.kind === 'cpv'
-          ? `Chi vince di piu' le gare ${seg.label.toLowerCase()}?`
-          : `Chi vince di piu' le gare d'appalto in ${seg.label}?`,
-      a: `La classifica sopra elenca le imprese con piu' gare d'appalto aggiudicate ${
+          ? `Chi vince di più le gare ${seg.label.toLowerCase()}?`
+          : `Chi vince di più le gare d'appalto in ${seg.label}?`,
+      a: `La classifica sopra elenca le imprese con più gare d'appalto aggiudicate ${
         seg.kind === 'cpv' ? `nella categoria CPV ${seg.code} (${seg.label})` : `in ${seg.label}`
-      }, su un dataset di oltre 36.000 aggiudicazioni da fonti ufficiali e pubbliche. Mostriamo solo ragioni sociali di persone giuridiche.`,
+      }, su un dataset di ${formatNumber(agg.gare)} gare aggiudicate da fonti ufficiali e pubbliche. Mostriamo solo ragioni sociali di persone giuridiche.`,
     },
     {
       q: 'Questi numeri sono una garanzia di vittoria?',
-      a: 'No. Sono il track record storico di chi ha gia\' vinto in questo segmento. Servono a capire se un mercato e\' presidiato da pochi operatori radicati o aperto a nuovi entranti, prima di decidere se partecipare.',
+      a: 'No. Sono il track record storico di chi ha già vinto in questo segmento. Servono a capire se un mercato è presidiato da pochi operatori radicati o aperto a nuovi entranti, prima di decidere se partecipare.',
     },
   ];
 
@@ -166,7 +168,7 @@ export default async function ClassificaSegmentoPage({ params }: PageProps) {
             </h1>
             <p className="text-lg font-light leading-relaxed text-secondary-text max-w-3xl text-pretty">
               <span className="font-black tabular-nums text-foreground text-2xl mr-1.5 tracking-tight">{formatNumber(rows.length)}</span>
-              imprese in classifica{seg.kind === 'cpv' ? ' in questa categoria' : ` in ${seg.label}`}. I nomi che ricorrono di piu&apos; sono il segnale competitivo del segmento.
+              imprese in classifica{seg.kind === 'cpv' ? ' in questa categoria' : ` in ${seg.label}`}. I nomi che ricorrono di più sono il segnale competitivo del segmento.
             </p>
           </div>
         </div>
@@ -179,7 +181,6 @@ export default async function ClassificaSegmentoPage({ params }: PageProps) {
             showCpv={seg.kind === 'regione'}
             showZona={seg.kind === 'cpv'}
             ctaCampaign="leaderboard_segmento"
-            unlockNoun="imprese in classifica"
           />
         </div>
       </section>

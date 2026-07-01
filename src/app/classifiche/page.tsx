@@ -5,6 +5,7 @@ import {
   getLeaderboard,
   getLeaderboardSegments,
 } from '@/lib/supabase/queries/intelligence';
+import { getAggStats, type AggStats } from '@/lib/supabase/queries/bandi';
 import { cpvGroupLabel } from '@websonica/cantieri-core';
 import { regioneSlug } from '@/lib/regioni';
 import { formatNumber } from '@/lib/utils';
@@ -22,12 +23,12 @@ export const revalidate = 3600;
 
 const TITLE = 'Classifiche dei vincitori delle gare d\'appalto in Italia';
 const DESCRIPTION =
-  'Chi vince di piu\' le gare d\'appalto pubbliche in Italia: le classifiche delle imprese vincitrici ricorrenti, per categoria CPV e per regione. Dati pubblici da fonti ufficiali e pubbliche.';
+  'Chi vince di più le gare d\'appalto pubbliche in Italia: le classifiche delle imprese vincitrici ricorrenti, per categoria CPV e per regione. Dati pubblici da fonti ufficiali e pubbliche.';
 
 export async function generateMetadata(): Promise<Metadata> {
   const ogImage = ogImageUrl({
     title: 'Classifiche vincitori',
-    subtitle: 'Chi vince di piu\' le gare d\'appalto in Italia',
+    subtitle: 'Chi vince di più le gare d\'appalto in Italia',
     kind: 'stats',
     label: 'gare vinte',
   });
@@ -46,26 +47,30 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-const faqs = [
-  {
-    q: 'Come sono calcolate queste classifiche?',
-    a: 'Contiamo, per ogni impresa, il numero di gare d\'appalto pubbliche aggiudicate sul nostro dataset (oltre 36.000 aggiudicazioni da fonti ufficiali e pubbliche). Le classifiche raggruppano i vincitori per categoria CPV e per regione prevalente. Mostriamo solo ragioni sociali di persone giuridiche, nel rispetto del GDPR.',
-  },
-  {
-    q: 'Cosa significa "in RTI" nelle classifiche?',
-    a: 'Indica la quota di gare che un\'impresa ha vinto in raggruppamento temporaneo, cioe\' insieme ad altre imprese con un\'unica offerta. Sul nostro dataset meta\' delle gare si aggiudica in raggruppamento.',
-  },
-  {
-    q: 'Posso vedere il dettaglio delle gare vinte da un\'impresa?',
-    a: 'Il track record completo di un\'impresa e gli strumenti per confrontarti con i concorrenti sono disponibili sul network ItaliaProgettisti. La registrazione di base e\' gratuita.',
-  },
-];
+function buildFaqs(agg: AggStats) {
+  return [
+    {
+      q: 'Come sono calcolate queste classifiche?',
+      a: `Contiamo, per ogni impresa, il numero di gare d'appalto pubbliche aggiudicate sul nostro dataset (${formatNumber(agg.gare)} gare aggiudicate da fonti ufficiali e pubbliche). Le classifiche raggruppano i vincitori per categoria CPV e per regione prevalente. Mostriamo solo ragioni sociali di persone giuridiche, nel rispetto del GDPR.`,
+    },
+    {
+      q: 'Cosa significa "in RTI" nelle classifiche?',
+      a: `Indica la quota di gare che un'impresa ha vinto in raggruppamento temporaneo, cioè insieme ad altre imprese con un'unica offerta. Sul nostro dataset ${formatNumber(agg.gareRti)} gare sono state aggiudicate in raggruppamento (RTI).`,
+    },
+    {
+      q: 'Posso vedere il dettaglio delle gare vinte da un\'impresa?',
+      a: 'Il track record completo di un\'impresa e gli strumenti per confrontarti con i concorrenti sono disponibili sul network ItaliaProgettisti. La registrazione di base è gratuita.',
+    },
+  ];
+}
 
 export default async function ClassifichePage() {
-  const [topGlobale, segments] = await Promise.all([
+  const [topGlobale, segments, agg] = await Promise.all([
     getLeaderboard({ limit: 20 }),
     getLeaderboardSegments(),
+    getAggStats(),
   ]);
+  const faqs = buildFaqs(agg);
 
   // Segmenti con almeno 5 imprese (anti-thin): generano una pagina sensata.
   const cpvSegments = segments.cpv.filter((s) => s.cnt >= 5).slice(0, 24);
@@ -94,18 +99,17 @@ export default async function ClassifichePage() {
               <span>Il dato di rete, in chiaro</span>
             </p>
             <h1 id="cls-hero" className="font-black tracking-[-0.05em] leading-[0.92] text-foreground text-balance mb-8" style={{ fontSize: 'clamp(2.25rem, 5.5vw + 0.5rem, 5rem)' }}>
-              Chi vince di piu&apos; le gare d&apos;appalto in{' '}
+              Chi vince di più le gare d&apos;appalto in{' '}
               <span className="italic font-black text-construction">Italia</span>.
             </h1>
             <p className="text-lg md:text-xl font-light leading-relaxed text-secondary-text max-w-3xl text-pretty">
               Le classifiche dei vincitori ricorrenti, per categoria e per zona. Un
-              assaggio gratuito del nostro mestiere: leggere 36.254 aggiudicazioni
+              assaggio gratuito del nostro mestiere: leggere {formatNumber(agg.gare)} gare aggiudicate
               come una partita, non come un elenco.
             </p>
             <p className="mt-5 text-base text-secondary-text max-w-3xl leading-relaxed">
-              Su 11.901 imprese che hanno vinto almeno una gara, 200 ne hanno vinte
-              piu&apos; di venti. La piu&apos; presente ne ha vinte 238. Questi sono i nomi con
-              cui, prima o poi, ti troverai a competere.
+              Sono {formatNumber(agg.imprese)} le imprese che hanno vinto almeno una gara: i nomi
+              che ricorrono di più sono quelli con cui, prima o poi, ti troverai a competere.
             </p>
           </div>
         </div>
@@ -115,12 +119,12 @@ export default async function ClassifichePage() {
       <section className="pb-12 md:pb-16">
         <div className="container-zen max-w-5xl">
           <h2 className="text-xl md:text-2xl font-bold tracking-tight mb-2">
-            Le imprese che vincono di piu&apos; in Italia
+            Le imprese che vincono di più in Italia
           </h2>
           <p className="text-sm text-muted-foreground mb-6">
             Classifica generale per numero di gare d&apos;appalto pubbliche aggiudicate.
           </p>
-          <LeaderboardTable rows={topGlobale} ctaCampaign="leaderboard_index" unlockNoun="imprese in classifica" />
+          <LeaderboardTable rows={topGlobale} ctaCampaign="leaderboard_index" />
         </div>
       </section>
 
@@ -159,7 +163,7 @@ export default async function ClassifichePage() {
               Classifiche per regione
             </h2>
             <p className="text-sm text-muted-foreground mb-6">
-              Le imprese che vincono di piu&apos; nella tua regione, prima di sfidarle o di allearti.
+              Le imprese che vincono di più nella tua regione, prima di sfidarle o di allearti.
             </p>
             <div className="flex flex-wrap gap-2.5">
               {regSegments.map((s) => (
@@ -182,7 +186,7 @@ export default async function ClassifichePage() {
       <section className="py-12 md:py-16 bg-secondary/30 border-t border-border">
         <div className="container-zen max-w-3xl text-center">
           <p className="text-lg md:text-xl font-light text-secondary-text mb-6 text-pretty">
-            Nessun elenco di bandi ti dice chi sta vincendo. Questa classifica si&apos;.
+            Nessun elenco di bandi ti dice chi sta vincendo. Questa classifica sì.
           </p>
           <a
             href="https://www.italiaprogettisti.com/register?utm_source=bandigaredappalto&utm_medium=referral&utm_campaign=leaderboard&intent=bidder-leaderboard"

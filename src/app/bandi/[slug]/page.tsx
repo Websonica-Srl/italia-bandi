@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Calendar, Building2, Briefcase, Hash, FileText, EuroIcon, Database, Tag, MapPin } from 'lucide-react';
 import { getBandoBySlug, getAggiudicatariByBando } from '@/lib/supabase/queries/bandi';
 import { getBuyer } from '@/lib/supabase/queries/intelligence';
-import { formatDate, formatEuro, formatPct, bandoTitolo, truncate } from '@/lib/utils';
+import { formatDate, formatEuro, formatPct, bandoTitolo, truncate, decodeEntities } from '@/lib/utils';
 import { proceduraLabel, cpvGroupLabel, cpvGroup, cpvGroupToSlug } from '@websonica/cantieri-core';
 import { bandoLd, faqLd, safeJsonLd } from '@/lib/seo/structured-data';
 import { isBandoIndexable } from '@/lib/seo/indexable';
@@ -31,8 +31,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const titolo = bandoTitolo(b, cpvLabel);
   const desc =
     (b.descrizione_completa && b.descrizione_completa.length > 30
-      ? b.descrizione_completa
-      : `${titolo}. Stazione appaltante: ${b.stazione_appaltante || 'n.d.'}. Importo a base di gara: ${formatEuro(b.importo_base)}. ${proceduraLabel(b.tipo_procedura)}.`
+      ? decodeEntities(b.descrizione_completa)
+      : `${titolo}. Stazione appaltante: ${decodeEntities(b.stazione_appaltante) || 'n.d.'}. Importo a base di gara: ${formatEuro(b.importo_base)}. ${proceduraLabel(b.tipo_procedura)}.`
     ).slice(0, 160);
   // Indicizzazione selettiva (single source of truth): i bandi thin (oggetto
   // corto, senza importo) restano noindex,follow → fuori indice ma nel silo.
@@ -85,8 +85,8 @@ export default async function BandoPage({ params }: PageProps) {
   const grp = cpvGroup(b.cpv_principale);
   const descrizione =
     b.descrizione_completa && b.descrizione_completa.length > 30
-      ? b.descrizione_completa
-      : `${titolo}. ${proceduraLabel(b.tipo_procedura)}. Stazione appaltante: ${b.stazione_appaltante || 'n.d.'}.`;
+      ? decodeEntities(b.descrizione_completa)
+      : `${titolo}. ${proceduraLabel(b.tipo_procedura)}. Stazione appaltante: ${decodeEntities(b.stazione_appaltante) || 'n.d.'}.`;
   const hasAggiudicazione = !!b.aggiudicatario_ragione_sociale_raw || aggiudicatari.length > 0;
   const faqs = bandoFaq(titolo, b.stazione_appaltante || 'n.d.', cpvLabel);
 
@@ -138,7 +138,7 @@ export default async function BandoPage({ params }: PageProps) {
             {b.stazione_appaltante && (
               <p className="text-muted-foreground inline-flex items-center gap-1.5">
                 <Building2 className="h-4 w-4" strokeWidth={1.75} /> Stazione appaltante:{' '}
-                <strong className="text-foreground">{b.stazione_appaltante}</strong>
+                <strong className="text-foreground">{decodeEntities(b.stazione_appaltante)}</strong>
               </p>
             )}
           </div>
@@ -151,7 +151,11 @@ export default async function BandoPage({ params }: PageProps) {
               <dl className="space-y-3 text-sm">
                 {b.cig && <Row label={<><Hash className="h-3 w-3 inline" /> CIG</>} value={b.cig} mono />}
                 {b.cup && <Row label="CUP" value={b.cup} mono />}
-                {b.numero_bando && <Row label="Numero bando" value={b.numero_bando} />}
+                {/* Mostra "Numero bando" solo se realmente distinto dal CIG:
+                    spesso i due valori coincidono e la riga sarebbe un doppione. */}
+                {b.numero_bando && b.numero_bando !== b.cig && (
+                  <Row label="Numero bando" value={b.numero_bando} />
+                )}
                 {b.cpv_principale && <Row label="CPV principale" value={b.cpv_principale} mono />}
                 {b.cpv_codes && b.cpv_codes.length > 1 && (
                   <Row label="Altri CPV" value={b.cpv_codes.slice(1).join(', ')} mono />
@@ -183,7 +187,7 @@ export default async function BandoPage({ params }: PageProps) {
           {b.descrizione_completa && b.descrizione_completa.length > 30 && (
             <div className="rounded-2xl border border-border bg-white p-6 mb-10">
               <h2 className="text-base font-semibold mb-3">Oggetto della gara</h2>
-              <p className="text-sm text-secondary-text whitespace-pre-line leading-relaxed">{b.descrizione_completa}</p>
+              <p className="text-sm text-secondary-text whitespace-pre-line leading-relaxed">{decodeEntities(b.descrizione_completa)}</p>
             </div>
           )}
 
@@ -246,7 +250,7 @@ export default async function BandoPage({ params }: PageProps) {
                   className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-foreground/40 hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <Building2 className="h-3 w-3" strokeWidth={2} />
-                  Tutti i bandi di {truncate(b.stazione_appaltante, 40)}
+                  Tutti i bandi di {truncate(decodeEntities(b.stazione_appaltante), 40)}
                 </Link>
               )}
               {provCoerente && regSlug && (

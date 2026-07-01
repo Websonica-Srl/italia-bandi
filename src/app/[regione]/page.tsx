@@ -256,7 +256,7 @@ export default async function RegionePage({ params }: PageProps) {
               <div className="flex items-center gap-2.5">
                 <Trophy className="h-5 w-5 text-construction" strokeWidth={2} />
                 <h2 className="text-xl md:text-2xl font-bold tracking-tight">
-                  Chi vince di piu&apos; in {nome}
+                  Chi vince di più in {nome}
                 </h2>
               </div>
               <Link
@@ -279,7 +279,7 @@ export default async function RegionePage({ params }: PageProps) {
             <RtiCoppie
               coppie={rti}
               title={`Alleanze tipiche in ${nome}`}
-              subtitle={`Le coppie di imprese che si aggiudicano piu' spesso insieme le gare in ${nome}, in raggruppamento.`}
+              subtitle={`Le coppie di imprese che si aggiudicano più spesso insieme le gare in ${nome}, in raggruppamento.`}
               ctaCampaign="regione_rti"
             />
           </div>

@@ -120,6 +120,9 @@ export default async function CategoriaPage({ params }: PageProps) {
 
   const importoTot = bandi.reduce((s, b) => s + (Number(b.importo_base) || 0), 0);
   const otherGroups = allGroups.filter((g) => g.group !== cpv).slice(0, 6);
+  // Totale mostrato = conteggio dalla cache CPV group (STESSA fonte di
+  // generateMetadata): così metadata e hero coincidono sempre.
+  const cachedTotal = allGroups.find((g) => g.group === cpv)?.cnt ?? total;
 
   const itemList = itemListLd(
     bandi.map((b) => ({ name: bandoTitolo(b, label), url: `${siteConfig.baseUrl}/bandi/${b.slug}` })),
@@ -133,7 +136,7 @@ export default async function CategoriaPage({ params }: PageProps) {
     },
     {
       q: `Quanti bandi sono disponibili per la categoria ${label}?`,
-      a: `Attualmente abbiamo ${formatNumber(total)} bandi pubblici tracciati nella categoria CPV ${cpv}. L'elenco si aggiorna automaticamente dalle fonti pubbliche.`,
+      a: `Attualmente abbiamo ${formatNumber(cachedTotal)} bandi pubblici tracciati nella categoria CPV ${cpv}. L'elenco si aggiorna automaticamente dalle fonti pubbliche.`,
     },
     {
       q: `Chi vince le gare della categoria ${label}?`,
@@ -159,7 +162,7 @@ export default async function CategoriaPage({ params }: PageProps) {
               <span className="italic font-black text-construction">{label}</span>.
             </h1>
             <p className="text-lg md:text-xl font-light leading-relaxed text-secondary-text max-w-3xl text-pretty">
-              <span className="font-black tabular-nums text-foreground text-2xl md:text-3xl mr-1.5 tracking-tight">{formatNumber(total)}</span>
+              <span className="font-black tabular-nums text-foreground text-2xl md:text-3xl mr-1.5 tracking-tight">{formatNumber(cachedTotal)}</span>
               bandi pubblici nella categoria CPV {cpv}. {editorial?.intro || `Gare d'appalto il cui oggetto rientra nella divisione "${label}" del Vocabolario Comune per gli Appalti europeo.`}
             </p>
           </div>
@@ -186,13 +189,13 @@ export default async function CategoriaPage({ params }: PageProps) {
                     <strong className="text-foreground">{formatNumber(landscape.vincitori_distinti_tot)}</strong>{' '}
                     imprese distinte, e{' '}
                     <strong className="text-foreground">{formatPct(landscape.pct_rti)}</strong>{' '}
-                    delle gare e&apos; andato a un raggruppamento. Pochi nomi ricorrono
-                    spesso: e&apos; il segnale che ti dice se c&apos;e&apos; spazio per te o un
+                    delle gare è andato a un raggruppamento. Pochi nomi ricorrono
+                    spesso: è il segnale che ti dice se c&apos;è spazio per te o un
                     presidio consolidato.
                   </>
                 ) : (
                   editorial?.chiVince ||
-                  'In questa categoria contano due cose: quanti nomi diversi vincono davvero e quante gare vanno a un raggruppamento. E\' la differenza tra una categoria aperta e una presidiata. Lo vedi gratis, scheda per scheda.'
+                  'In questa categoria contano due cose: quanti nomi diversi vincono davvero e quante gare vanno a un raggruppamento. È la differenza tra una categoria aperta e una presidiata. Lo vedi gratis, scheda per scheda.'
                 )}
               </p>
             </div>
@@ -217,7 +220,7 @@ export default async function CategoriaPage({ params }: PageProps) {
               <div className="flex items-center gap-2.5">
                 <Trophy className="h-5 w-5 text-construction" strokeWidth={2} />
                 <h2 className="text-xl md:text-2xl font-bold tracking-tight">
-                  Chi vince di piu&apos; {label.toLowerCase()}
+                  Chi vince di più {label.toLowerCase()}
                 </h2>
               </div>
               <Link
@@ -325,7 +328,7 @@ export default async function CategoriaPage({ params }: PageProps) {
             rel="noopener noreferrer"
             className="group mt-4 inline-flex items-center gap-2 rounded-full bg-foreground text-background px-6 py-3 text-sm font-semibold transition-all hover:scale-[1.03] hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
-            Scopri quanto e&apos; &quot;tua&quot; una gara di questa categoria
+            Scopri quanto è &quot;tua&quot; una gara di questa categoria
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" strokeWidth={2} />
           </a>
         </div>

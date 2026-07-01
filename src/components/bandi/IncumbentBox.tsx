@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ShieldAlert, Building2, ArrowRight } from 'lucide-react';
 import type { BuyerVincitore } from '@/lib/supabase/queries/intelligence';
 import { cleanRagioneSociale, buyerSlug } from '@/lib/buyer';
-import { formatNumber } from '@/lib/utils';
+import { formatNumber, decodeEntities } from '@/lib/utils';
 
 interface Props {
   ente: string;
@@ -42,9 +42,9 @@ export default function IncumbentBox({ ente, topVincitori, nBandi }: Props) {
         </div>
       </div>
       <p className="text-sm text-secondary-text mb-5 leading-relaxed">
-        Da <strong className="text-foreground">{ente}</strong> hanno gia&apos; vinto
-        delle imprese, alcune piu&apos; volte. Vedere chi domina questo ente ti dice se
-        la gara e&apos; alla tua portata o se c&apos;e&apos; un operatore gia&apos; radicato da battere.
+        Da <strong className="text-foreground">{decodeEntities(ente)}</strong> hanno già vinto
+        delle imprese, alcune più volte. Vedere chi domina questo ente ti dice se
+        la gara è alla tua portata o se c&apos;è un operatore già radicato da battere.
       </p>
 
       <ul className="space-y-2.5">

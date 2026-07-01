@@ -1,6 +1,6 @@
 import { Link2, Building2 } from 'lucide-react';
 import type { RtiPartnerRow } from '@/lib/supabase/queries/intelligence';
-import { formatNumber } from '@/lib/utils';
+import { formatNumber, decodeEntities } from '@/lib/utils';
 import { hubUrl } from '@/lib/site-config';
 
 interface Props {
@@ -59,12 +59,12 @@ export default function RtiCoppie({
             <div className="flex items-center gap-2 min-w-0 flex-wrap">
               <span className="inline-flex items-center gap-1.5 font-semibold text-foreground min-w-0">
                 <Building2 className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" strokeWidth={1.75} />
-                <span className="truncate">{c.firm_a_name}</span>
+                <span className="truncate">{decodeEntities(c.firm_a_name)}</span>
               </span>
               <Link2 className="h-3.5 w-3.5 flex-shrink-0 text-construction" strokeWidth={2} aria-hidden="true" />
               <span className="inline-flex items-center gap-1.5 font-semibold text-foreground min-w-0">
                 <Building2 className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" strokeWidth={1.75} />
-                <span className="truncate">{c.firm_b_name}</span>
+                <span className="truncate">{decodeEntities(c.firm_b_name)}</span>
               </span>
             </div>
             <span className="text-xs font-medium text-muted-foreground tabular-nums flex-shrink-0 whitespace-nowrap">
@@ -75,7 +75,7 @@ export default function RtiCoppie({
       </ul>
 
       <p className="mt-5 text-sm text-secondary-text leading-relaxed">
-        Meta&apos; delle gare si vince in raggruppamento. Vuoi sapere con chi
+        Molte gare si aggiudicano in raggruppamento (RTI). Vuoi sapere con chi
         conviene allearti per la tua categoria e zona?{' '}
         <a
           href={hubUrl('/register', ctaCampaign, { intent: ctaIntent })}

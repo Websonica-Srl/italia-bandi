@@ -158,39 +158,48 @@ export async function getBandoBySlug(slug: string): Promise<Bando | null> {
  * Usato da sitemap + aggregati per-regione/per-CPV (enumerano l'intero dataset).
  */
 const PAGE_SIZE = 1000;
+/**
+ * Enumera l'intero dataset (>50k righe) con KEYSET pagination sulla PK `id` (uuid).
+ * NIENTE `.range()` a offset profondo: su 51k righe l'OFFSET 50.000 scansiona 50k
+ * righe per pagina → statement_timeout anon → sitemap vuota. Con keyset ogni pagina
+ * usa l'indice PK (`id > cursor`) ed è O(PAGE_SIZE). Il `select` include sempre `id`
+ * (serve come cursore). L'ordinamento è per `id` (le callback NON devono aggiungere
+ * un proprio order: romperebbe il keyset).
+ */
 async function fetchAllBandiRows(
   select: string,
   applyFilters?: (q: any) => any,
 ): Promise<any[]> {
   const supabase: any = createServerClient();
+  const sel = /(^|,)\s*id(\s|,|$)/.test(select) ? select : `id, ${select}`;
   const out: any[] = [];
-  for (let from = 0; ; from += PAGE_SIZE) {
-    let q = supabase
-      .from('bandi_gara_public')
-      .select(select)
-      .range(from, from + PAGE_SIZE - 1);
+  let cursor: string | null = null;
+  for (;;) {
+    let q = supabase.from('bandi_gara_public').select(sel);
     if (applyFilters) q = applyFilters(q);
-    // Tie-breaker su colonna UNICA: senza, l'ordinamento con pari-merito
-    // (es. stesso updated_at dell'import bulk ANAC) non è stabile tra le
-    // pagine .range() e produce righe duplicate/mancanti. `id` è univoco.
-    q = q.order('id', { ascending: true });
+    q = q.order('id', { ascending: true }).limit(PAGE_SIZE);
+    if (cursor) q = q.gt('id', cursor);
     const { data, error } = await q;
     if (error) {
-      console.error('[bandi] fetchAllBandiRows error:', error.message);
-      break;
+      // Con keyset l'errore è improbabile; se capita, ritorniamo l'accumulato
+      // PARZIALE (meglio di una sitemap vuota) e lo segnaliamo. I conteggi NON
+      // dipendono più da questa funzione (usano la stats-cache), quindi il
+      // parziale non produce divergenze.
+      console.error('[bandi] fetchAllBandiRows error (dataset parziale):', error.message);
+      return out;
     }
     if (!data || data.length === 0) break;
     out.push(...data);
     if (data.length < PAGE_SIZE) break;
+    cursor = data[data.length - 1].id as string;
   }
   return out;
 }
 
 export async function getAllBandiSlugs(): Promise<{ slug: string; updated_at: string }[]> {
-  // Tutte le schede bando (no cap 1000): paginiamo l'intero dataset per la sitemap.
-  return fetchAllBandiRows('slug, updated_at', (q) =>
-    q.not('slug', 'is', null).order('updated_at', { ascending: false }),
-  );
+  // Tutte le schede bando (no cap 1000): keyset sull'intero dataset per la sitemap.
+  // NB: nessun .order() qui (l'ordine è per id, richiesto dal keyset).
+  return fetchAllBandiRows('slug, updated_at', (q) => q.not('slug', 'is', null));
 }
 
 /**
@@ -272,14 +281,52 @@ export async function getBandiStats(): Promise<BandiStats> {
   const { data, error } = await supabase.rpc('get_bandi_home_stats');
   const r = (data as any[])?.[0];
   if (error || !r) {
+    // Lanciamo (non ritorniamo 0): con ISR Next mantiene l'ultima pagina buona
+    // invece di cachearne una che dichiara "0 bandi" (dato falso su un sito la
+    // cui proposta di valore E' la copertura dati).
     console.error('[bandi] getBandiStats RPC error:', error?.message);
-    return { totale: 0, scadFuture: 0, enti: 0, importoTotaleBase: 0 };
+    throw new Error(`getBandiStats: cache non disponibile (${error?.message ?? 'nessuna riga'})`);
   }
   return {
     totale: Number(r.totale) || 0,
     scadFuture: Number(r.scad_future) || 0,
     enti: Number(r.enti) || 0,
     importoTotaleBase: Number(r.importo_totale_base) || 0,
+  };
+}
+
+export interface AggStats {
+  /** Righe di aggiudicazione (una impresa per gara, RTI = piu' righe). */
+  righe: number;
+  /** Gare distinte aggiudicate. */
+  gare: number;
+  /** Imprese distinte che hanno vinto almeno una gara. */
+  imprese: number;
+  /** Gare aggiudicate in raggruppamento (RTI). */
+  gareRti: number;
+}
+
+/**
+ * Statistiche aggregate sulle aggiudicazioni (cache `bandi_aggiudicazioni`).
+ * Alimenta i copy di dominio (numeri reali, non hardcoded) su home e classifiche.
+ */
+export async function getAggStats(): Promise<AggStats> {
+  const supabase: any = createServerClient();
+  const { data, error } = await supabase.rpc('get_stats_cache', {
+    p_key: 'bandi_aggiudicazioni',
+  });
+  const r = data as any;
+  if (error || !r) {
+    // Throw invece di zeri: evita di stampare "0 imprese vincitrici" (anche in
+    // JSON-LD) come dato reale; ISR mantiene l'ultima pagina buona.
+    console.error('[bandi] getAggStats cache error:', error?.message);
+    throw new Error(`getAggStats: cache non disponibile (${error?.message ?? 'payload vuoto'})`);
+  }
+  return {
+    righe: Number(r.righe) || 0,
+    gare: Number(r.gare) || 0,
+    imprese: Number(r.imprese) || 0,
+    gareRti: Number(r.gare_rti) || 0,
   };
 }
 
@@ -290,21 +337,26 @@ export interface CpvGroupStat {
 
 /**
  * Conteggi per gruppo CPV (prime 2 cifre del cpv_principale).
- * Calcolato lato applicativo sul dataset (no RPC dedicata su questa view).
+ * SINGLE SOURCE: legge la cache `bandi_cpv_group` (istantanea e coerente), così
+ * home, filtro /bandi e pagina categoria mostrano lo STESSO numero. Sostituisce
+ * l'enumerazione full-dataset (lenta e soggetta a conteggi parziali/divergenti).
  */
 export async function getBandiByCpvGroup(): Promise<CpvGroupStat[]> {
-  // Aggregato sull'intero dataset (no cap 1000): conteggi CPV corretti.
-  const data = await fetchAllBandiRows('cpv_principale', (q) =>
-    q.not('cpv_principale', 'is', null),
-  );
-  if (!data.length) return [];
-  const counts = new Map<string, number>();
-  for (const row of data as { cpv_principale: string }[]) {
-    const g = (row.cpv_principale || '').replace(/[^0-9]/g, '').slice(0, 2);
-    if (g.length === 2) counts.set(g, (counts.get(g) || 0) + 1);
+  const supabase: any = createServerClient();
+  const { data, error } = await supabase.rpc('get_stats_cache', {
+    p_key: 'bandi_cpv_group',
+  });
+  if (error || !Array.isArray(data)) {
+    // Throw invece di []: le categorie CPV non sono mai legittimamente vuote;
+    // un errore cache non deve svuotare silenziosamente filtro e griglia home.
+    console.error('[bandi] getBandiByCpvGroup cache error:', error?.message);
+    throw new Error(`getBandiByCpvGroup: cache non disponibile (${error?.message ?? 'payload non-array'})`);
   }
-  return Array.from(counts.entries())
-    .map(([group, cnt]) => ({ group, cnt }))
+  return (data as { group: string | number; cnt: number }[])
+    // padStart: robusto verso eventuali divisioni CPV con zero iniziale (es. "03")
+    // che una serializzazione numerica ridurrebbe a 1 cifra.
+    .map((r) => ({ group: String(r.group).padStart(2, '0'), cnt: Number(r.cnt) || 0 }))
+    .filter((r) => r.group.length === 2)
     .sort((a, b) => b.cnt - a.cnt);
 }
 
@@ -331,14 +383,15 @@ export async function getRegioniByCpvGroup(
     .slice(0, limit);
 }
 
-/** Conteggio bandi per uno specifico gruppo CPV. */
+/**
+ * Conteggio bandi per uno specifico gruppo CPV.
+ * Legge dalla STESSA cache di getBandiByCpvGroup: così il totale in
+ * generateMetadata e quello mostrato nella hero della pagina categoria coincidono
+ * (niente divergenza tra count exact e count planned).
+ */
 export async function getBandiCountByCpvGroup(group: string): Promise<number> {
-  const supabase: any = createServerClient();
-  const { count } = await supabase
-    .from('bandi_gara_public')
-    .select('id', { count: 'exact', head: true })
-    .like('cpv_principale', `${group}%`);
-  return count || 0;
+  const groups = await getBandiByCpvGroup();
+  return groups.find((g) => g.group === group)?.cnt ?? 0;
 }
 
 /** Bandi in scadenza (scadenza futura), ordinati per scadenza crescente. */

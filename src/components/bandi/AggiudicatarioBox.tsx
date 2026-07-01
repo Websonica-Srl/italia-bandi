@@ -1,6 +1,6 @@
-import { Award, Users, EuroIcon, Building2 } from 'lucide-react';
+import { Award, Users, Building2 } from 'lucide-react';
 import { Aggiudicatario } from '@/lib/supabase/queries/bandi';
-import { formatEuro } from '@/lib/utils';
+import { formatEuro, decodeEntities } from '@/lib/utils';
 import { hubUrl } from '@/lib/site-config';
 
 interface Props {
@@ -70,7 +70,7 @@ export default function AggiudicatarioBox({
               <Building2 className="h-4 w-4 mt-0.5 flex-shrink-0 text-muted-foreground" strokeWidth={1.75} />
               <div className="min-w-0">
                 <p className="font-semibold text-foreground leading-snug break-words">
-                  {a.ragione_sociale_raw || 'Operatore economico'}
+                  {decodeEntities(a.ragione_sociale_raw) || 'Operatore economico'}
                 </p>
                 {a.ruolo_rti && (
                   <p className="text-xs text-muted-foreground inline-flex items-center gap-1 mt-0.5">
@@ -81,7 +81,6 @@ export default function AggiudicatarioBox({
             </div>
             {a.importo_aggiudicazione != null && (
               <span className="inline-flex items-center gap-1 text-sm font-semibold text-foreground tabular-nums flex-shrink-0">
-                <EuroIcon className="h-3.5 w-3.5" strokeWidth={2} />
                 {formatEuro(a.importo_aggiudicazione, { compact: true })}
               </span>
             )}

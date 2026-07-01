@@ -93,6 +93,13 @@
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
   }
+  /* Header fisso: ogni ancora in-page (elementi con id) deve fermarsi sotto
+     l'header, non finirci nascosta sotto. Vale per tutte le pagine (il
+     glossario mantiene comunque il suo scroll-mt-32 piu' generoso). */
+  :target,
+  [id] {
+    scroll-margin-top: 6.5rem;
+  }
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-body);

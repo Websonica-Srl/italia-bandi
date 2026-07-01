@@ -122,11 +122,17 @@ export default function FiltriBandi({ cpvOptions }: Props) {
               aria-label="Filtra per categoria CPV"
             >
               <option value="">Tutte le categorie</option>
-              {cpvOptions.map((o) => (
-                <option key={o.group} value={o.group}>
-                  {cpvGroupLabel(o.group)} ({o.cnt})
-                </option>
-              ))}
+              {cpvOptions.map((o) => {
+                // Per i gruppi CPV senza label mappata, cpvGroupLabel ritorna il
+                // codice nudo: mostriamo "CPV NN" invece del solo numero.
+                const label = cpvGroupLabel(o.group);
+                const display = label === o.group ? `CPV ${o.group}` : label;
+                return (
+                  <option key={o.group} value={o.group}>
+                    {display} ({o.cnt})
+                  </option>
+                );
+              })}
             </select>
           </label>
 

@@ -67,6 +67,9 @@ export async function getLeaderboard(
   if (provincia) query = query.eq('firm_province', provincia);
 
   query = query.order('gare_vinte', { ascending: false, nullsFirst: false });
+  // Tie-breaker stabile: a pari gare_vinte l'ordine deve essere deterministico
+  // tra i render (firm_slug e' univoco in leaderboard_public).
+  query = query.order('firm_slug', { ascending: true });
   query = query.limit(limit);
 
   const { data, error } = await query;
@@ -128,6 +131,9 @@ export async function getRtiPartners(
   if (regione) query = query.ilike('top_regione', regione);
 
   query = query.order('gare_condivise', { ascending: false, nullsFirst: false });
+  // Tie-breaker stabile su chiavi univoche della coppia.
+  query = query.order('firm_a_slug', { ascending: true });
+  query = query.order('firm_b_slug', { ascending: true });
   query = query.limit(limit);
 
   const { data, error } = await query;
@@ -282,6 +288,8 @@ export async function getTopBuyers(
   if (cpvGroup) query = query.eq('top_cpv2', cpvGroup);
 
   query = query.order('n_bandi', { ascending: false, nullsFirst: false });
+  // Tie-breaker stabile: a pari n_bandi ordina per nome ente (univoco nella view).
+  query = query.order('stazione_appaltante', { ascending: true });
   query = query.limit(limit);
 
   const { data, error } = await query;
@@ -347,6 +355,9 @@ export async function getLandscape(
   if (fascia) query = query.eq('fascia_importo', fascia);
 
   query = query.order('n_gare', { ascending: false, nullsFirst: false });
+  // Tie-breaker stabile: a pari n_gare ordina per regione e fascia importo.
+  query = query.order('regione', { ascending: true });
+  query = query.order('fascia_importo', { ascending: true });
   query = query.limit(limit);
 
   const { data, error } = await query;
