@@ -15,6 +15,7 @@
  * getBandiByCpvGroup in bandi.ts, che non scala per questi moduli).
  */
 import { createServerClient } from '../client';
+import { memoTtl } from './memo';
 
 // =====================================================================
 // M8 — Leaderboard "chi vince di piu'"
@@ -207,7 +208,16 @@ export interface BuyerKey {
   n_aggiudicati: number;
 }
 
-async function fetchAllBuyerKeys(): Promise<BuyerKey[]> {
+/**
+ * Memoizzata (TTL 1h): chiamata da OGNI render di /ente/[slug]
+ * (resolveBuyerSlug) e dal chunk 5 della sitemap — senza memo ogni render
+ * ripagava il walk paginato completo di buyer_public (~9 query da 1000 righe).
+ */
+function fetchAllBuyerKeys(): Promise<BuyerKey[]> {
+  return memoTtl('buyer_keys', fetchAllBuyerKeysUncached);
+}
+
+async function fetchAllBuyerKeysUncached(): Promise<BuyerKey[]> {
   const supabase: any = createServerClient();
   const PAGE = 1000;
   const out: BuyerKey[] = [];
@@ -496,7 +506,15 @@ export interface SegmentCount {
  * Per l'indice /classifiche (sezione "per categoria"). Aggregato lato app
  * sull'intero set (11.880 righe, paginato).
  */
-async function fetchAllLeaderboardDims(): Promise<
+function fetchAllLeaderboardDims(): Promise<
+  { top_cpv2: string | null; top_regione: string | null }[]
+> {
+  // Memo TTL 1h: riusata tra sitemap chunk 4 e /classifiche nella stessa
+  // finestra ISR (walk paginato ~12 query da 1000 righe pagato una volta).
+  return memoTtl('leaderboard_dims', fetchAllLeaderboardDimsUncached);
+}
+
+async function fetchAllLeaderboardDimsUncached(): Promise<
   { top_cpv2: string | null; top_regione: string | null }[]
 > {
   const supabase: any = createServerClient();

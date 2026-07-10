@@ -6,6 +6,7 @@
  * visibilita_pubblica = true.
  */
 import { createServerClient } from '../client';
+import { memoTtl } from './memo';
 
 /** Colonne safe esposte da bandi_gara_public. */
 const BANDO_COLS =
@@ -154,10 +155,12 @@ export async function getBandoBySlug(slug: string): Promise<Bando | null> {
 
 /**
  * Fetch di TUTTE le righe di `bandi_gara_public` per le colonne richieste,
- * superando il cap PostgREST di 1000 righe via paginazione `.range()`.
- * Usato da sitemap + aggregati per-regione/per-CPV (enumerano l'intero dataset).
+ * superando il cap PostgREST di 1000 righe. Usato SOLO da sitemap (slug) e
+ * aggregato province — sempre dietro memo TTL. Gli aggregati regione/CPV NON
+ * passano piu' di qui: leggono stats_cache / landscape_public (1 query).
  */
 const PAGE_SIZE = 1000;
+
 /**
  * Enumera l'intero dataset (>50k righe) con KEYSET pagination sulla PK `id` (uuid).
  * NIENTE `.range()` a offset profondo: su 51k righe l'OFFSET 50.000 scansiona 50k
@@ -216,8 +219,16 @@ export async function getAllBandiSlugs(): Promise<{ slug: string; updated_at: st
  * che cattura il ~99,8% dei bandi; la fascia "storico ricco" si chiude lato JS.
  *
  * MANTENERE allineato con isBandoIndexable() — ogni cambio di soglia va replicato.
+ *
+ * Memoizzata (TTL 1h): la chiamano countSitemapChunks (indice + route
+ * /sitemap.xml) E ogni chunk bandi della sitemap → senza memo il walk da ~50
+ * pagine si ripete per ognuna di queste render nella stessa finestra ISR.
  */
-export async function getIndexableBandiSlugs(): Promise<{ slug: string; updated_at: string }[]> {
+export function getIndexableBandiSlugs(): Promise<{ slug: string; updated_at: string }[]> {
+  return memoTtl('indexable_bandi_slugs', fetchIndexableBandiSlugs);
+}
+
+async function fetchIndexableBandiSlugs(): Promise<{ slug: string; updated_at: string }[]> {
   const nowIso = new Date().toISOString();
   const rows = await fetchAllBandiRows(
     'slug, updated_at, scadenza_offerte, aggiudicatario_ragione_sociale_raw, importo_aggiudicazione, importo_base, oggetto, stazione_appaltante',
@@ -362,20 +373,31 @@ export async function getBandiByCpvGroup(): Promise<CpvGroupStat[]> {
 
 /**
  * Top regioni per uno specifico gruppo CPV (cross-link categoria↔geo §4.2.3).
- * Aggregato lato app sulle righe del gruppo (filtro DB `like cpv%`).
+ * Legge da `landscape_public` (pre-aggregata cpv2 × regione × fascia, gia'
+ * usata dai moduli intelligence): UNA query da <=80 righe, sommando n_gare per
+ * regione. Verificato sul DB (10/07): i totali coincidono ESATTAMENTE con il
+ * conteggio raw su bandi_gara_public (like 'NN%' + regione not null).
+ * Sostituisce il walk keyset dell'intero gruppo (per CPV 45 = ~43 query da
+ * 1000 righe A OGNI render della pagina categoria).
  */
 export async function getRegioniByCpvGroup(
   group: string,
   limit = 8,
 ): Promise<RegioneStat[]> {
-  const data = await fetchAllBandiRows('regione', (q) =>
-    q.like('cpv_principale', `${group}%`).not('regione', 'is', null),
-  );
-  if (!data.length) return [];
+  const supabase: any = createServerClient();
+  const { data, error } = await supabase
+    .from('landscape_public')
+    .select('regione, n_gare')
+    .eq('cpv2', group)
+    .limit(1000);
+  if (error) {
+    console.error('[bandi] getRegioniByCpvGroup error:', error.message);
+    return [];
+  }
   const counts = new Map<string, number>();
-  for (const row of data as { regione: string }[]) {
+  for (const row of (data as { regione: string | null; n_gare: number }[]) || []) {
     const r = (row.regione || '').trim();
-    if (r) counts.set(r, (counts.get(r) || 0) + 1);
+    if (r) counts.set(r, (counts.get(r) || 0) + (Number(row.n_gare) || 0));
   }
   return Array.from(counts.entries())
     .map(([regione, cnt]) => ({ regione, cnt }))
@@ -418,21 +440,27 @@ export interface RegioneStat {
 
 /**
  * Conteggio bandi per regione (solo righe con `regione` valorizzata).
- * Aggregato lato applicativo sul dataset (~3k righe, no RPC dedicata su view).
+ * SINGLE SOURCE: legge la cache `bandi_regioni` (refresh via pg_cron), come
+ * getBandiByCpvGroup. UNA query invece del walk keyset dell'intero dataset
+ * (~52 query da 1000 righe) che veniva ripetuto per OGNI render di /regioni,
+ * delle 20 pagine /[regione] e del chunk 2 della sitemap (audit 10/07: era il
+ * secondo pattern piu' costoso sul DB, ~49k chiamate).
  */
 export async function getBandiByRegione(): Promise<RegioneStat[]> {
-  // Aggregato sull'intero dataset (no cap 1000): conteggi per regione corretti.
-  const data = await fetchAllBandiRows('regione', (q) =>
-    q.not('regione', 'is', null),
-  );
-  if (!data.length) return [];
-  const counts = new Map<string, number>();
-  for (const row of data as { regione: string }[]) {
-    const r = (row.regione || '').trim();
-    if (r) counts.set(r, (counts.get(r) || 0) + 1);
+  const supabase: any = createServerClient();
+  const { data, error } = await supabase.rpc('get_stats_cache', {
+    p_key: 'bandi_regioni',
+  });
+  if (error || !Array.isArray(data)) {
+    // Throw invece di []: le regioni non sono mai legittimamente vuote; un
+    // errore cache non deve svuotare silenziosamente /regioni, i cross-link
+    // regione e il chunk sitemap (ISR mantiene l'ultima pagina buona).
+    console.error('[bandi] getBandiByRegione cache error:', error?.message);
+    throw new Error(`getBandiByRegione: cache non disponibile (${error?.message ?? 'payload non-array'})`);
   }
-  return Array.from(counts.entries())
-    .map(([regione, cnt]) => ({ regione, cnt }))
+  return (data as { regione: string | null; n: number }[])
+    .map((r) => ({ regione: String(r.regione || '').trim(), cnt: Number(r.n) || 0 }))
+    .filter((r) => r.regione)
     .sort((a, b) => b.cnt - a.cnt);
 }
 
@@ -506,8 +534,20 @@ export interface ProvinciaStat {
  * (rumore d'ingestion, es. Sicilia/RM). La whitelist gerarchica derivata da
  * PROVINCE del package (in lib/province.ts) le scarta: una pagina esiste solo
  * se (regioneSlug/provinciaSlug) è una coppia valida del package.
+ *
+ * Memoizzata (TTL 1h): il walk keyset dell'intero dataset si paga UNA volta
+ * per finestra e viene riusato da sitemap, /[regione] (via
+ * getProvinceCountByRegione) e cross-link. Nessuna cache key `bandi_province`
+ * esiste ancora in stats_cache: quando ci sara' (vedi DDL proposto in
+ * refresh_stats_cache) questa funzione potra' leggerla direttamente.
  */
-export async function getBandiByProvincia(minCount = 1): Promise<ProvinciaStat[]> {
+export function getBandiByProvincia(minCount = 1): Promise<ProvinciaStat[]> {
+  return memoTtl('bandi_by_provincia', fetchBandiByProvincia).then((all) =>
+    all.filter((p) => p.cnt >= minCount),
+  );
+}
+
+async function fetchBandiByProvincia(): Promise<ProvinciaStat[]> {
   const data = await fetchAllBandiRows('regione, provincia', (q) =>
     q.not('provincia', 'is', null).not('regione', 'is', null),
   );
@@ -521,25 +561,22 @@ export async function getBandiByProvincia(minCount = 1): Promise<ProvinciaStat[]
     cur.cnt += 1;
     counts.set(key, cur);
   }
-  return Array.from(counts.values())
-    .filter((p) => p.cnt >= minCount)
-    .sort((a, b) => b.cnt - a.cnt);
+  return Array.from(counts.values()).sort((a, b) => b.cnt - a.cnt);
 }
 
 /**
  * Conteggio bandi per le province (sigla) di UNA regione. Per il blocco
- * "Province di [Regione]" — una sola enumerazione filtrata per nome regione.
+ * "Province di [Regione]". Derivato dall'aggregato memoizzato
+ * getBandiByProvincia (stesse righe: provincia+regione not null): niente
+ * enumerazione per-regione ripetuta su ognuna delle 20 pagine /[regione].
  */
 export async function getProvinceCountByRegione(
   regione: string,
 ): Promise<Map<string, number>> {
-  const data = await fetchAllBandiRows('provincia', (q) =>
-    q.eq('regione', regione).not('provincia', 'is', null),
-  );
+  const all = await getBandiByProvincia();
   const counts = new Map<string, number>();
-  for (const r of data as { provincia: string }[]) {
-    const sigla = (r.provincia || '').trim();
-    if (sigla) counts.set(sigla, (counts.get(sigla) || 0) + 1);
+  for (const p of all) {
+    if (p.regione === regione) counts.set(p.sigla, p.cnt);
   }
   return counts;
 }
