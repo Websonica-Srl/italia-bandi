@@ -155,9 +155,10 @@ export async function getBandoBySlug(slug: string): Promise<Bando | null> {
 
 /**
  * Fetch di TUTTE le righe di `bandi_gara_public` per le colonne richieste,
- * superando il cap PostgREST di 1000 righe. Usato SOLO da sitemap (slug) e
- * aggregato province — sempre dietro memo TTL. Gli aggregati regione/CPV NON
- * passano piu' di qui: leggono stats_cache / landscape_public (1 query).
+ * superando il cap PostgREST di 1000 righe. Usato SOLO dalla sitemap (slug,
+ * indicizzabilita') — sempre dietro memo TTL. Gli aggregati regione/CPV/
+ * provincia NON passano piu' di qui: leggono stats_cache / landscape_public
+ * (1 query).
  */
 const PAGE_SIZE = 1000;
 
@@ -528,47 +529,49 @@ export interface ProvinciaStat {
 /**
  * Conteggio bandi per provincia (chiave = regione|sigla), solo righe
  * geolocalizzate. Usato da sitemap (chunk province) e dal blocco "Province di
- * [Regione]" sulle pagine regione. Aggregato lato app sull'intero dataset.
+ * [Regione]" sulle pagine regione.
  *
- * NB: il dataset contiene poche righe con coppia (regione, sigla) incoerente
- * (rumore d'ingestion, es. Sicilia/RM). La whitelist gerarchica derivata da
- * PROVINCE del package (in lib/province.ts) le scarta: una pagina esiste solo
- * se (regioneSlug/provinciaSlug) è una coppia valida del package.
+ * SINGLE SOURCE: legge la cache `bandi_province` (refresh orario via
+ * pg_cron), stesso pattern di getBandiByRegione/getBandiByCpvGroup. Sostituisce
+ * il walk keyset dell'intero dataset (memoizzato 1h) che pagava comunque una
+ * enumerazione completa per finestra.
  *
- * Memoizzata (TTL 1h): il walk keyset dell'intero dataset si paga UNA volta
- * per finestra e viene riusato da sitemap, /[regione] (via
- * getProvinceCountByRegione) e cross-link. Nessuna cache key `bandi_province`
- * esiste ancora in stats_cache: quando ci sara' (vedi DDL proposto in
- * refresh_stats_cache) questa funzione potra' leggerla direttamente.
+ * NB conteggio: la cache conta su `bandi_gara` (non sulla vista
+ * `_public`/sanitizzata) — stesso scarto gia' accettato per regioni/CPV in
+ * d1d7b8d, coerente con quei conteggi.
+ *
+ * NB coppie incoerenti: il dataset contiene poche righe con coppia (regione,
+ * sigla) incoerente (rumore d'ingestion, es. Sicilia/RM). La whitelist
+ * gerarchica derivata da PROVINCE del package (in lib/province.ts) le scarta
+ * lato chiamante: una pagina esiste solo se (regioneSlug/provinciaSlug) è una
+ * coppia valida del package.
  */
-export function getBandiByProvincia(minCount = 1): Promise<ProvinciaStat[]> {
-  return memoTtl('bandi_by_provincia', fetchBandiByProvincia).then((all) =>
-    all.filter((p) => p.cnt >= minCount),
-  );
-}
-
-async function fetchBandiByProvincia(): Promise<ProvinciaStat[]> {
-  const data = await fetchAllBandiRows('regione, provincia', (q) =>
-    q.not('provincia', 'is', null).not('regione', 'is', null),
-  );
-  const counts = new Map<string, ProvinciaStat>();
-  for (const r of data as { regione: string; provincia: string }[]) {
-    const regione = (r.regione || '').trim();
-    const sigla = (r.provincia || '').trim();
-    if (!regione || !sigla) continue;
-    const key = `${regione}|${sigla}`;
-    const cur = counts.get(key) ?? { regione, sigla, cnt: 0 };
-    cur.cnt += 1;
-    counts.set(key, cur);
+export async function getBandiByProvincia(minCount = 1): Promise<ProvinciaStat[]> {
+  const supabase: any = createServerClient();
+  const { data, error } = await supabase.rpc('get_stats_cache', {
+    p_key: 'bandi_province',
+  });
+  if (error || !Array.isArray(data)) {
+    // Throw invece di []: come per regioni/CPV, un errore cache non deve
+    // svuotare silenziosamente sitemap e blocco "Province di [Regione]".
+    console.error('[bandi] getBandiByProvincia cache error:', error?.message);
+    throw new Error(`getBandiByProvincia: cache non disponibile (${error?.message ?? 'payload non-array'})`);
   }
-  return Array.from(counts.values()).sort((a, b) => b.cnt - a.cnt);
+  return (data as { regione: string | null; provincia: string | null; n: number }[])
+    .map((r) => ({
+      regione: String(r.regione || '').trim(),
+      sigla: String(r.provincia || '').trim(),
+      cnt: Number(r.n) || 0,
+    }))
+    .filter((p) => p.regione && p.sigla && p.cnt >= minCount)
+    .sort((a, b) => b.cnt - a.cnt);
 }
 
 /**
  * Conteggio bandi per le province (sigla) di UNA regione. Per il blocco
- * "Province di [Regione]". Derivato dall'aggregato memoizzato
- * getBandiByProvincia (stesse righe: provincia+regione not null): niente
- * enumerazione per-regione ripetuta su ognuna delle 20 pagine /[regione].
+ * "Province di [Regione]". Derivato dalla cache getBandiByProvincia (1
+ * query, RPC read-through): niente enumerazione per-regione ripetuta su
+ * ognuna delle 20 pagine /[regione].
  */
 export async function getProvinceCountByRegione(
   regione: string,
