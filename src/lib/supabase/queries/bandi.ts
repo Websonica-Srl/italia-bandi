@@ -210,54 +210,53 @@ export async function getAllBandiSlugs(): Promise<{ slug: string; updated_at: st
  * Slug dei SOLI bandi INDICIZZABILI (vedi isBandoIndexable in lib/seo/indexable.ts).
  * Usato dalla sitemap: NON deve contenere URL noindex.
  *
- * Pre-filtro a livello DB (riduce il dataset paginato), poi rifinitura JS con la
- * STESSA logica di isBandoIndexable() per le condizioni composte (oggetto+ente).
+ * Il criterio di indicizzabilità NON viene più calcolato qui: vive nella MV
+ * `bandi_indicizzabili_mv (slug, updated_at)` (migration del 24/08/2026 su
+ * italia-progettisti, `supabase/migrations/20260824160000_bandi_indicizzabili_mv_e_rpc_province_cantieri_settore.sql`),
+ * refreshata ogni notte alle 04:45 UTC. Questa funzione fa solo il walk keyset
+ * (per `slug`) sulla RPC `get_bandi_indicizzabili`, che ritorna righe già
+ * filtrate — NESSUN filtro JS aggiuntivo qui.
  *
- * NB di calibrazione: nella view `aggiudicatario_ragione_sociale_raw` e
- * `importo_aggiudicazione` sono sempre vuoti, quindi NON si possono usare come
- * pre-filtro (darebbero solo i ~261 aperti). Il pre-filtro reale è:
- *   scadenza futura  OR  importo_base > 0
- * che cattura il ~99,8% dei bandi; la fascia "storico ricco" si chiude lato JS.
- *
- * MANTENERE allineato con isBandoIndexable() — ogni cambio di soglia va replicato.
+ * MANTENERE allineato con isBandoIndexable() in lib/seo/indexable.ts — che
+ * resta la fonte di verità per il `robots` della singola pagina bando —
+ * ogni cambio di soglia nella MV va replicato lì.
  *
  * Memoizzata (TTL 1h): la chiamano countSitemapChunks (indice + route
- * /sitemap.xml) E ogni chunk bandi della sitemap → senza memo il walk da ~50
- * pagine si ripete per ognuna di queste render nella stessa finestra ISR.
+ * /sitemap.xml) E ogni chunk bandi della sitemap → senza memo il walk si
+ * ripete per ognuna di queste render nella stessa finestra ISR.
  */
 export function getIndexableBandiSlugs(): Promise<{ slug: string; updated_at: string }[]> {
   return memoTtl('indexable_bandi_slugs', fetchIndexableBandiSlugs);
 }
 
+/**
+ * Walk keyset (cursore = ultimo `slug` della pagina precedente) sulla RPC
+ * `get_bandi_indicizzabili`, che legge dalla MV `bandi_indicizzabili_mv` già
+ * filtrata per indicizzabilità e ordinata per `slug` ASC. Sostituisce il
+ * vecchio walk per `id` (uuid) su tutta `bandi_gara_public` con rifinitura
+ * JS, che generava ~52 pagine da 1.016 blocchi casuali l'una.
+ */
 async function fetchIndexableBandiSlugs(): Promise<{ slug: string; updated_at: string }[]> {
-  const nowIso = new Date().toISOString();
-  const rows = await fetchAllBandiRows(
-    'slug, updated_at, scadenza_offerte, aggiudicatario_ragione_sociale_raw, importo_aggiudicazione, importo_base, oggetto, stazione_appaltante',
-    (q) =>
-      q
-        .not('slug', 'is', null)
-        // Pre-filtro DB: aperto OPPURE con importo a base d'asta valorizzato.
-        // Esclude già la fascia "senza alcun importo" (thin); la soglia oggetto
-        // (>=40) e la presenza ente si chiudono lato JS qui sotto.
-        .or([`scadenza_offerte.gte.${nowIso}`, `importo_base.gt.0`].join(',')),
-  );
-  return rows
-    .filter((r: any) => {
-      const aperto = !!r.scadenza_offerte && new Date(r.scadenza_offerte) >= new Date();
-      if (aperto) return true;
-      const haAgg = !!(
-        r.aggiudicatario_ragione_sociale_raw &&
-        r.aggiudicatario_ragione_sociale_raw.trim().length > 2
-      );
-      const haImp =
-        (r.importo_aggiudicazione != null && r.importo_aggiudicazione > 0) ||
-        (r.importo_base != null && r.importo_base > 0);
-      if (haAgg && haImp) return true;
-      const oggRicco = !!(r.oggetto && r.oggetto.trim().length >= 40);
-      const haEnte = !!(r.stazione_appaltante && r.stazione_appaltante.trim().length > 3);
-      return oggRicco && haImp && haEnte;
-    })
-    .map((r: any) => ({ slug: r.slug as string, updated_at: r.updated_at as string }));
+  const supabase: any = createServerClient();
+  const out: { slug: string; updated_at: string }[] = [];
+  let cursor: string | null = null;
+  for (;;) {
+    const { data, error } = await supabase.rpc('get_bandi_indicizzabili', {
+      p_after_slug: cursor,
+      p_limit: PAGE_SIZE,
+    });
+    if (error) {
+      // Con keyset l'errore è improbabile; se capita, ritorniamo l'accumulato
+      // PARZIALE (meglio di una sitemap vuota), stesso comportamento di prima.
+      console.error('[bandi] fetchIndexableBandiSlugs error (dataset parziale):', error.message);
+      return out;
+    }
+    if (!data || data.length === 0) break;
+    out.push(...(data as { slug: string; updated_at: string }[]));
+    if (data.length < PAGE_SIZE) break;
+    cursor = data[data.length - 1].slug as string;
+  }
+  return out;
 }
 
 /** Aggiudicatari (solo colonne safe) di un bando — per AggiudicatarioBox. */
