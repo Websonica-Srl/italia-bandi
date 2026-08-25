@@ -2,15 +2,33 @@
  * SINGLE SOURCE OF TRUTH per l'indicizzazione selettiva dei bandi.
  *
  * Usato da:
- *   - /bandi/[slug]            → robots meta (index vs noindex,follow)
- *   - app/sitemap.ts           → quali URL bando includere (via getIndexableBandiSlugs)
- *   - link interni / cross-link → per non spingere equity su pagine thin
+ *   - /bandi/[slug]                        → robots meta (index vs noindex,follow)
+ *   - /bandi, /categoria/[slug], /scadenze,
+ *     /ente/[slug]                         → robots meta di lista (via isListaIndexable)
+ *   - link interni / cross-link             → per non spingere equity su pagine thin
  *
- * NON duplicare questa logica altrove. La versione SQL (filtro a livello DB)
- * vive in `getIndexableBandiSlugs()` in queries/bandi.ts e DEVE restare allineata
- * a questa funzione: qualunque cambio di soglia va replicato in entrambe.
+ * NON duplicare questa logica altrove.
  *
- * --- Calibrazione sui dati reali (2026-05-24, view bandi_gara_public, 50.882 bandi) ---
+ * --- Decisione 2026-08-26 (ondata 0) ---
+ * bandigaredappalto.it: ~150 impression e 0 click in Search Console negli
+ * ultimi 90 giorni, a fronte di 46k schede bando pubblicate ("scaled content"
+ * senza ritorno). Schede singole, liste (/bandi, /categoria/[slug],
+ * /scadenze) e pagine ente (/ente/[slug]) escono dall'indice con
+ * `noindex, follow`: restano navigabili e crawlabili (mantengono il silo
+ * interno), ma non competono più per l'indicizzazione. La sitemap dei bandi
+ * NON esiste più (rimossa in un task separato della stessa ondata, che pulisce
+ * anche il chunk categorie/enti). Restano indicizzabili home, /regioni,
+ * /[regione], /[regione]/[provincia], /classifiche, /classifiche/[segmento],
+ * /glossario, /chi-siamo, /contatti, /iscriviti, /api-pubbliche,
+ * /come-trattiamo-i-dati, legal.
+ * Spec: docs/superpowers/specs/2026-08-26-cantieri-bandi-fuori-indice-contenuti-verticali.md
+ * (repo italia-progettisti).
+ *
+ * `SCHEDE_PUBBLICHE_INDICIZZABILI = false` è l'interruttore: quando torna
+ * `true`, `isBandoIndexable()` ripristina la logica di calibrazione qui sotto
+ * (mai cancellata) e `isListaIndexable()` ripristina l'indicizzazione delle liste.
+ *
+ * --- Calibrazione storica sui dati reali (2026-05-24, view bandi_gara_public, 50.882 bandi) ---
  *  Fasce misurate:
  *    - aperto (scadenza futura):                         261
  *    - storico_ricco (oggetto>=40 + importo>0 + ente):   46.428
@@ -19,15 +37,29 @@
  *  sono SEMPRE vuoti a livello di bando (l'aggiudicatario vive in
  *  `bando_aggiudicatari_public`, GDPR-safe). Le clausole "aggiudicato ricco" qui
  *  sotto restano per robustezza futura (se la view un giorno esponesse il campo),
- *  ma sui dati attuali la regola che decide è "aperto OR storico ricco".
- *  → Indicizzabili stimati: ~46.689 / 50.882 (resto noindex,follow).
+ *  ma sui dati attuali la regola che decide era "aperto OR storico ricco".
+ *  → Indicizzabili stimati (quando l'interruttore è ON): ~46.689 / 50.882.
  */
 import type { Bando } from '@/lib/supabase/queries/bandi';
 
 /** Lunghezza minima dell'oggetto per considerarlo autosufficiente (vedi calibrazione). */
 export const OGGETTO_MIN_LEN = 40;
 
+/**
+ * Interruttore globale: quando `false`, nessuna scheda bando e nessuna lista
+ * bandi/categoria/scadenze/ente è indicizzabile (noindex,follow ovunque),
+ * indipendentemente dalla calibrazione sotto. Vedi decisione 2026-08-26 sopra.
+ */
+export const SCHEDE_PUBBLICHE_INDICIZZABILI = false;
+
+/** Le liste (/bandi, /categoria/[slug], /scadenze) e le pagine ente (/ente/[slug]) sono indicizzabili solo se l'interruttore è ON. */
+export function isListaIndexable(): boolean {
+  return SCHEDE_PUBBLICHE_INDICIZZABILI;
+}
+
 export function isBandoIndexable(b: Bando): boolean {
+  if (!SCHEDE_PUBBLICHE_INDICIZZABILI) return false;
+
   const aperto =
     !!b.scadenza_offerte && new Date(b.scadenza_offerte) >= new Date();
 

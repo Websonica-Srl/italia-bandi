@@ -9,6 +9,7 @@ import BreadcrumbCantiere from '@/components/cantieri/BreadcrumbCantiere';
 import FAQ from '@/components/cantieri/FAQ';
 import { ogImageUrl, itemListLd, safeJsonLd } from '@/lib/seo/structured-data';
 import { siteConfig } from '@/lib/site-config';
+import { isListaIndexable } from '@/lib/seo/indexable';
 
 export const revalidate = 1800; // mezz'ora: pagina time-sensitive
 
@@ -23,6 +24,10 @@ export const metadata: Metadata = {
   description:
     'I bandi e le gare d\'appalto pubbliche con termine di presentazione delle offerte ancora aperto, ordinati per scadenza più vicina. Non perdere le opportunità.',
   alternates: { canonical: '/scadenze' },
+  // Decisione 2026-08-26 (ondata 0): lista scadenze fuori indice.
+  robots: isListaIndexable()
+    ? { index: true, follow: true }
+    : { index: false, follow: true },
   openGraph: { title: 'Bandi di gara in scadenza', description: 'Le gare d\'appalto con termine offerte ancora aperto.', url: '/scadenze', type: 'website', images: [{ url: og, width: 1200, height: 630, alt: 'Bandi di gara in scadenza' }] },
   twitter: { card: 'summary_large_image', title: 'Bandi di gara in scadenza', images: [og] },
 };
