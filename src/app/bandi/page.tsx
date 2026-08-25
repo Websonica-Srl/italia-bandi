@@ -11,6 +11,7 @@ import FiltriBandi from '@/components/bandi/FiltriBandi';
 import BreadcrumbCantiere from '@/components/cantieri/BreadcrumbCantiere';
 import { ogImageUrl, itemListLd, safeJsonLd } from '@/lib/seo/structured-data';
 import { siteConfig } from '@/lib/site-config';
+import { isListaIndexable } from '@/lib/seo/indexable';
 
 export const revalidate = 3600;
 
@@ -51,8 +52,12 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
       'Elenco dei bandi e delle gare d\'appalto pubbliche in Italia: filtra per categoria CPV, procedura, importo a base di gara e scadenza. Dati pubblici da fonti ufficiali e pubbliche.',
     alternates: { canonical: '/bandi' },
     // Le pagine di ricerca/filtro dinamiche non vanno indicizzate: la lista
-    // base /bandi è la canonica indicizzabile.
-    robots: filtered ? { index: false, follow: true } : { index: true, follow: true },
+    // base /bandi è la canonica indicizzabile — MA solo se isListaIndexable()
+    // è true (decisione 2026-08-26, ondata 0: liste bandi fuori indice).
+    robots:
+      isListaIndexable() && !filtered
+        ? { index: true, follow: true }
+        : { index: false, follow: true },
     openGraph: {
       title: 'Bandi e gare d\'appalto pubbliche in Italia',
       description: 'Elenco dei bandi pubblici italiani: filtra per categoria, procedura, importo e scadenza.',

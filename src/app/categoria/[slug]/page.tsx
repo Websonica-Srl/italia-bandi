@@ -30,6 +30,7 @@ import BreadcrumbCantiere from '@/components/cantieri/BreadcrumbCantiere';
 import FAQ from '@/components/cantieri/FAQ';
 import { ogImageUrl, itemListLd, safeJsonLd } from '@/lib/seo/structured-data';
 import { siteConfig } from '@/lib/site-config';
+import { isListaIndexable } from '@/lib/seo/indexable';
 
 export const revalidate = 3600;
 
@@ -91,6 +92,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title,
     description,
     alternates: { canonical: `/categoria/${slug}` },
+    // Decisione 2026-08-26 (ondata 0): liste categoria fuori indice.
+    robots: isListaIndexable()
+      ? { index: true, follow: true }
+      : { index: false, follow: true },
     openGraph: { title, description, url: `/categoria/${slug}`, type: 'website', images: [{ url: ogImage, width: 1200, height: 630, alt: title }] },
     twitter: { card: 'summary_large_image', title, description, images: [ogImage] },
   };
