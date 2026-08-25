@@ -1,61 +1,39 @@
 import { MetadataRoute } from 'next';
 import { siteConfig } from '@/lib/site-config';
-import {
-  getIndexableBandiSlugs,
-  getBandiByCpvGroup,
-  getBandiByRegione,
-  getBandiByProvincia,
-} from '@/lib/supabase/queries/bandi';
-import {
-  getLeaderboardSegments,
-  getAllBuyersForParams,
-} from '@/lib/supabase/queries/intelligence';
+import { getBandiByRegione, getBandiByProvincia } from '@/lib/supabase/queries/bandi';
+import { getLeaderboardSegments } from '@/lib/supabase/queries/intelligence';
 import { regioneSlug } from '@/lib/regioni';
 import { provinciaFromSigla } from '@/lib/province';
-import { buyerSlug } from '@/lib/buyer';
-import { cpvGroupToSlug } from '@websonica/cantieri-core';
 
 export const revalidate = 3600;
 
-/** < 45k = margine di sicurezza sotto il limite Google di 50.000 URL/file. */
-export const CHUNK = 40_000;
 /**
- * Chunk non-bando: id 0 statiche, 1 categorie, 2 regioni, 3 province,
- * 4 classifiche (M8), 5 stazioni appaltanti / enti (M6).
+ * Sitemap ridotta al solo contenuto indicizzabile (decisione 26/08/2026):
+ * schede bando, liste categoria, /bandi, /scadenze ed ente sono `noindex,
+ * follow` (corsia B1), quindi escono dalla sitemap. Restano SOLO 4 chunk fissi
+ * (nessuna query per contarli): 0 statiche, 1 regioni, 2 province,
+ * 3 classifiche.
  */
-export const NON_BANDO_CHUNKS = 6;
+export const TOTAL_CHUNKS = 4;
 
 /** Soglia minima imprese per segmento leaderboard (allineata alle pagine). */
 const LEADERBOARD_MIN = 5;
-/** Solo gli enti con almeno un'aggiudicazione hanno una pagina /ente utile (M6). */
-const ENTE_MIN_AGGIUDICATI = 1;
 
 /**
- * Numero TOTALE di chunk sitemap (non-bando + chunk bandi indicizzabili).
- * Usato sia da generateSitemaps() (qui) sia dall'indice manuale
- * (app/sitemap.xml/route.ts) per restare coerenti.
+ * Numero TOTALE di chunk sitemap. Usato sia da generateSitemaps() (qui) sia
+ * dall'indice manuale (app/sitemap.xml/route.ts) per restare coerenti.
  *
  * NB Next 14.1.0: generateSitemaps() espone i chunk a /sitemap/[id].xml ma NON
  * serve l'indice a /sitemap.xml (bug noto, fixato in 14.2+). Per questo l'indice
  * è emesso manualmente da app/sitemap.xml/route.ts, che riusa questa funzione.
+ * Resta async (nessuna query dentro) per non cambiare la firma usata dall'indice.
  */
 export async function countSitemapChunks(): Promise<number> {
-  let bandoChunks = 1;
-  try {
-    const slugs = await getIndexableBandiSlugs();
-    bandoChunks = Math.max(1, Math.ceil(slugs.length / CHUNK));
-  } catch {
-    // Env Supabase assente a build time: almeno 1 chunk (resta ISR).
-    bandoChunks = 1;
-  }
-  return NON_BANDO_CHUNKS + bandoChunks;
+  return TOTAL_CHUNKS;
 }
 
 /**
  * Chunk sitemap via Next `generateSitemaps()` → /sitemap/[id].xml.
- * Segmentazione per tipo (debug Search Console + priority per tipo). I chunk
- * bandi contengono SOLO URL indicizzabili (isBandoIndexable === true): inserire
- * noindex in sitemap è un segnale contraddittorio e spreca crawl budget.
  */
 export async function generateSitemaps() {
   const total = await countSitemapChunks();
@@ -70,14 +48,12 @@ export default async function sitemap({
   const baseUrl = siteConfig.baseUrl;
   const now = new Date();
 
-  // id 0 — statiche + hub
+  // id 0 — statiche + hub (/bandi e /scadenze sono noindex: fuori sitemap)
   if (id === 0) {
     return [
       { url: `${baseUrl}/`, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
-      { url: `${baseUrl}/bandi`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
       { url: `${baseUrl}/classifiche`, lastModified: now, changeFrequency: 'daily', priority: 0.85 },
       { url: `${baseUrl}/regioni`, lastModified: now, changeFrequency: 'daily', priority: 0.85 },
-      { url: `${baseUrl}/scadenze`, lastModified: now, changeFrequency: 'daily', priority: 0.85 },
       { url: `${baseUrl}/glossario`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
       { url: `${baseUrl}/iscriviti`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
       // /per-pubbliche-amministrazioni e' noindex (fuori indice + fuori menu):
@@ -92,19 +68,8 @@ export default async function sitemap({
     ];
   }
 
-  // id 1 — categorie CPV (gruppi realmente presenti)
+  // id 1 — regioni (solo quelle con almeno un bando geolocalizzato)
   if (id === 1) {
-    const groups = await getBandiByCpvGroup();
-    return groups.map((g) => ({
-      url: `${baseUrl}/categoria/${cpvGroupToSlug(g.group)}`,
-      lastModified: now,
-      changeFrequency: 'daily' as const,
-      priority: 0.8,
-    }));
-  }
-
-  // id 2 — regioni (solo quelle con almeno un bando geolocalizzato)
-  if (id === 2) {
     const regioni = await getBandiByRegione();
     return regioni.map((r) => ({
       url: `${baseUrl}/${regioneSlug(r.regione)}`,
@@ -114,8 +79,8 @@ export default async function sitemap({
     }));
   }
 
-  // id 3 — province (whitelist package, solo sigle valide con bandi)
-  if (id === 3) {
+  // id 2 — province (whitelist package, solo sigle valide con bandi)
+  if (id === 2) {
     const province = await getBandiByProvincia();
     const seen = new Set<string>();
     const out: MetadataRoute.Sitemap = [];
@@ -138,46 +103,18 @@ export default async function sitemap({
     return out;
   }
 
-  // id 4 — classifiche (indice + segmenti CPV/regione con >= LEADERBOARD_MIN imprese)
-  if (id === 4) {
-    const segments = await getLeaderboardSegments();
-    const out: MetadataRoute.Sitemap = [
-      { url: `${baseUrl}/classifiche`, lastModified: now, changeFrequency: 'daily' as const, priority: 0.85 },
-    ];
-    for (const s of segments.cpv) {
-      if (s.cnt < LEADERBOARD_MIN) continue;
-      out.push({ url: `${baseUrl}/classifiche/cpv-${s.key}`, lastModified: now, changeFrequency: 'daily' as const, priority: 0.7 });
-    }
-    for (const s of segments.regioni) {
-      if (s.cnt < LEADERBOARD_MIN) continue;
-      out.push({ url: `${baseUrl}/classifiche/regione-${regioneSlug(s.key)}`, lastModified: now, changeFrequency: 'daily' as const, priority: 0.7 });
-    }
-    return out;
+  // id 3 — classifiche (indice + segmenti CPV/regione con >= LEADERBOARD_MIN imprese)
+  const segments = await getLeaderboardSegments();
+  const out: MetadataRoute.Sitemap = [
+    { url: `${baseUrl}/classifiche`, lastModified: now, changeFrequency: 'daily' as const, priority: 0.85 },
+  ];
+  for (const s of segments.cpv) {
+    if (s.cnt < LEADERBOARD_MIN) continue;
+    out.push({ url: `${baseUrl}/classifiche/cpv-${s.key}`, lastModified: now, changeFrequency: 'daily' as const, priority: 0.7 });
   }
-
-  // id 5 — stazioni appaltanti / enti (solo con aggiudicazioni; dedup per slug)
-  if (id === 5) {
-    const buyers = await getAllBuyersForParams();
-    const seen = new Set<string>();
-    const out: MetadataRoute.Sitemap = [];
-    for (const b of buyers) {
-      if ((Number(b.n_aggiudicati) || 0) < ENTE_MIN_AGGIUDICATI) continue;
-      const slug = buyerSlug(b.stazione_appaltante);
-      if (!slug || seen.has(slug)) continue;
-      seen.add(slug);
-      out.push({ url: `${baseUrl}/ente/${slug}`, lastModified: now, changeFrequency: 'weekly' as const, priority: 0.7 });
-    }
-    return out;
+  for (const s of segments.regioni) {
+    if (s.cnt < LEADERBOARD_MIN) continue;
+    out.push({ url: `${baseUrl}/classifiche/regione-${regioneSlug(s.key)}`, lastModified: now, changeFrequency: 'daily' as const, priority: 0.7 });
   }
-
-  // id >= 6 — bandi INDICIZZABILI, chunked da 40k
-  const slugs = await getIndexableBandiSlugs();
-  const chunkIdx = id - NON_BANDO_CHUNKS;
-  const slice = slugs.slice(chunkIdx * CHUNK, (chunkIdx + 1) * CHUNK);
-  return slice.map((b) => ({
-    url: `${baseUrl}/bandi/${b.slug}`,
-    lastModified: b.updated_at ? new Date(b.updated_at) : now,
-    changeFrequency: 'weekly' as const,
-    priority: 0.6,
-  }));
+  return out;
 }
